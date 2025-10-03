@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Point_v1.Views.FilterPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Фильтры">
+
+    <ContentPage.Content>
+        <VerticalStackLayout Spacing="20" Padding="20">
+
+            <Label Text="Фильтры событий" 
+                   FontSize="24" 
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+
+            <Label Text="Эта функция находится в разработке" 
+                   FontSize="16"
+                   HorizontalOptions="Center"
+                   TextColor="Gray"
+                   TextAlignment="Center"/>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0" 
+                        Text="Сбросить" 
+                        Command="{Binding ResetFiltersCommand}"
+                        BackgroundColor="LightGray"
+                        TextColor="Black"/>
+
+                <Button Grid.Column="1" 
+                        Text="Применить" 
+                        Command="{Binding ApplyFiltersCommand}"
+                        BackgroundColor="#512BD4"/>
+            </Grid>
+
+            <Button Text="Закрыть" 
+                    Clicked="OnCloseClicked"
+                    BackgroundColor="#512BD4"
+                    HorizontalOptions="Fill"/>
+        </VerticalStackLayout>
+    </ContentPage.Content>
+</ContentPage>

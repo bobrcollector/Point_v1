@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Point_v1.MainPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Point_v1">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style x:Key="WelcomeLabel" TargetType="Label">
+                <Setter Property="FontSize" Value="24"/>
+                <Setter Property="HorizontalOptions" Value="Center"/>
+                <Setter Property="VerticalOptions" Value="Center"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="*,Auto,Auto,*">
+
+        <Label Grid.Row="1"
+               Text="Добро пожаловать в Point!"
+               Style="{StaticResource WelcomeLabel}"/>
+
+        <Button Grid.Row="2"
+                Text="Войти / Зарегистрироваться"
+                Clicked="OnLoginBtnClicked"
+                HorizontalOptions="Center"
+                Margin="0,20,0,0"/>
+
+    </Grid>
+</ContentPage>

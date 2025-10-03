@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Point_v1.Views.HomePage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Лента событий"
+             x:Name="Page">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Панель поиска -->
+        <VerticalStackLayout Grid.Row="0" Spacing="10" Padding="15,10">
+
+            <!-- Поиск -->
+            <Frame BackgroundColor="#F5F5F5" 
+                   Padding="10" 
+                   HasShadow="False"
+                   CornerRadius="10">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Label Grid.Column="0" Text="🔍" VerticalOptions="Center" Margin="0,0,10,0"/>
+                    <Entry Grid.Column="1" 
+                           Placeholder="Поиск событий..." 
+                           BackgroundColor="Transparent"/>
+                </Grid>
+            </Frame>
+
+            <!-- Переключение и фильтры -->
+            <Grid ColumnDefinitions="*,Auto">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="0">
+                    <Button Grid.Column="0" 
+                            Text="📋 Лента" 
+                            CornerRadius="10"
+                            BackgroundColor="#512BD4"/>
+                    <Button Grid.Column="1" 
+                            Text="🗺️ Карта" 
+                            CornerRadius="10"
+                            BackgroundColor="LightGray"
+                            TextColor="Black"/>
+                </Grid>
+
+                <Button Grid.Column="1" 
+                        Text="Фильтры" 
+                        Command="{Binding OpenFiltersCommand}"
+                        BackgroundColor="#DFD8F7"
+                        TextColor="#512BD4"
+                        Padding="15,8"
+                        CornerRadius="8"
+                        FontSize="14"
+                        Margin="10,0,0,0"/>
+            </Grid>
+
+        </VerticalStackLayout>
+
+        <!-- Лента событий (упрощенная) -->
+        <StackLayout Grid.Row="1" Padding="15" Spacing="10">
+
+            <!-- Карточка события 1 -->
+            <Frame Margin="0,5" Padding="15" CornerRadius="15" HasShadow="True">
+                <StackLayout Spacing="8">
+                    <Label Text="Вечер настольных игр" 
+                           FontSize="18" 
+                           FontAttributes="Bold"/>
+
+                    <Label Text="Играем в Мафию, Каркассон и другие игры" 
+                           FontSize="14"
+                           LineBreakMode="TailTruncation"
+                           MaxLines="2"/>
+
+                    <Grid ColumnDefinitions="*,*">
+                        <Label Grid.Column="0"
+                               Text="Кафе 'Игровая зона'" 
+                               FontSize="12"
+                               TextColor="Gray"/>
+
+                        <Label Grid.Column="1"
+                               Text="3 участника" 
+                               FontSize="12"
+                               TextColor="Gray"
+                               HorizontalOptions="End"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Frame BackgroundColor="#DFD8F7"
+                               Padding="8,4"
+                               CornerRadius="8"
+                               HasShadow="False"
+                               HorizontalOptions="Start">
+                            <Label Text="Настольные игры" 
+                                   FontSize="12"
+                                   TextColor="#512BD4"/>
+                        </Frame>
+
+                        <Button Text="Я пойду!"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.JoinEventCommand}"
+                                CommandParameter="1"
+                                BackgroundColor="#512BD4"
+                                Padding="15,8"
+                                CornerRadius="8"
+                                FontSize="12"/>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Карточка события 2 -->
+            <Frame Margin="0,5" Padding="15" CornerRadius="15" HasShadow="True">
+                <StackLayout Spacing="8">
+                    <Label Text="Аниме-марафон" 
+                           FontSize="18" 
+                           FontAttributes="Bold"/>
+
+                    <Label Text="Смотрим классические аниме серии" 
+                           FontSize="14"
+                           LineBreakMode="TailTruncation"
+                           MaxLines="2"/>
+
+                    <Grid ColumnDefinitions="*,*">
+                        <Label Grid.Column="0"
+                               Text="Антикафе 'Geek Room'" 
+                               FontSize="12"
+                               TextColor="Gray"/>
+
+                        <Label Grid.Column="1"
+                               Text="1 участник" 
+                               FontSize="12"
+                               TextColor="Gray"
+                               HorizontalOptions="End"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Frame BackgroundColor="#DFD8F7"
+                               Padding="8,4"
+                               CornerRadius="8"
+                               HasShadow="False"
+                               HorizontalOptions="Start">
+                            <Label Text="Аниме" 
+                                   FontSize="12"
+                                   TextColor="#512BD4"/>
+                        </Frame>
+
+                        <Button Text="Я пойду!"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.JoinEventCommand}"
+                                CommandParameter="2"
+                                BackgroundColor="#512BD4"
+                                Padding="15,8"
+                                CornerRadius="8"
+                                FontSize="12"/>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+        </StackLayout>
+
+        <!-- Баннер гостевого режима -->
+        <Frame Grid.Row="2"
+               IsVisible="{Binding IsGuestMode}"
+               BackgroundColor="#DFD8F7"
+               Padding="15"
+               Margin="10"
+               CornerRadius="10"
+               HasShadow="True">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Grid.Column="0"
+                       Text="Войдите, чтобы создавать события и участвовать в них"
+                       VerticalOptions="Center"/>
+                <Button Grid.Column="1"
+                        Text="Войти"
+                        Command="{Binding GoToLoginCommand}"
+                        BackgroundColor="#512BD4"
+                        Padding="15,8"/>
+            </Grid>
+        </Frame>
+
+        <!-- FAB для создания события -->
+        <Button Grid.Row="1"
+                Text="+" 
+                Command="{Binding CreateEventCommand}"
+                FontSize="24"
+                FontAttributes="Bold"
+                WidthRequest="60"
+                HeightRequest="60"
+                CornerRadius="30"
+                BackgroundColor="#512BD4"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Margin="0,0,20,20"/>
+
+    </Grid>
+</ContentPage>

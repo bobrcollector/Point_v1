@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell x:Class="Point_v1.AppShell"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:Point_v1.Views"
+       Title="Point_v1"
+       FlyoutBehavior="Disabled">
+
+    <!-- TabBar для нижней навигации -->
+    <TabBar>
+        <Tab Title="Лента" Icon="tab_home.png">
+            <ShellContent Route="HomePage" ContentTemplate="{DataTemplate views:HomePage}" />
+        </Tab>
+
+        <Tab Title="Мои события" Icon="tab_events.png">
+            <ShellContent Route="MyEventsPage" ContentTemplate="{DataTemplate views:MyEventsPage}" />
+        </Tab>
+
+        <Tab Title="Профиль" Icon="tab_profile.png">
+            <ShellContent Route="ProfilePage" ContentTemplate="{DataTemplate views:ProfilePage}" />
+        </Tab>
+    </TabBar>
+
+    <!-- Маршруты для навигации -->
+    <ShellContent Route="LoginPage" ContentTemplate="{DataTemplate views:LoginPage}" />
+    <ShellContent Route="CreateEventPage" ContentTemplate="{DataTemplate views:CreateEventPage}" />
+    <ShellContent Route="FilterPage" ContentTemplate="{DataTemplate views:FilterPage}" />
+    <ShellContent Route="RegisterPage" ContentTemplate="{DataTemplate views:RegisterPage}" />
+
+</Shell>

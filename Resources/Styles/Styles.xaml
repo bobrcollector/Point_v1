@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Color x:Key="Primary">#512BD4</Color>
+    <Color x:Key="Secondary">#DFD8F7</Color>
+
+    <Style TargetType="Entry">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light=Black, Dark=White}"/>
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=White, Dark=#1C1C1E}"/>
+        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light=#999999, Dark=#8E8E93}"/>
+    </Style>
+
+    <Style TargetType="Button">
+        <Setter Property="TextColor" Value="White"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="14,10"/>
+        <Setter Property="MinimumHeightRequest" Value="44"/>
+    </Style>
+
+</ResourceDictionary>

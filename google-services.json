@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "268629065821",
+    "project_id": "point-v1",
+    "storage_bucket": "point-v1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:268629065821:android:ee4dc90c3a7397cd20cdb4",
+        "android_client_info": {
+          "package_name": "com.companyname.point_v1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEzmKGE5xr4u2ggze_eTuYyKfVr823vJs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

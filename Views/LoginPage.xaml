@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Point_v1.Views.LoginPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:Point_v1.Converters"
+             Title="Вход"
+             BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}">
+
+    <ScrollView>
+        <Grid RowDefinitions="Auto,*,Auto" 
+              VerticalOptions="Center"
+              Padding="30">
+
+            <!-- Верхний баннер -->
+            <Frame Grid.Row="0"
+                   BackgroundColor="#512BD4"
+                   Padding="40,60"
+                   CornerRadius="20"
+                   HasShadow="True"
+                   HorizontalOptions="Fill"
+                   Margin="0,0,0,30">
+
+                <VerticalStackLayout Spacing="15" HorizontalOptions="Center">
+                    <Label Text="👋" 
+                           FontSize="40"
+                           HorizontalOptions="Center"/>
+
+                    <Label Text="С возвращением!" 
+                           FontSize="28" 
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"/>
+
+                    <Label Text="Войдите в свой аккаунт" 
+                           FontSize="16" 
+                           TextColor="#DFD8F7"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Форма входа -->
+            <VerticalStackLayout Grid.Row="1" Spacing="20">
+
+                <!-- Сообщение об успехе -->
+                <Frame IsVisible="{Binding SuccessMessage, Converter={x:Static converters:StringNotEmptyConverter}}"
+                       BackgroundColor="#E8F5E8"
+                       Padding="15"
+                       CornerRadius="10"
+                       HasShadow="False">
+                    <Label Text="{Binding SuccessMessage}" 
+                           TextColor="#2E7D32" 
+                           FontSize="14"
+                           HorizontalOptions="Center"/>
+                </Frame>
+
+                <!-- Сообщения об ошибках -->
+                <Frame IsVisible="{Binding ErrorMessage, Converter={x:Static converters:StringNotEmptyConverter}}"
+                       BackgroundColor="#FFE0E0"
+                       Padding="15"
+                       CornerRadius="10"
+                       HasShadow="False">
+                    <Label Text="{Binding ErrorMessage}" 
+                           TextColor="#D32F2F" 
+                           FontSize="14"
+                           HorizontalOptions="Center"/>
+                </Frame>
+
+                <!-- Поля формы -->
+                <VerticalStackLayout Spacing="15">
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Email" 
+                               FontSize="14" 
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                        <Entry Placeholder="your@email.com" 
+                               Text="{Binding Email}"
+                               Keyboard="Email"
+                               BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
+                               TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                               HeightRequest="50"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Пароль" 
+                               FontSize="14" 
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                        <Entry Placeholder="Введите пароль" 
+                               Text="{Binding Password}"
+                               IsPassword="True"
+                               BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
+                               TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                               HeightRequest="50"/>
+                    </VerticalStackLayout>
+
+                    <!-- Забыли пароль? -->
+                    <Label Text="Забыли пароль?" 
+                           FontSize="14"
+                           TextColor="#512BD4"
+                           HorizontalOptions="End"
+                           Margin="0,-10,0,0">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnForgotPasswordTapped"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </VerticalStackLayout>
+
+                <!-- Кнопка входа -->
+                <Button Text="Войти" 
+                        Command="{Binding LoginCommand}"
+                        BackgroundColor="#512BD4"
+                        TextColor="White"
+                        FontSize="16"
+                        FontAttributes="Bold"
+                        HeightRequest="50"
+                        CornerRadius="10"
+                        Margin="0,10,0,0"/>
+
+                <!-- Разделитель -->
+                <Grid VerticalOptions="Center" Margin="0,20">
+                    <BoxView HeightRequest="1" 
+                             BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#444}"/>
+                    <Label Text="или" 
+                           BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                           Padding="10,0"
+                           FontSize="14"
+                           TextColor="Gray"
+                           HorizontalOptions="Center"/>
+                </Grid>
+
+                <!-- Социальные сети (заглушки) -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
+                    <Button Text="Google" 
+                            Clicked="OnGoogleLoginClicked"
+                            BackgroundColor="White"
+                            TextColor="Black"
+                            BorderColor="#E0E0E0"
+                            BorderWidth="1"
+                            HeightRequest="50"
+                            CornerRadius="10"/>
+
+                    <Button Text="VK" 
+                            Clicked="OnVkLoginClicked"
+                            BackgroundColor="#0077FF"
+                            TextColor="White"
+                            HeightRequest="50"
+                            CornerRadius="10"/>
+                </Grid>
+
+                <!-- Переход к регистрации -->
+                <Grid VerticalOptions="End" 
+                      Margin="0,30,0,0">
+                    <Label Text="Еще нет аккаунта? " 
+                           FontSize="14"
+                           TextColor="{AppThemeBinding Light=#666, Dark=#999}"
+                           HorizontalOptions="Center"/>
+
+                    <Label Text="Зарегистрироваться" 
+                           FontSize="14"
+                           FontAttributes="Bold"
+                           TextColor="#512BD4"
+                           HorizontalOptions="End"
+                           Margin="0,0,40,0">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnRegisterTapped"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </Grid>
+
+            </VerticalStackLayout>
+
+            <!-- Индикатор загрузки -->
+            <ActivityIndicator Grid.Row="2"
+                             IsVisible="{Binding IsBusy}" 
+                             IsRunning="{Binding IsBusy}"
+                             Color="#512BD4"
+                             HorizontalOptions="Center"
+                             VerticalOptions="End"
+                             HeightRequest="50"/>
+
+        </Grid>
+    </ScrollView>
+</ContentPage>

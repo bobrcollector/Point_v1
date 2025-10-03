@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Point_v1.Views.ProfilePage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Профиль">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Заголовок -->
+        <Frame Grid.Row="0"
+               BackgroundColor="#512BD4"
+               Padding="20"
+               CornerRadius="0"
+               HasShadow="True">
+            <Label Text="Профиль" 
+                   TextColor="White"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+        </Frame>
+
+        <!-- Контент -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="20" Padding="20">
+
+                <!-- Гостевой режим -->
+                <VerticalStackLayout Spacing="15" 
+                                   HorizontalOptions="Center" 
+                                   VerticalOptions="Center"
+                                   IsVisible="{Binding IsGuestMode}">
+
+                    <Label Text="👤" 
+                           FontSize="40" 
+                           HorizontalOptions="Center"/>
+
+                    <Label Text="Вы не авторизованы" 
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"/>
+
+                    <Label Text="Войдите, чтобы увидеть свой профиль и создавать события" 
+                           FontSize="14"
+                           TextColor="Gray"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"/>
+
+                    <Button Text="Войти / Зарегистрироваться" 
+                            Command="{Binding GoToLoginCommand}"
+                            BackgroundColor="#512BD4"
+                            HorizontalOptions="Fill"
+                            HeightRequest="50"
+                            Margin="0,20,0,0"/>
+                </VerticalStackLayout>
+
+                <!-- Авторизованный пользователь -->
+                <VerticalStackLayout Spacing="20"
+                                   IsVisible="{Binding IsAuthenticated}">
+
+                    <!-- Аватар и информация -->
+                    <Frame Padding="20" 
+                           CornerRadius="15" 
+                           HasShadow="True"
+                           BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
+                        <VerticalStackLayout Spacing="15">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <Frame Grid.Column="0"
+                                       BackgroundColor="#512BD4"
+                                       Padding="20"
+                                       CornerRadius="50"
+                                       HeightRequest="60"
+                                       WidthRequest="60"
+                                       HorizontalOptions="Start">
+                                    <Label Text="👤" 
+                                           FontSize="20"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center"/>
+                                </Frame>
+
+                                <VerticalStackLayout Grid.Column="1" 
+                                                   Spacing="5"
+                                                   VerticalOptions="Center"
+                                                   Margin="15,0,0,0">
+                                    <Label Text="{Binding UserName}" 
+                                           FontSize="18"
+                                           FontAttributes="Bold"/>
+                                    <Label Text="{Binding UserEmail}" 
+                                           FontSize="14"
+                                           TextColor="Gray"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Статистика -->
+                    <Frame Padding="20" 
+                           CornerRadius="15" 
+                           HasShadow="True"
+                           BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="Статистика" 
+                                   FontSize="16"
+                                   FontAttributes="Bold"/>
+
+                            <Grid ColumnDefinitions="*,*" 
+                                  RowDefinitions="Auto,Auto"
+                                  RowSpacing="10"
+                                  ColumnSpacing="10">
+
+                                <Frame Grid.Row="0" Grid.Column="0"
+                                       BackgroundColor="#E8F5E8"
+                                       Padding="15"
+                                       CornerRadius="10">
+                                    <VerticalStackLayout Spacing="5">
+                                        <Label Text="5" 
+                                               FontSize="20"
+                                               FontAttributes="Bold"
+                                               TextColor="#2E7D32"
+                                               HorizontalOptions="Center"/>
+                                        <Label Text="Создано событий" 
+                                               FontSize="12"
+                                               TextColor="#2E7D32"
+                                               HorizontalOptions="Center"/>
+                                    </VerticalStackLayout>
+                                </Frame>
+
+                                <Frame Grid.Row="0" Grid.Column="1"
+                                       BackgroundColor="#E3F2FD"
+                                       Padding="15"
+                                       CornerRadius="10">
+                                    <VerticalStackLayout Spacing="5">
+                                        <Label Text="12" 
+                                               FontSize="20"
+                                               FontAttributes="Bold"
+                                               TextColor="#1976D2"
+                                               HorizontalOptions="Center"/>
+                                        <Label Text="Участвовал" 
+                                               FontSize="12"
+                                               TextColor="#1976D2"
+                                               HorizontalOptions="Center"/>
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Действия -->
+                    <Frame Padding="20" 
+                           CornerRadius="15" 
+                           HasShadow="True"
+                           BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
+                        <VerticalStackLayout Spacing="15">
+                            <Label Text="Действия" 
+                                   FontSize="16"
+                                   FontAttributes="Bold"/>
+
+                            <Button Text="✏️ Редактировать профиль" 
+                                    Clicked="OnEditProfileClicked"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                    HorizontalOptions="Fill"
+                                    BorderColor="#E0E0E0"
+                                    BorderWidth="1"
+                                    HeightRequest="45"/>
+
+                            <Button Text="⚙️ Настройки" 
+                                    Clicked="OnSettingsClicked"
+                                    BackgroundColor="Transparent"
+                                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                    HorizontalOptions="Fill"
+                                    BorderColor="#E0E0E0"
+                                    BorderWidth="1"
+                                    HeightRequest="45"/>
+
+                            <Button Text="🚪 Выйти" 
+                                    Command="{Binding SignOutCommand}"
+                                    BackgroundColor="#FFE0E0"
+                                    TextColor="#D32F2F"
+                                    HorizontalOptions="Fill"
+                                    HeightRequest="45"
+                                    Margin="0,10,0,0"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>
