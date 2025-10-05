@@ -2,27 +2,194 @@
 <ContentPage x:Class="Point_v1.Views.CreateEventPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             Title="Создать событие">
+             Title="Создать событие"
+             BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#1C1C1E}">
 
-    <ContentPage.Content>
-        <VerticalStackLayout Spacing="20" Padding="20" HorizontalOptions="Center" VerticalOptions="Center">
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
 
-            <Label Text="Создание события" 
-                   FontSize="24" 
+            <!-- Заголовок -->
+            <Frame BackgroundColor="#512BD4"
+                   Padding="25,40"
+                   CornerRadius="0"
+                   HasShadow="True">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="🎉" 
+                           FontSize="30"
+                           HorizontalOptions="Center"/>
+
+                    <Label Text="Создать событие" 
+                           FontSize="24" 
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"/>
+
+                    <Label Text="Расскажите о вашем мероприятии" 
+                           FontSize="14" 
+                           TextColor="#DFD8F7"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Форма -->
+            <VerticalStackLayout Spacing="20" Padding="25" BackgroundColor="Transparent">
+
+                <!-- Сообщения об ошибках -->
+                <!-- Сообщения об ошибках -->
+                <Label Text="{Binding ErrorMessage}" 
+               IsVisible="{Binding ErrorMessage, Converter={x:Static converters:IsNotNullOrEmptyConverter}}"
+               TextColor="#D32F2F" 
+               FontSize="14"
+               HorizontalOptions="Center"
+               Padding="15,10"
+               HorizontalTextAlignment="Center"
+               Margin="0,0,0,10"/>
+
+                <!-- Название -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Название события *" 
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                    <Entry Placeholder="Например: Вечер настольных игр" 
+                           Text="{Binding Title}"
+                           BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
+                           TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                           HeightRequest="50"/>
+                </VerticalStackLayout>
+
+                <!-- Описание -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Описание *" 
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                    <Editor Placeholder="Опишите ваше событие подробнее..." 
+                            Text="{Binding Description}"
+                            BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
+                            TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                            HeightRequest="120"
+                            AutoSize="TextChanges"/>
+                </VerticalStackLayout>
+
+                <!-- Категория -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Категория *" 
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                    <Picker Title="Выберите категорию..." 
+                            ItemsSource="{Binding Interests}"
+                            ItemDisplayBinding="{Binding Name}"
+                            SelectedItem="{Binding SelectedInterest}"
+                            BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
+                            TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                            HeightRequest="50"/>
+                </VerticalStackLayout>
+
+                <!-- Дата и время -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
+                    <VerticalStackLayout Grid.Column="0" Spacing="8">
+                        <Label Text="Дата *" 
+                               FontSize="14" 
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                        <DatePicker Date="{Binding EventDate}"
+                                    MinimumDate="{Binding MinDate}"
+                                    MaximumDate="{Binding MaxDate}"
+                                    BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Grid.Column="1" Spacing="8">
+                        <Label Text="Время *" 
+                               FontSize="14" 
+                               FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                        <TimePicker Time="{Binding EventTime}"
+                                    BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"/>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Местоположение -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Местоположение *" 
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                    <Entry Placeholder="Например: кафе 'Сталинка', ул. Ленина, 777" 
+                           Text="{Binding Address}"
+                           BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
+                           TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                           HeightRequest="50"/>
+                </VerticalStackLayout>
+
+                <!-- Максимум участников -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Максимум участников" 
+           FontSize="14" 
+           FontAttributes="Bold"
+           TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
+                        <VerticalStackLayout Grid.Column="0" Spacing="5">
+                            <Label Text="{Binding MaxParticipants, StringFormat='{0} участников'}"
+                   FontSize="16"
                    FontAttributes="Bold"
+                   TextColor="#512BD4"
                    HorizontalOptions="Center"/>
 
-            <Label Text="Эта функция находится в разработке" 
-                   FontSize="16"
-                   HorizontalOptions="Center"
+                            <Label Text="Текущее значение" 
+                   FontSize="12"
                    TextColor="Gray"
-                   HorizontalTextAlignment="Center"/>
+                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
 
-            <Button Text="Назад" 
-                    Clicked="OnBackClicked"
-                    BackgroundColor="#512BD4"
-                    HorizontalOptions="Center"/>
+                        <Stepper Grid.Column="1"
+                 Value="{Binding MaxParticipants}"
+                 Minimum="2"
+                 Maximum="50"
+                 Increment="1"
+                 HorizontalOptions="Center"
+                 VerticalOptions="Center"/>
+                    </Grid>
+
+                    <!-- Подсказка диапазона 
+                    <Label Text="От 2 до 50 участников" 
+           FontSize="12"
+           TextColor="Gray"
+           HorizontalOptions="Center"/> -->
+                </VerticalStackLayout>
+
+                <!-- Кнопки -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="15" Margin="0,30">
+                    <Button Grid.Column="0" 
+                            Text="Отмена" 
+                            Command="{Binding CancelCommand}"
+                            Clicked="OnCancelClicked"
+                            BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#444}"
+                            TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                            HeightRequest="50"
+                            CornerRadius="10"/>
+
+                    <Button Grid.Column="1" 
+                            Text="Создать" 
+                            Command="{Binding CreateEventCommand}"
+                            BackgroundColor="#512BD4"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            HeightRequest="50"
+                            CornerRadius="10"/>
+                </Grid>
+
+                <!-- Индикатор загрузки -->
+                <ActivityIndicator IsVisible="{Binding IsBusy}" 
+                                 IsRunning="{Binding IsBusy}"
+                                 Color="#512BD4"
+                                 HorizontalOptions="Center"
+                                 HeightRequest="50"/>
+
+            </VerticalStackLayout>
 
         </VerticalStackLayout>
-    </ContentPage.Content>
+    </ScrollView>
 </ContentPage>

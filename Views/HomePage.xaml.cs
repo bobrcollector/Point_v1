@@ -9,4 +9,15 @@ public partial class HomePage : ContentPage
         InitializeComponent();
         BindingContext = viewModel;
     }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        if (BindingContext is HomeViewModel viewModel)
+        {
+            // Просто вызываем загрузку событий
+            _ = viewModel.LoadEvents();
+        }
+    }
 }

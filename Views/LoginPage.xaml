@@ -42,28 +42,25 @@
             <VerticalStackLayout Grid.Row="1" Spacing="20">
 
                 <!-- Сообщение об успехе -->
-                <Frame IsVisible="{Binding SuccessMessage, Converter={x:Static converters:StringNotEmptyConverter}}"
-                       BackgroundColor="#E8F5E8"
-                       Padding="15"
-                       CornerRadius="10"
-                       HasShadow="False">
-                    <Label Text="{Binding SuccessMessage}" 
-                           TextColor="#2E7D32" 
-                           FontSize="14"
-                           HorizontalOptions="Center"/>
-                </Frame>
+                <!-- УДАЛИ эти Frame и замени на: -->
 
-                <!-- Сообщения об ошибках -->
-                <Frame IsVisible="{Binding ErrorMessage, Converter={x:Static converters:StringNotEmptyConverter}}"
-                       BackgroundColor="#FFE0E0"
-                       Padding="15"
-                       CornerRadius="10"
-                       HasShadow="False">
-                    <Label Text="{Binding ErrorMessage}" 
-                           TextColor="#D32F2F" 
-                           FontSize="14"
-                           HorizontalOptions="Center"/>
-                </Frame>
+                <!-- Сообщение об успехе -->
+                        <Label Text="{Binding SuccessMessage}" 
+               IsVisible="{Binding SuccessMessage, Converter={x:Static converters:IsNotNullOrEmptyConverter}}"
+               TextColor="#2E7D32" 
+               FontSize="14"
+               HorizontalOptions="Center"
+               Padding="15,10"
+               HorizontalTextAlignment="Center"/>
+
+                        <!-- Сообщения об ошибках -->
+                        <Label Text="{Binding ErrorMessage}" 
+               IsVisible="{Binding ErrorMessage, Converter={x:Static converters:IsNotNullOrEmptyConverter}}"
+               TextColor="#D32F2F" 
+               FontSize="14"
+               HorizontalOptions="Center"
+               Padding="15,10"
+               HorizontalTextAlignment="Center"/>
 
                 <!-- Поля формы -->
                 <VerticalStackLayout Spacing="15">
@@ -148,24 +145,14 @@
                 </Grid>
 
                 <!-- Переход к регистрации -->
-                <Grid VerticalOptions="End" 
-                      Margin="0,30,0,0">
-                    <Label Text="Еще нет аккаунта? " 
-                           FontSize="14"
-                           TextColor="{AppThemeBinding Light=#666, Dark=#999}"
-                           HorizontalOptions="Center"/>
-
-                    <Label Text="Зарегистрироваться" 
-                           FontSize="14"
-                           FontAttributes="Bold"
-                           TextColor="#512BD4"
-                           HorizontalOptions="End"
-                           Margin="0,0,40,0">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnRegisterTapped"/>
-                        </Label.GestureRecognizers>
-                    </Label>
-                </Grid>
+                <Button Text="Зарегистрироваться" 
+                    Command="{Binding GoToRegisterPageCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#512BD4"
+                    BorderColor="#512BD4"
+                    BorderWidth="1"
+                    HeightRequest="45"
+                    Margin="0,20,0,0"/>
 
             </VerticalStackLayout>
 

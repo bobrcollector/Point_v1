@@ -1,4 +1,4 @@
-using Point_v1.Models;
+п»їusing Point_v1.Models;
 
 namespace Point_v1.Services;
 
@@ -16,26 +16,26 @@ public class DataService : IDataService
 
     private void InitializeSampleData()
     {
-        // Тестовые интересы
+        // РўРµСЃС‚РѕРІС‹Рµ РёРЅС‚РµСЂРµСЃС‹
         _interests = new List<Interest>
         {
-            new Interest { Id = "1", Name = "Настольные игры" },
-            new Interest { Id = "2", Name = "Косплей" },
-            new Interest { Id = "3", Name = "Искусство" },
-            new Interest { Id = "4", Name = "Программирование" },
-            new Interest { Id = "5", Name = "Аниме" }
+            new Interest { Id = "1", Name = "РќР°СЃС‚РѕР»СЊРЅС‹Рµ РёРіСЂС‹" },
+            new Interest { Id = "2", Name = "РљРѕСЃРїР»РµР№" },
+            new Interest { Id = "3", Name = "РСЃРєСѓСЃСЃС‚РІРѕ" },
+            new Interest { Id = "4", Name = "РџСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ" },
+            new Interest { Id = "5", Name = "РђРЅРёРјРµ" }
         };
 
-        // Тестовые события
+        // РўРµСЃС‚РѕРІС‹Рµ СЃРѕР±С‹С‚РёСЏ
         _events = new List<Event>
         {
             new Event
             {
                 Id = "1",
-                Title = "Вечер настольных игр",
-                Description = "Играем в Мафию, Каркассон и другие игры",
-                CategoryId = "Настольные игры",
-                Address = "Кафе 'Игровая зона'",
+                Title = "РРіСЂР°РµРј РІ РЅР°СЂРґС‹. С‚РµСЃС‚",
+                Description = "РўСѓС‚ РµСЃС‚СЊ РЅР°СЂРґС‹, Р°СЂР±СѓР·С‹ Рё С‡СѓСЂС‡С…РµР»Р°",
+                CategoryId = "РќР°СЃС‚РѕР»СЊРЅС‹Рµ РёРіСЂС‹",
+                Address = "Р°СЂРјСЏРЅСЃРєР°СЏ СѓР»",
                 EventDate = DateTime.Now.AddDays(1),
                 CreatorId = "user1",
                 ParticipantIds = new List<string> { "user1", "user2" }
@@ -43,10 +43,10 @@ public class DataService : IDataService
             new Event
             {
                 Id = "2",
-                Title = "Аниме-марафон",
-                Description = "Смотрим классические аниме",
-                CategoryId = "Аниме",
-                Address = "Антикафе 'Geek Room'",
+                Title = "РРіСЂР°РµРј РІ РєР°РјРµРЅСЊ РЅРѕР¶РЅРёС†С‹ Р±СѓРјР°РіР°. С‚РµСЃС‚",
+                Description = "РїСЂРёС…РѕРґРёС‚Рµ РёРіСЂР°С‚СЊ РІ СЃСѓРїРµСЂ РёРіСЂСѓ!!!",
+                CategoryId = "РќР°СЃС‚РѕР»СЊРЅС‹Рµ РёРіСЂС‹",
+                Address = "РњРµС‚СЂРѕ РўРµРєСЃС‚РёР»СЊС‰РёРєРё",
                 EventDate = DateTime.Now.AddDays(3),
                 CreatorId = "user2",
                 ParticipantIds = new List<string> { "user2" }
@@ -56,7 +56,7 @@ public class DataService : IDataService
 
     public async Task<List<Interest>> GetInterestsAsync()
     {
-        await Task.Delay(100); // Имитация загрузки
+        await Task.Delay(100); 
         return _interests;
     }
 
@@ -68,10 +68,11 @@ public class DataService : IDataService
         return true;
     }
 
-    public async Task<List<Event>> GetEventsAsync()
+    public async Task<Event> GetEventAsync(string eventId)
     {
         await Task.Delay(100);
-        return _events;
+        System.Diagnostics.Debug.WriteLine($"РєРѕР»РІРѕ СЃРѕР±С‹С‚РёР№ РЅР° РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚: {_events.Count}");
+        return _events.FirstOrDefault(e => e.Id == eventId);
     }
 
     public async Task<List<Event>> GetEventsByInterestAsync(string interestId)
@@ -80,21 +81,41 @@ public class DataService : IDataService
         return _events.Where(e => e.CategoryId == interestId).ToList();
     }
 
-    public async Task<Event> GetEventAsync(string eventId)
+    public async Task<List<Event>> GetEventsAsync()
     {
         await Task.Delay(100);
-        return _events.FirstOrDefault(e => e.Id == eventId);
+        //System.Diagnostics.Debug.WriteLine($"рџ“Ґ Р—Р°РіСЂСѓР¶РµРЅРѕ СЃРѕР±С‹С‚РёР№: {_events.Count}");
+        return _events;
     }
-
     public async Task<bool> AddEventAsync(Event eventItem)
     {
-        await Task.Delay(100);
-        eventItem.Id = Guid.NewGuid().ToString();
-        eventItem.CreatorId = _authStateService.CurrentUserId;
-        eventItem.ParticipantIds = new List<string> { _authStateService.CurrentUserId };
-        _events.Add(eventItem);
-        return true;
+        try
+        {
+            await Task.Delay(100);
+
+            eventItem.Id = Guid.NewGuid().ToString();
+            eventItem.CreatorId = _authStateService.CurrentUserId;
+            eventItem.CreatorName = "С‚РµСЃС‚РѕРІС‹Р№ РѕСЂРіР°РЅРёР·Р°С‚РѕСЂ";
+            eventItem.ParticipantIds = new List<string> { _authStateService.CurrentUserId };
+
+            _events.Add(eventItem);
+
+            //System.Diagnostics.Debug.WriteLine($"вњ… РЎРѕР±С‹С‚РёРµ СЃРѕР·РґР°РЅРѕ: {eventItem.Title}");
+            //System.Diagnostics.Debug.WriteLine($"рџ“Љ Р’СЃРµРіРѕ СЃРѕР±С‹С‚РёР№: {_events.Count}");
+
+            System.Diagnostics.Debug.WriteLine($"СЃРѕР±С‹С‚РёРµ СЃРѕС…СЂР°РЅРёР»РѕСЃСЊ РІ Р±Рґ!!!: {eventItem.Title}");
+            System.Diagnostics.Debug.WriteLine($"Р°Р№РґРё: {eventItem.Id}");
+            System.Diagnostics.Debug.WriteLine($"РґР°С‚Р°: {eventItem.EventDate}");
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            //System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° РґРѕР±Р°РІР»РµРЅРёСЏ СЃРѕР±С‹С‚РёСЏ: {ex.Message}");
+            return false;
+        }
     }
+
 
     public async Task<bool> UpdateEventAsync(Event eventItem)
     {
@@ -124,7 +145,7 @@ public class DataService : IDataService
     public async Task<User> GetUserAsync(string userId)
     {
         await Task.Delay(100);
-        return new User { Id = userId, DisplayName = "Тестовый пользователь", Email = "test@example.com" };
+        return new User { Id = userId, DisplayName = "С‚РµСЃС‚РѕРІС‹Р№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ", Email = "test@mail.ru" };
     }
 
     public async Task<bool> UpdateUserAsync(User user)
@@ -156,4 +177,6 @@ public class DataService : IDataService
         }
         return false;
     }
+
+
 }

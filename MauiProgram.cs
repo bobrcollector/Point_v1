@@ -49,9 +49,11 @@ public static class MauiProgram
         // Регистрируем конвертеры
         builder.Services.AddSingleton<Converters.InverseBoolConverter>();
         builder.Services.AddSingleton<Converters.StringNotEmptyConverter>();
+        builder.Services.AddSingleton<Converters.IsNotNullOrEmptyConverter>();
 
         // AppShell
         builder.Services.AddSingleton<AppShell>();
+
 
         return builder.Build();
     }

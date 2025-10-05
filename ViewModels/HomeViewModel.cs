@@ -1,6 +1,5 @@
-using Point_v1.Models;
+п»їusing Point_v1.Models;
 using Point_v1.Services;
-using Point_v1.Views;
 using System.Windows.Input;
 
 namespace Point_v1.ViewModels;
@@ -8,19 +7,25 @@ namespace Point_v1.ViewModels;
 public class HomeViewModel : BaseViewModel
 {
     private readonly IAuthStateService _authStateService;
+    private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
 
-    public HomeViewModel(IAuthStateService authStateService, INavigationService navigationService)
+    public HomeViewModel(IAuthStateService authStateService, IDataService dataService, INavigationService navigationService)
     {
         _authStateService = authStateService;
+        _dataService = dataService;
         _navigationService = navigationService;
+
+        _authStateService.AuthenticationStateChanged += OnAuthenticationStateChanged;
 
         GoToLoginCommand = new Command(async () => await GoToLogin());
         CreateEventCommand = new Command(async () => await CreateEvent());
         JoinEventCommand = new Command<string>(async (eventId) => await JoinEvent(eventId));
         OpenFiltersCommand = new Command(async () => await OpenFilters());
+        LoadEventsCommand = new Command(async () => await LoadEvents());
 
         UpdateAuthState();
+        LoadEventsCommand.Execute(null);
     }
 
     private bool _isGuestMode = true;
@@ -30,10 +35,30 @@ public class HomeViewModel : BaseViewModel
         set => SetProperty(ref _isGuestMode, value);
     }
 
+    private List<Event> _events;
+    public List<Event> Events
+    {
+        get => _events;
+        set => SetProperty(ref _events, value);
+    }
+
+    private bool _isLoading;
+    public bool IsLoading
+    {
+        get => _isLoading;
+        set => SetProperty(ref _isLoading, value);
+    }
+
     public ICommand GoToLoginCommand { get; }
     public ICommand CreateEventCommand { get; }
     public ICommand JoinEventCommand { get; }
     public ICommand OpenFiltersCommand { get; }
+    public ICommand LoadEventsCommand { get; }
+
+    private void OnAuthenticationStateChanged(object sender, EventArgs e)
+    {
+        UpdateAuthState();
+    }
 
     private void UpdateAuthState()
     {
@@ -42,74 +67,58 @@ public class HomeViewModel : BaseViewModel
 
     private async Task GoToLogin()
     {
-        try
-        {
-            System.Diagnostics.Debug.WriteLine("Кнопка Войти нажата!");
-            await Shell.Current.GoToAsync("//LoginPage");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Ошибка навигации: {ex.Message}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось перейти на страницу входа", "OK");
-        }
+        await _navigationService.GoToLoginAsync();
     }
 
     private async Task CreateEvent()
     {
-        try
+        if (IsGuestMode)
         {
-            System.Diagnostics.Debug.WriteLine("Кнопка Создать событие нажата!");
-            if (IsGuestMode)
-            {
-                await GoToLogin();
-                return;
-            }
-            // Используем правильный синтаксис для Shell навигации
-            await Shell.Current.GoToAsync("//CreateEventPage");
+            await GoToLogin();
+            return;
         }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Ошибка навигации: {ex.Message}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось перейти к созданию события", "OK");
-        }
+
+        await Shell.Current.GoToAsync("//CreateEventPage");
     }
+
     private async Task JoinEvent(string eventId)
     {
-        try
+        if (IsGuestMode)
         {
-            System.Diagnostics.Debug.WriteLine($"Кнопка Я пойду! нажата для события {eventId}");
-            if (IsGuestMode)
-            {
-                await GoToLogin();
-                return;
-            }
-
-            // Временная логика - показываем сообщение
-            await Application.Current.MainPage.DisplayAlert("Успех!", $"Вы присоединились к событию {eventId}", "OK");
-
-            // Здесь можно добавить реальную логику участия
-            // await _dataService.JoinEventAsync(eventId, _authStateService.CurrentUserId);
+            await GoToLogin();
+            return;
         }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Ошибка участия в событии: {ex.Message}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось присоединиться к событию", "OK");
-        }
+
+        await Application.Current.MainPage.DisplayAlert("РЈСЃРїРµС…!", $"Р’С‹ РїСЂРёСЃРѕРµРґРёРЅРёР»РёСЃСЊ Рє СЃРѕР±С‹С‚РёСЋ {eventId}", "OK");
     }
 
     private async Task OpenFilters()
     {
+        await Shell.Current.GoToAsync("//FilterPage");
+    }
+
+    public async Task LoadEvents()
+    {
+        if (IsLoading) return;
+
         try
         {
-            System.Diagnostics.Debug.WriteLine("Кнопка Фильтры нажата!");
-            // Используем правильный синтаксис для Shell навигации
-            await Shell.Current.GoToAsync("//FilterPage");
+            IsLoading = true;
+            //System.Diagnostics.Debug.WriteLine("рџ”„ Р—Р°РіСЂСѓР·РєР° СЃРѕР±С‹С‚РёР№...");
+
+            var events = await _dataService.GetEventsAsync();
+            Events = events ?? new List<Event>();
+
+            //System.Diagnostics.Debug.WriteLine($"вњ… Р—Р°РіСЂСѓР¶РµРЅРѕ {Events.Count} СЃРѕР±С‹С‚РёР№");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Ошибка навигации: {ex.Message}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось открыть фильтры", "OK");
+            //System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё СЃРѕР±С‹С‚РёР№: {ex.Message}");
+            Events = new List<Event>();
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
-
 }

@@ -25,11 +25,9 @@ public partial class LoginPage : ContentPage
         DisplayAlert("VK вход", "¬ход через VK будет доступен в ближайшее врем€", "OK");
     }
 
-    private void OnRegisterTapped(object sender, EventArgs e)
+    private async void OnRegisterClicked(object sender, EventArgs e)
     {
-        if (BindingContext is AuthViewModel viewModel)
-        {
-            viewModel.IsRegisterMode = true;
-        }
+        await Shell.Current.GoToAsync("//RegisterPage");
     }
+
 }

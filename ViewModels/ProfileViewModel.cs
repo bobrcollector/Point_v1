@@ -16,7 +16,6 @@ public class ProfileViewModel : BaseViewModel
         SignOutCommand = new Command(async () => await SignOut());
         GoToLoginCommand = new Command(async () => await GoToLogin());
 
-        // Подписываемся на изменение состояния аутентификации
         _authService.AuthStateChanged += OnAuthStateChanged;
 
         UpdateUserInfo();
@@ -72,14 +71,14 @@ public class ProfileViewModel : BaseViewModel
     {
         if (_authService.IsAuthenticated)
         {
-            // В реальном приложении здесь будет загрузка данных пользователя
-            UserName = "Тестовый Пользователь";
-            UserEmail = "test@example.com";
+
+            UserName = "тестовый пользователь";
+            UserEmail = "test@mail.ru";
         }
         else
         {
             UserName = "Пользователь";
-            UserEmail = "user@example.com";
+            UserEmail = "user@mail.ru";
         }
     }
 }

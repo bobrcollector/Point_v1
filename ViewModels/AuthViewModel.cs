@@ -17,10 +17,11 @@ public class AuthViewModel : BaseViewModel
         System.Diagnostics.Debug.WriteLine($"AuthService: {authService != null}");
         System.Diagnostics.Debug.WriteLine($"NavigationService: {navigationService != null}");
 
+        // Команды для форм
         LoginCommand = new Command(async () => await Login(), () => CanLogin());
         RegisterCommand = new Command(async () => await Register(), () => CanRegister());
-        GoToRegisterCommand = new Command(() => IsRegisterMode = true);
-        GoToLoginCommand = new Command(() => IsRegisterMode = false);
+
+        // Команды для навигации между страницами
         GoToLoginPageCommand = new Command(async () => await GoToLoginPage());
         GoToRegisterPageCommand = new Command(async () => await GoToRegisterPage());
 
@@ -72,23 +73,6 @@ public class AuthViewModel : BaseViewModel
         }
     }
 
-    private bool _isRegisterMode;
-    public bool IsRegisterMode
-    {
-        get => _isRegisterMode;
-        set
-        {
-            SetProperty(ref _isRegisterMode, value);
-            ClearErrors();
-            UpdateCommands();
-            OnPropertyChanged(nameof(IsLoginMode));
-            OnPropertyChanged(nameof(PageTitle));
-        }
-    }
-
-    public bool IsLoginMode => !_isRegisterMode;
-    public string PageTitle => _isRegisterMode ? "Регистрация" : "Вход";
-
     private bool _isBusy;
     public bool IsBusy
     {
@@ -114,14 +98,11 @@ public class AuthViewModel : BaseViewModel
         set => SetProperty(ref _successMessage, value);
     }
 
+    // Команды
     public Command LoginCommand { get; }
     public Command RegisterCommand { get; }
-    public Command GoToRegisterCommand { get; }
-    public Command GoToLoginCommand { get; }
     public ICommand GoToLoginPageCommand { get; }
     public ICommand GoToRegisterPageCommand { get; }
-
-
 
     private bool CanLogin()
     {
@@ -139,15 +120,6 @@ public class AuthViewModel : BaseViewModel
                Password == ConfirmPassword;
     }
 
-    private async Task GoToLoginPage()
-    {
-        await Shell.Current.GoToAsync("//LoginPage");
-    }
-
-    private async Task GoToRegisterPage()
-    {
-        await Shell.Current.GoToAsync("//RegisterPage");
-    }
     private void UpdateCommands()
     {
         LoginCommand.ChangeCanExecute();
@@ -160,7 +132,6 @@ public class AuthViewModel : BaseViewModel
         SuccessMessage = "";
     }
 
-    // ИЗМЕНИ с private на public
     public async Task Login()
     {
         if (IsBusy) return;
@@ -192,7 +163,7 @@ public class AuthViewModel : BaseViewModel
         }
     }
 
-    private async Task Register()
+    public async Task Register()
     {
         if (IsBusy) return;
 
@@ -235,6 +206,17 @@ public class AuthViewModel : BaseViewModel
         {
             IsBusy = false;
         }
+    }
+    private async Task GoToLoginPage()
+    {
+        System.Diagnostics.Debug.WriteLine("Переход на LoginPage");
+        await Shell.Current.GoToAsync("//LoginPage");
+    }
+
+    private async Task GoToRegisterPage()
+    {
+        System.Diagnostics.Debug.WriteLine("Переход на RegisterPage");
+        await Shell.Current.GoToAsync("//RegisterPage");
     }
 
     private async void OnAuthStateChanged(object sender, EventArgs e)

@@ -10,11 +10,4 @@ public partial class RegisterPage : ContentPage
         BindingContext = viewModel;
     }
 
-    private void OnLoginTapped(object sender, EventArgs e)
-    {
-        if (BindingContext is AuthViewModel viewModel)
-        {
-            viewModel.IsRegisterMode = false;
-        }
-    }
 }

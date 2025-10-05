@@ -1,4 +1,4 @@
-using Point_v1.Models;
+п»їusing Point_v1.Models;
 using Point_v1.Services;
 using System.Windows.Input;
 
@@ -8,42 +8,43 @@ public class CreateEventViewModel : BaseViewModel
 {
     private readonly IDataService _dataService;
     private readonly IAuthStateService _authStateService;
+    private readonly INavigationService _navigationService;
 
-    public CreateEventViewModel(IDataService dataService, IAuthStateService authStateService)
+    public CreateEventViewModel(IDataService dataService, IAuthStateService authStateService, INavigationService navigationService)
     {
         _dataService = dataService;
         _authStateService = authStateService;
+        _navigationService = navigationService;
 
         CreateEventCommand = new Command(async () => await CreateEvent(), () => CanCreateEvent());
         CancelCommand = new Command(async () => await Cancel());
 
-        // Загружаем интересы
         LoadInterests();
 
-        // Устанавливаем значения по умолчанию
         EventDate = DateTime.Today.AddDays(1);
-        EventTime = TimeSpan.FromHours(18); // 18:00 по умолчанию
+        EventTime = TimeSpan.FromHours(19);
+        MaxParticipants = 20;
     }
 
-    private string _title;
+    private string _title = "";
     public string Title
     {
         get => _title;
         set
         {
             SetProperty(ref _title, value);
-            CreateEventCommand.ChangeCanExecute();
+            UpdateCreateCommand();
         }
     }
 
-    private string _description;
+    private string _description = "";
     public string Description
     {
         get => _description;
         set
         {
             SetProperty(ref _description, value);
-            CreateEventCommand.ChangeCanExecute();
+            UpdateCreateCommand();
         }
     }
 
@@ -61,7 +62,7 @@ public class CreateEventViewModel : BaseViewModel
         set
         {
             SetProperty(ref _selectedInterest, value);
-            CreateEventCommand.ChangeCanExecute();
+            UpdateCreateCommand();
         }
     }
 
@@ -79,36 +80,61 @@ public class CreateEventViewModel : BaseViewModel
         set => SetProperty(ref _eventTime, value);
     }
 
-    private string _address;
+    private string _address = "";
     public string Address
     {
         get => _address;
         set
         {
             SetProperty(ref _address, value);
-            CreateEventCommand.ChangeCanExecute();
+            UpdateCreateCommand();
         }
+    }
+
+    private int _maxParticipants = 20;
+    public int MaxParticipants
+    {
+        get => _maxParticipants;
+        set => SetProperty(ref _maxParticipants, value);
     }
 
     private bool _isBusy;
     public bool IsBusy
     {
         get => _isBusy;
-        set => SetProperty(ref _isBusy, value);
+        set
+        {
+            SetProperty(ref _isBusy, value);
+            UpdateCreateCommand();
+        }
     }
 
-    public DateTime Today => DateTime.Today;
+    private string _errorMessage = "";
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        set => SetProperty(ref _errorMessage, value);
+    }
 
-    public Command CreateEventCommand { get; }
-    public Command CancelCommand { get; }
+    public DateTime MinDate => DateTime.Today;
+    public DateTime MaxDate => DateTime.Today.AddYears(1);
+
+    public ICommand CreateEventCommand { get; }
+    public ICommand CancelCommand { get; }
 
     private bool CanCreateEvent()
     {
-        return !string.IsNullOrWhiteSpace(Title) &&
+        return !IsBusy &&
+               !string.IsNullOrWhiteSpace(Title) &&
                !string.IsNullOrWhiteSpace(Description) &&
                SelectedInterest != null &&
                !string.IsNullOrWhiteSpace(Address) &&
-               !IsBusy;
+               MaxParticipants >= 2;
+    }
+
+    private void UpdateCreateCommand()
+    {
+        (CreateEventCommand as Command)?.ChangeCanExecute();
     }
 
     private async Task CreateEvent()
@@ -118,37 +144,45 @@ public class CreateEventViewModel : BaseViewModel
         try
         {
             IsBusy = true;
+            ErrorMessage = "";
 
-            // Собираем дату и время
+
             var eventDateTime = EventDate.Add(EventTime);
+
+            if (eventDateTime <= DateTime.Now)
+            {
+                ErrorMessage = "Р”Р°С‚Р° СЃРѕР±С‹С‚РёСЏ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІ Р±СѓРґСѓС‰РµРј";
+                return;
+            }
 
             var newEvent = new Event
             {
-                Title = Title,
-                Description = Description,
-                CategoryId = SelectedInterest.Name, // Используем имя как категорию
+                Title = Title.Trim(),
+                Description = Description.Trim(),
+                CategoryId = SelectedInterest.Name,
                 EventDate = eventDateTime,
-                Address = Address,
+                Address = Address.Trim(),
+                MaxParticipants = MaxParticipants,
                 CreatorId = _authStateService.CurrentUserId,
-                ParticipantIds = new List<string> { _authStateService.CurrentUserId }
+                CreatorName = "РўРµСЃС‚РѕРІС‹Р№ РћСЂРіР°РЅРёР·Р°С‚РѕСЂ" 
             };
 
             var success = await _dataService.AddEventAsync(newEvent);
 
             if (success)
             {
-                await Application.Current.MainPage.DisplayAlert("Успех", "Событие создано!", "OK");
-                await Shell.Current.GoToAsync(".."); // Возвращаемся назад
+                await Application.Current.MainPage.DisplayAlert("РЈСЃРїРµС…!", "РЎРѕР±С‹С‚РёРµ СЃРѕР·РґР°РЅРѕ!", "OK");
+                await Shell.Current.GoToAsync("//HomePage");
             }
             else
             {
-                await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось создать событие", "OK");
+                ErrorMessage = "РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ СЃРѕР±С‹С‚РёРµ";
             }
         }
         catch (Exception ex)
         {
-            await Application.Current.MainPage.DisplayAlert("Ошибка", $"Ошибка: {ex.Message}", "OK");
-            System.Diagnostics.Debug.WriteLine($"Ошибка создания события: {ex.Message}");
+            ErrorMessage = $"РћС€РёР±РєР°: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"РћС€РёР±РєР° СЃРѕР·РґР°РЅРёСЏ СЃРѕР±С‹С‚РёСЏ: {ex.Message}");
         }
         finally
         {
@@ -158,31 +192,35 @@ public class CreateEventViewModel : BaseViewModel
 
     private async Task Cancel()
     {
-        await Shell.Current.GoToAsync("..");
+        await _navigationService.GoBackAsync();
     }
-
     private async void LoadInterests()
     {
         try
         {
             Interests = await _dataService.GetInterestsAsync();
 
-            // Если интересов нет, создаем тестовые
+
             if (Interests == null || Interests.Count == 0)
             {
                 Interests = new List<Interest>
                 {
-                    new Interest { Name = "Настольные игры" },
-                    new Interest { Name = "Косплей" },
-                    new Interest { Name = "Искусство" },
-                    new Interest { Name = "Программирование" },
-                    new Interest { Name = "Встречи" }
+                    new Interest { Name = "рџЋ® РќР°СЃС‚РѕР»СЊРЅС‹Рµ РёРіСЂС‹" },
+                    new Interest { Name = "рџЋ­ РљРѕСЃРїР»РµР№" },
+                    new Interest { Name = "рџЋЁ РСЃРєСѓСЃСЃС‚РІРѕ" },
+                    new Interest { Name = "рџ’» РџСЂРѕРіСЂР°РјРјРёСЂРѕРІР°РЅРёРµ" },
+                    new Interest { Name = "рџ“є РђРЅРёРјРµ" },
+                    new Interest { Name = "рџЋµ РњСѓР·С‹РєР°" },
+                    new Interest { Name = "рџЌі РљСѓР»РёРЅР°СЂРёСЏ" },
+                    new Interest { Name = "рџ“љ РљРЅРёРіРё" },
+                    new Interest { Name = "рџљ¶вЂЌв™‚пёЏ РџСЂРѕРіСѓР»РєРё" },
+                    new Interest { Name = "рџЋ¬ РљРёРЅРѕ" }
                 };
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Ошибка загрузки интересов: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РёРЅС‚РµСЂРµСЃРѕРІ: {ex.Message}");
         }
     }
 }

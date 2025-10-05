@@ -1,14 +1,18 @@
+﻿using Point_v1.ViewModels;
+
 namespace Point_v1.Views;
 
 public partial class CreateEventPage : ContentPage
 {
-    public CreateEventPage()
+    public CreateEventPage(CreateEventViewModel viewModel)
     {
         InitializeComponent();
+        BindingContext = viewModel;
     }
 
-    private async void OnBackClicked(object sender, EventArgs e)
+    private async void OnCancelClicked(object sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync("..");
+        System.Diagnostics.Debug.WriteLine("🔄 Кнопка Отмена нажата (Clicked)");
+        await Shell.Current.GoToAsync("//HomePage");
     }
 }
