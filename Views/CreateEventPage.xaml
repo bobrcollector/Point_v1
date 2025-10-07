@@ -8,6 +8,7 @@
 
     <ScrollView>
         <VerticalStackLayout Spacing="0">
+
             <!-- Заголовок -->
             <Frame BackgroundColor="#512BD4"
                    Padding="25,40"
@@ -17,11 +18,13 @@
                     <Label Text="🎉" 
                            FontSize="30"
                            HorizontalOptions="Center"/>
+
                     <Label Text="Создать событие" 
                            FontSize="24" 
                            TextColor="White"
                            FontAttributes="Bold"
                            HorizontalOptions="Center"/>
+
                     <Label Text="Расскажите о вашем мероприятии" 
                            FontSize="14" 
                            TextColor="#DFD8F7"
@@ -151,7 +154,7 @@
                     </Grid>
                 </VerticalStackLayout>
 
-                <!-- Кнопки - ИСПРАВЛЕНЫ -->
+                <!-- Кнопки -->
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="15" Margin="0,30">
                     <Button Grid.Column="0" 
                             Text="Отмена" 
@@ -177,7 +180,9 @@
                                  Color="#512BD4"
                                  HorizontalOptions="Center"
                                  HeightRequest="50"/>
+
             </VerticalStackLayout>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

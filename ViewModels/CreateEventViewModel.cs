@@ -15,7 +15,7 @@ public class CreateEventViewModel : BaseViewModel
         _authStateService = authStateService;
 
         CreateEventCommand = new Command(async () => await CreateEvent(), () => CanCreateEvent());
-        CancelCommand = new Command(async () => await Cancel()); // ИСПРАВЛЕНА КОМАНДА
+        CancelCommand = new Command(async () => await Cancel());
 
         LoadInterests();
 
@@ -144,7 +144,6 @@ public class CreateEventViewModel : BaseViewModel
             IsBusy = true;
             ErrorMessage = "";
 
-
             var eventDateTime = EventDate.Add(EventTime);
 
             if (eventDateTime <= DateTime.Now)
@@ -162,7 +161,7 @@ public class CreateEventViewModel : BaseViewModel
                 Address = Address.Trim(),
                 MaxParticipants = MaxParticipants,
                 CreatorId = _authStateService.CurrentUserId,
-                CreatorName = "Тестовый Организатор" 
+                CreatorName = "Тестовый Организатор"
             };
 
             var success = await _dataService.AddEventAsync(newEvent);
@@ -194,27 +193,20 @@ public class CreateEventViewModel : BaseViewModel
 
         try
         {
-            // ПРОБУЕМ РАЗНЫЕ СПОСОБЫ
             await Shell.Current.GoToAsync("//HomePage");
             System.Diagnostics.Debug.WriteLine("✅ Отмена: переход на главную выполнен");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка при отмене: {ex.Message}");
-
-            // Альтернативный способ
-            if (Application.Current?.MainPage != null)
-            {
-                await Application.Current.MainPage.Navigation.PopAsync();
-            }
         }
     }
+
     private async void LoadInterests()
     {
         try
         {
             Interests = await _dataService.GetInterestsAsync();
-
 
             if (Interests == null || Interests.Count == 0)
             {
