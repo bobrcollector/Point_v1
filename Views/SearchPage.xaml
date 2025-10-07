@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Point_v1.Views.SearchPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Поиск событий"
+             BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#1C1C1E}">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- Шапка -->
+        <Frame Grid.Row="0"
+               BackgroundColor="#512BD4"
+               Padding="15,50,15,20"
+               CornerRadius="0"
+               HasShadow="True">
+
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Исправленная кнопка назад -->
+                <Button Grid.Column="0"
+                        Text="←"
+                        Clicked="OnBackButtonClicked"
+                        BackgroundColor="Transparent"
+                        TextColor="White"
+                        FontSize="18"
+                        WidthRequest="40"
+                        HeightRequest="40"/>
+
+                <Label Grid.Column="1"
+                       Text="Поиск событий"
+                       TextColor="White"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+            </Grid>
+        </Frame>
+
+        <!-- Остальной код без изменений -->
+        <Frame Grid.Row="1"
+               Margin="10"
+               Padding="15"
+               CornerRadius="15"
+               HasShadow="True"
+               BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
+
+            <VerticalStackLayout Spacing="15">
+
+                <!-- Поисковая строка -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <Entry Grid.Column="0"
+                           Placeholder="Поиск событий..."
+                           Text="{Binding SearchText}"
+                           BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#3C3C3E}"
+                           TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                           HeightRequest="45"/>
+
+                    <Button Grid.Column="1"
+                            Text="🔍"
+                            Command="{Binding SearchCommand}"
+                            BackgroundColor="#512BD4"
+                            TextColor="White"
+                            WidthRequest="50"
+                            HeightRequest="45"
+                            Margin="10,0,0,0"
+                            CornerRadius="8"/>
+                </Grid>
+
+                <!-- Фильтры -->
+                <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="10">
+
+                    <!-- Категория -->
+                    <Picker Grid.Column="0"
+                            Title="Категория"
+                            ItemsSource="{Binding AvailableCategories}"
+                            SelectedItem="{Binding SelectedCategory}"
+                            BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#3C3C3E}"
+                            TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                            HeightRequest="45"/>
+
+                    <!-- Дата -->
+                    <DatePicker Grid.Column="1"
+                                Date="{Binding SelectedDate}"
+                                BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#3C3C3E}"
+                                HeightRequest="45"/>
+
+                    <!-- Кнопка сброса -->
+                    <Button Grid.Column="2"
+                            Text="🧹"
+                            Command="{Binding ClearFiltersCommand}"
+                            BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#444}"
+                            TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                            WidthRequest="45"
+                            HeightRequest="45"
+                            CornerRadius="8"/>
+                </Grid>
+            </VerticalStackLayout>
+        </Frame>
+
+        <!-- Результаты поиска -->
+        <CollectionView Grid.Row="2" 
+                        ItemsSource="{Binding SearchResults}"
+                        SelectionMode="None">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="15">
+                    <Label Text="🔍" FontSize="40" HorizontalOptions="Center"/>
+                    <Label Text="Начните поиск событий" 
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"/>
+                    <Label Text="Используйте поисковую строку и фильтры выше" 
+                           FontSize="14"
+                           TextColor="Gray"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="15,5">
+                        <Frame Padding="15" CornerRadius="15" HasShadow="True"
+                               BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
+
+                            <!-- Добавляем GestureRecognizer для кликабельности -->
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer 
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ViewEventDetailsCommand}"
+                                    CommandParameter="{Binding Id}" />
+                            </Frame.GestureRecognizers>
+
+                            <VerticalStackLayout Spacing="10">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding Title}" 
+                                           FontSize="18" 
+                                           FontAttributes="Bold"
+                                           LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding DateDisplay}" 
+                                           FontSize="12"
+                                           TextColor="Gray"/>
+                                </Grid>
+
+                                <Label Text="{Binding ShortDescription}" 
+                                       FontSize="14"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="2"/>
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding Address}" 
+                                           FontSize="12"
+                                           TextColor="Gray"
+                                           LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding ParticipantsCount, StringFormat='{0} 🎯'}" 
+                                           FontSize="12"
+                                           TextColor="Gray"/>
+                                </Grid>
+
+                                <Frame BackgroundColor="#DFD8F7"
+                                       Padding="8,4"
+                                       CornerRadius="8"
+                                       HasShadow="False"
+                                       HorizontalOptions="Start">
+                                    <Label Text="{Binding CategoryId}" 
+                                           FontSize="12"
+                                           TextColor="#512BD4"/>
+                                </Frame>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

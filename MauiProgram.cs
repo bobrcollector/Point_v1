@@ -28,6 +28,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<IDataService, DataService>();
         builder.Services.AddSingleton<ISearchService, SearchService>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();
+        builder.Services.AddSingleton<ISearchService, SearchService>();
+        builder.Services.AddSingleton<IMessagingService, MessagingService>();
+
 
 
         // Регистрируем ViewModels
@@ -37,6 +40,7 @@ public static class MauiProgram
         builder.Services.AddTransient<FilterViewModel>();
         builder.Services.AddTransient<ProfileViewModel>();
         builder.Services.AddTransient<EventDetailsViewModel>();
+        builder.Services.AddTransient<SearchViewModel>();
 
         // Регистрируем Pages
         builder.Services.AddTransient<LoginPage>();
@@ -47,6 +51,11 @@ public static class MauiProgram
         builder.Services.AddTransient<ProfilePage>();
         builder.Services.AddTransient<RegisterPage>();
         builder.Services.AddTransient<EventDetailsPage>();
+        builder.Services.AddTransient<SearchPage>();
+        // Добавьте эти строки в метод ConfigureServices:
+
+        builder.Services.AddTransient<HomeViewModel>();
+        builder.Services.AddTransient<FilterViewModel>();
 
 
         // Регистрируем конвертеры
@@ -54,6 +63,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<Converters.StringNotEmptyConverter>();
         builder.Services.AddSingleton<Converters.IsNotNullOrEmptyConverter>();
         builder.Services.AddSingleton<Converters.InverseBoolConverter>();
+
 
 
         Routing.RegisterRoute(nameof(EventDetailsPage), typeof(EventDetailsPage));

@@ -2,15 +2,15 @@ using Point_v1.ViewModels;
 
 namespace Point_v1.Views;
 
-public partial class FilterPage : ContentPage
+public partial class SearchPage : ContentPage
 {
-    public FilterPage(FilterViewModel viewModel)
+    public SearchPage(SearchViewModel viewModel)
     {
         InitializeComponent();
         BindingContext = viewModel;
     }
 
-    private async void OnCloseClicked(object sender, EventArgs e)
+    private async void OnBackButtonClicked(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync("//HomePage");
     }
