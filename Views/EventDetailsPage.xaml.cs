@@ -1,48 +1,28 @@
-using Point_v1.ViewModels;
+п»їusing Point_v1.ViewModels;
+using Point_v1.Services;
 
 namespace Point_v1.Views;
 
 public partial class EventDetailsPage : ContentPage
 {
-    public EventDetailsPage()
+    public EventDetailsPage(EventDetailsViewModel viewModel)
     {
         InitializeComponent();
-    }
-
-    // Query Property для получения eventId
-    public static readonly BindableProperty EventIdProperty =
-        BindableProperty.Create(nameof(EventId), typeof(string), typeof(EventDetailsPage), null,
-        propertyChanged: OnEventIdChanged);
-
-    public string EventId
-    {
-        get => (string)GetValue(EventIdProperty);
-        set => SetValue(EventIdProperty, value);
-    }
-
-    public EventDetailsViewModel ViewModel => BindingContext as EventDetailsViewModel;
-
-    private static void OnEventIdChanged(BindableObject bindable, object oldValue, object newValue)
-    {
-        var page = (EventDetailsPage)bindable;
-        page.LoadEventDetails();
-    }
-
-    private void LoadEventDetails()
-    {
-        if (ViewModel != null && !string.IsNullOrEmpty(EventId))
-        {
-            // Здесь можно обновить ViewModel с новым eventId
-        }
+        BindingContext = viewModel;
     }
 
     protected override void OnAppearing()
     {
         base.OnAppearing();
 
-        if (ViewModel != null)
+        if (BindingContext is EventDetailsViewModel viewModel)
         {
-            ViewModel.LoadEventDetailsCommand.Execute(null);
+            if (string.IsNullOrEmpty(viewModel.EventId) &&
+                !string.IsNullOrEmpty(GlobalEventId.EventId))
+            {
+                viewModel.EventId = GlobalEventId.EventId;
+                GlobalEventId.EventId = null;
+            }
         }
     }
 }

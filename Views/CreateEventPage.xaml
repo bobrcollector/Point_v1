@@ -2,12 +2,12 @@
 <ContentPage x:Class="Point_v1.Views.CreateEventPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:Point_v1.Converters"
              Title="Создать событие"
              BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#1C1C1E}">
 
     <ScrollView>
         <VerticalStackLayout Spacing="0">
-
             <!-- Заголовок -->
             <Frame BackgroundColor="#512BD4"
                    Padding="25,40"
@@ -17,13 +17,11 @@
                     <Label Text="🎉" 
                            FontSize="30"
                            HorizontalOptions="Center"/>
-
                     <Label Text="Создать событие" 
                            FontSize="24" 
                            TextColor="White"
                            FontAttributes="Bold"
                            HorizontalOptions="Center"/>
-
                     <Label Text="Расскажите о вашем мероприятии" 
                            FontSize="14" 
                            TextColor="#DFD8F7"
@@ -35,15 +33,14 @@
             <VerticalStackLayout Spacing="20" Padding="25" BackgroundColor="Transparent">
 
                 <!-- Сообщения об ошибках -->
-                <!-- Сообщения об ошибках -->
                 <Label Text="{Binding ErrorMessage}" 
-               IsVisible="{Binding ErrorMessage, Converter={x:Static converters:IsNotNullOrEmptyConverter}}"
-               TextColor="#D32F2F" 
-               FontSize="14"
-               HorizontalOptions="Center"
-               Padding="15,10"
-               HorizontalTextAlignment="Center"
-               Margin="0,0,0,10"/>
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static converters:IsNotNullOrEmptyConverter}}"
+                       TextColor="#D32F2F" 
+                       FontSize="14"
+                       HorizontalOptions="Center"
+                       Padding="15,10"
+                       HorizontalTextAlignment="Center"
+                       Margin="0,0,0,10"/>
 
                 <!-- Название -->
                 <VerticalStackLayout Spacing="8">
@@ -126,46 +123,39 @@
                 <!-- Максимум участников -->
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Максимум участников" 
-           FontSize="14" 
-           FontAttributes="Bold"
-           TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                           FontSize="14" 
+                           FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
 
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
                         <VerticalStackLayout Grid.Column="0" Spacing="5">
                             <Label Text="{Binding MaxParticipants, StringFormat='{0} участников'}"
-                   FontSize="16"
-                   FontAttributes="Bold"
-                   TextColor="#512BD4"
-                   HorizontalOptions="Center"/>
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="#512BD4"
+                                   HorizontalOptions="Center"/>
 
                             <Label Text="Текущее значение" 
-                   FontSize="12"
-                   TextColor="Gray"
-                   HorizontalOptions="Center"/>
+                                   FontSize="12"
+                                   TextColor="Gray"
+                                   HorizontalOptions="Center"/>
                         </VerticalStackLayout>
 
                         <Stepper Grid.Column="1"
-                 Value="{Binding MaxParticipants}"
-                 Minimum="2"
-                 Maximum="50"
-                 Increment="1"
-                 HorizontalOptions="Center"
-                 VerticalOptions="Center"/>
+                                 Value="{Binding MaxParticipants}"
+                                 Minimum="2"
+                                 Maximum="50"
+                                 Increment="1"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center"/>
                     </Grid>
-
-                    <!-- Подсказка диапазона 
-                    <Label Text="От 2 до 50 участников" 
-           FontSize="12"
-           TextColor="Gray"
-           HorizontalOptions="Center"/> -->
                 </VerticalStackLayout>
 
-                <!-- Кнопки -->
+                <!-- Кнопки - ИСПРАВЛЕНЫ -->
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="15" Margin="0,30">
                     <Button Grid.Column="0" 
                             Text="Отмена" 
                             Command="{Binding CancelCommand}"
-                            Clicked="OnCancelClicked"
                             BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#444}"
                             TextColor="{AppThemeBinding Light=Black, Dark=White}"
                             HeightRequest="50"
@@ -187,9 +177,7 @@
                                  Color="#512BD4"
                                  HorizontalOptions="Center"
                                  HeightRequest="50"/>
-
             </VerticalStackLayout>
-
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

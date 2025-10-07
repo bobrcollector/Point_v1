@@ -8,16 +8,14 @@ public class CreateEventViewModel : BaseViewModel
 {
     private readonly IDataService _dataService;
     private readonly IAuthStateService _authStateService;
-    private readonly INavigationService _navigationService;
 
-    public CreateEventViewModel(IDataService dataService, IAuthStateService authStateService, INavigationService navigationService)
+    public CreateEventViewModel(IDataService dataService, IAuthStateService authStateService)
     {
         _dataService = dataService;
         _authStateService = authStateService;
-        _navigationService = navigationService;
 
         CreateEventCommand = new Command(async () => await CreateEvent(), () => CanCreateEvent());
-        CancelCommand = new Command(async () => await Cancel());
+        CancelCommand = new Command(async () => await Cancel()); // ИСПРАВЛЕНА КОМАНДА
 
         LoadInterests();
 
@@ -192,7 +190,24 @@ public class CreateEventViewModel : BaseViewModel
 
     private async Task Cancel()
     {
-        await _navigationService.GoBackAsync();
+        System.Diagnostics.Debug.WriteLine("❌ Выполняется команда Отмена");
+
+        try
+        {
+            // ПРОБУЕМ РАЗНЫЕ СПОСОБЫ
+            await Shell.Current.GoToAsync("//HomePage");
+            System.Diagnostics.Debug.WriteLine("✅ Отмена: переход на главную выполнен");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка при отмене: {ex.Message}");
+
+            // Альтернативный способ
+            if (Application.Current?.MainPage != null)
+            {
+                await Application.Current.MainPage.Navigation.PopAsync();
+            }
+        }
     }
     private async void LoadInterests()
     {

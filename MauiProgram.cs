@@ -36,6 +36,7 @@ public static class MauiProgram
         builder.Services.AddTransient<CreateEventViewModel>();
         builder.Services.AddTransient<FilterViewModel>();
         builder.Services.AddTransient<ProfileViewModel>();
+        builder.Services.AddTransient<EventDetailsViewModel>();
 
         // Регистрируем Pages
         builder.Services.AddTransient<LoginPage>();
@@ -45,13 +46,18 @@ public static class MauiProgram
         builder.Services.AddTransient<MyEventsPage>();
         builder.Services.AddTransient<ProfilePage>();
         builder.Services.AddTransient<RegisterPage>();
+        builder.Services.AddTransient<EventDetailsPage>();
+
 
         // Регистрируем конвертеры
         builder.Services.AddSingleton<Converters.InverseBoolConverter>();
         builder.Services.AddSingleton<Converters.StringNotEmptyConverter>();
         builder.Services.AddSingleton<Converters.IsNotNullOrEmptyConverter>();
+        builder.Services.AddSingleton<Converters.InverseBoolConverter>();
 
-        // AppShell
+
+        Routing.RegisterRoute(nameof(EventDetailsPage), typeof(EventDetailsPage));
+
         builder.Services.AddSingleton<AppShell>();
 
 

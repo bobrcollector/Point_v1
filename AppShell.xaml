@@ -26,5 +26,6 @@
     <ShellContent Route="CreateEventPage" ContentTemplate="{DataTemplate views:CreateEventPage}" />
     <ShellContent Route="FilterPage" ContentTemplate="{DataTemplate views:FilterPage}" />
     <ShellContent Route="RegisterPage" ContentTemplate="{DataTemplate views:RegisterPage}" />
+    <ShellContent Route="EventDetailsPage" ContentTemplate="{DataTemplate views:EventDetailsPage}" />
 
 </Shell>

@@ -1,5 +1,5 @@
-using Point_v1.ViewModels;
-
+п»їusing Point_v1.ViewModels;
+using Point_v1.Models;
 namespace Point_v1.Views;
 
 public partial class HomePage : ContentPage
@@ -16,8 +16,21 @@ public partial class HomePage : ContentPage
 
         if (BindingContext is HomeViewModel viewModel)
         {
-            // Просто вызываем загрузку событий
             _ = viewModel.LoadEvents();
+        }
+    }
+
+    // РћР‘РЄР•Р”РРќР РѕР±СЂР°Р±РѕС‚С‡РёРєРё - РѕСЃС‚Р°РІСЊ С‚РѕР»СЊРєРѕ СЌС‚РѕС‚ РјРµС‚РѕРґ
+    private async void OnEventTapped(object sender, EventArgs e)
+    {
+        if (sender is Element element && element.BindingContext is Event eventItem)
+        {
+            System.Diagnostics.Debug.WriteLine($"рџЋЇ РўР°Рї РїРѕ СЃРѕР±С‹С‚РёСЋ: {eventItem.Id} - {eventItem.Title}");
+
+            if (BindingContext is HomeViewModel viewModel)
+            {
+                await viewModel.ViewEventDetails(eventItem.Id);
+            }
         }
     }
 }

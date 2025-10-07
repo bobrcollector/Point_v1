@@ -17,11 +17,17 @@ public class Event
     public List<string> ParticipantIds { get; set; } = new List<string>();
     public bool IsActive { get; set; } = true;
 
-    // Вычисляемые свойства (не сохраняются в БД)
+    // Вычисляемые свойства
     public int ParticipantsCount => ParticipantIds?.Count ?? 0;
     public bool HasFreeSpots => ParticipantsCount < MaxParticipants;
     public string DateDisplay => EventDate.ToString("dd.MM.yyyy HH:mm");
     public string ShortDescription => Description?.Length > 100
         ? Description.Substring(0, 100) + "..."
         : Description;
+
+    // Новые свойства для деталей
+    public string DetailedDateDisplay => EventDate.ToString("dd MMMM yyyy 'в' HH:mm");
+    public string ParticipantsDisplay => $"{ParticipantsCount} из {MaxParticipants}";
+    public double ParticipationProgress => (double)ParticipantsCount / MaxParticipants;
+    public bool IsFull => ParticipantsCount >= MaxParticipants;
 }

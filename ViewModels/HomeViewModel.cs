@@ -1,4 +1,5 @@
-﻿using Point_v1.Models;
+﻿using Point_v1.Services; // ДОБАВЬ ЭТУ СТРОЧКУ В НАЧАЛЕ ФАЙЛА
+using Point_v1.Models;
 using Point_v1.Services;
 using System.Windows.Input;
 
@@ -23,6 +24,7 @@ public class HomeViewModel : BaseViewModel
         JoinEventCommand = new Command<string>(async (eventId) => await JoinEvent(eventId));
         OpenFiltersCommand = new Command(async () => await OpenFilters());
         LoadEventsCommand = new Command(async () => await LoadEvents());
+        ViewEventDetailsCommand = new Command<string>(async (eventId) => await ViewEventDetails(eventId));
 
         UpdateAuthState();
         LoadEventsCommand.Execute(null);
@@ -54,6 +56,7 @@ public class HomeViewModel : BaseViewModel
     public ICommand JoinEventCommand { get; }
     public ICommand OpenFiltersCommand { get; }
     public ICommand LoadEventsCommand { get; }
+    public ICommand ViewEventDetailsCommand { get; }
 
     private void OnAuthenticationStateChanged(object sender, EventArgs e)
     {
@@ -81,15 +84,36 @@ public class HomeViewModel : BaseViewModel
         await Shell.Current.GoToAsync("//CreateEventPage");
     }
 
-    private async Task JoinEvent(string eventId)
+    public async Task JoinEvent(string eventId)
     {
-        if (IsGuestMode)
+        try
         {
-            await GoToLogin();
-            return;
-        }
+            System.Diagnostics.Debug.WriteLine($"🎯 Кнопка 'Я пойду!' нажата для события: {eventId}");
 
-        await Application.Current.MainPage.DisplayAlert("Успех!", $"Вы присоединились к событию {eventId}", "OK");
+            if (IsGuestMode)
+            {
+                await GoToLogin();
+                return;
+            }
+
+            var success = await _dataService.JoinEventAsync(eventId, _authStateService.CurrentUserId);
+
+            if (success)
+            {
+                await Application.Current.MainPage.DisplayAlert("Успех!", "Вы присоединились к событию!", "OK");
+                // Обновляем список событий
+                await LoadEvents();
+            }
+            else
+            {
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось присоединиться к событию", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка участия: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось присоединиться к событию", "OK");
+        }
     }
 
     private async Task OpenFilters()
@@ -121,4 +145,32 @@ public class HomeViewModel : BaseViewModel
             IsLoading = false;
         }
     }
+    public async Task ViewEventDetails(string eventId)
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine($"🔄 Переход к событию: {eventId}");
+
+            if (string.IsNullOrEmpty(eventId))
+            {
+                System.Diagnostics.Debug.WriteLine("❌ eventId пустой!");
+                return;
+            }
+
+            // Сохраняем eventId в глобальную переменную
+            GlobalEventId.EventId = eventId;
+            System.Diagnostics.Debug.WriteLine($"💾 Сохранен Global EventId: {eventId}");
+
+            // Навигация
+            await Shell.Current.GoToAsync("//EventDetailsPage");
+            System.Diagnostics.Debug.WriteLine($"✅ Навигация выполнена");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка навигации: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось открыть событие", "OK");
+        }
+    }
+
+
 }

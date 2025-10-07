@@ -10,9 +10,5 @@ public partial class CreateEventPage : ContentPage
         BindingContext = viewModel;
     }
 
-    private async void OnCancelClicked(object sender, EventArgs e)
-    {
-        System.Diagnostics.Debug.WriteLine("🔄 Кнопка Отмена нажата (Clicked)");
-        await Shell.Current.GoToAsync("//HomePage");
-    }
+   
 }

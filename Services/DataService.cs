@@ -18,40 +18,59 @@ public class DataService : IDataService
     {
         // Тестовые интересы
         _interests = new List<Interest>
-        {
-            new Interest { Id = "1", Name = "Настольные игры" },
-            new Interest { Id = "2", Name = "Косплей" },
-            new Interest { Id = "3", Name = "Искусство" },
-            new Interest { Id = "4", Name = "Программирование" },
-            new Interest { Id = "5", Name = "Аниме" }
-        };
+    {
+        new Interest { Id = "1", Name = "Настольные игры" },
+        new Interest { Id = "2", Name = "Косплей" },
+        new Interest { Id = "3", Name = "Искусство" },
+        new Interest { Id = "4", Name = "Программирование" },
+        new Interest { Id = "5", Name = "Аниме" }
+    };
 
-        // Тестовые события
+        // ОБНОВЛЕННЫЕ тестовые события с полными данными
         _events = new List<Event>
+    {
+        new Event
         {
-            new Event
-            {
-                Id = "1",
-                Title = "Играем в нарды. тест",
-                Description = "Тут есть нарды, арбузы и чурчхела",
-                CategoryId = "Настольные игры",
-                Address = "армянская ул",
-                EventDate = DateTime.Now.AddDays(1),
-                CreatorId = "user1",
-                ParticipantIds = new List<string> { "user1", "user2" }
-            },
-            new Event
-            {
-                Id = "2",
-                Title = "Играем в камень ножницы бумага. тест",
-                Description = "приходите играть в супер игру!!!",
-                CategoryId = "Настольные игры",
-                Address = "Метро Текстильщики",
-                EventDate = DateTime.Now.AddDays(3),
-                CreatorId = "user2",
-                ParticipantIds = new List<string> { "user2" }
-            }
-        };
+            Id = "1",
+            Title = "Вечер настольных игр в коворкинге",
+            Description = "Приглашаем всех любителей настольных игр! Будем играть в Мафию, Каркассон, Монополию и другие игры. Приносите свои любимые игры! Напитки и закуски предоставляются. Вход свободный.",
+            CategoryId = "Настольные игры",
+            Address = "Коворкинг 'Space', ул. Центральная, 15",
+            EventDate = DateTime.Now.AddDays(1).AddHours(19),
+            CreatorId = "user1",
+            CreatorName = "Анна Иванова",
+            MaxParticipants = 20,
+            ParticipantIds = new List<string> { "user1", "user2", "user3" }
+        },
+        new Event
+        {
+            Id = "2",
+            Title = "Аниме-марафон: Наруто",
+            Description = "Смотрим вместе классические серии Наруто! Приносите попкорн, хорошее настроение и любимых персонажей. Будем смотреть самые культовые серии, обсуждать сюжет и просто хорошо проводить время.",
+            CategoryId = "Аниме",
+            Address = "Антикафе 'Geek Room', пр. Победы, 28",
+            EventDate = DateTime.Now.AddDays(3).AddHours(17),
+            CreatorId = "user2",
+            CreatorName = "Дмитрий Петров",
+            MaxParticipants = 15,
+            ParticipantIds = new List<string> { "user2", "user4" }
+        },
+        new Event
+        {
+            Id = "3",
+            Title = "Воркшоп по цифровому рисунку",
+            Description = "Учимся основам digital art в Photoshop. Подходит для начинающих. Рассмотрим базовые инструменты, работу со слоями и создание простых иллюстраций. Приносите ноутбуки и графические планшеты.",
+            CategoryId = "Искусство",
+            Address = "Студия 'ArtSpace', ул. Творческая, 7",
+            EventDate = DateTime.Now.AddDays(5).AddHours(15),
+            CreatorId = "user3",
+            CreatorName = "Мария Сидорова",
+            MaxParticipants = 10,
+            ParticipantIds = new List<string> { "user3" }
+        }
+    };
+
+        System.Diagnostics.Debug.WriteLine($"✅ Инициализировано {_events.Count} тестовых событий");
     }
 
     public async Task<List<Interest>> GetInterestsAsync()
@@ -70,9 +89,30 @@ public class DataService : IDataService
 
     public async Task<Event> GetEventAsync(string eventId)
     {
-        await Task.Delay(100);
-        System.Diagnostics.Debug.WriteLine($"колво событий на данный момент: {_events.Count}");
-        return _events.FirstOrDefault(e => e.Id == eventId);
+        try
+        {
+            await Task.Delay(100);
+            System.Diagnostics.Debug.WriteLine($"🔍 DataService.GetEventAsync вызван с eventId: {eventId}");
+
+            var eventItem = _events.FirstOrDefault(e => e.Id == eventId);
+
+            if (eventItem != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"✅ Событие найдено: {eventItem.Title}");
+                System.Diagnostics.Debug.WriteLine($"📊 Участников: {eventItem.ParticipantIds?.Count ?? 0}");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Событие {eventId} НЕ найдено!");
+            }
+
+            return eventItem;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"💥 Ошибка в GetEventAsync: {ex.Message}");
+            return null;
+        }
     }
 
     public async Task<List<Event>> GetEventsByInterestAsync(string interestId)
@@ -156,26 +196,48 @@ public class DataService : IDataService
 
     public async Task<bool> JoinEventAsync(string eventId, string userId)
     {
-        await Task.Delay(100);
-        var eventItem = _events.FirstOrDefault(e => e.Id == eventId);
-        if (eventItem != null && !eventItem.ParticipantIds.Contains(userId))
+        try
         {
-            eventItem.ParticipantIds.Add(userId);
-            return true;
+            await Task.Delay(100);
+            var eventItem = _events.FirstOrDefault(e => e.Id == eventId);
+
+            if (eventItem != null && !eventItem.ParticipantIds.Contains(userId))
+            {
+                eventItem.ParticipantIds.Add(userId);
+                System.Diagnostics.Debug.WriteLine($"✅ Пользователь {userId} присоединился к событию {eventId}");
+                return true;
+            }
+
+            return false;
         }
-        return false;
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка присоединения: {ex.Message}");
+            return false;
+        }
     }
 
     public async Task<bool> LeaveEventAsync(string eventId, string userId)
     {
-        await Task.Delay(100);
-        var eventItem = _events.FirstOrDefault(e => e.Id == eventId);
-        if (eventItem != null)
+        try
         {
-            eventItem.ParticipantIds.Remove(userId);
-            return true;
+            await Task.Delay(100);
+            var eventItem = _events.FirstOrDefault(e => e.Id == eventId);
+
+            if (eventItem != null)
+            {
+                eventItem.ParticipantIds.Remove(userId);
+                System.Diagnostics.Debug.WriteLine($"✅ Пользователь {userId} вышел из события {eventId}");
+                return true;
+            }
+
+            return false;
         }
-        return false;
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка выхода: {ex.Message}");
+            return false;
+        }
     }
 
 
