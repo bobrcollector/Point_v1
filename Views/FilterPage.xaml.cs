@@ -9,9 +9,4 @@ public partial class FilterPage : ContentPage
         InitializeComponent();
         BindingContext = viewModel;
     }
-
-    private async void OnCloseClicked(object sender, EventArgs e)
-    {
-        await Shell.Current.GoToAsync("//HomePage");
-    }
 }

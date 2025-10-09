@@ -1,27 +1,16 @@
-using Point_v1.Services;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Point_v1.ViewModels;
 
-public abstract class BaseViewModel : INotifyPropertyChanged, IMessageSubscriber
+public class BaseViewModel : INotifyPropertyChanged
 {
-    private readonly Dictionary<string, object> _callbacks = new();
-
     public event PropertyChangedEventHandler PropertyChanged;
 
-    public void SetCallback<TMessage>(string message, Action<TMessage> callback)
+    // ИЗМЕНИЛ НА VIRTUAL
+    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
-        _callbacks[message] = callback;
-    }
-
-    public Action<TMessage> GetCallback<TMessage>(string message)
-    {
-        if (_callbacks.ContainsKey(message))
-        {
-            return _callbacks[message] as Action<TMessage>;
-        }
-        return null;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     protected bool SetProperty<T>(ref T backingStore, T value, [CallerMemberName] string propertyName = "")
@@ -32,15 +21,5 @@ public abstract class BaseViewModel : INotifyPropertyChanged, IMessageSubscriber
         backingStore = value;
         OnPropertyChanged(propertyName);
         return true;
-    }
-
-    protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    protected virtual void OnDisappearing()
-    {
-        // Очистка ресурсов при необходимости
     }
 }

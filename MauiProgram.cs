@@ -40,7 +40,10 @@ public static class MauiProgram
         builder.Services.AddTransient<FilterViewModel>();
         builder.Services.AddTransient<ProfileViewModel>();
         builder.Services.AddTransient<EventDetailsViewModel>();
+
         builder.Services.AddTransient<SearchViewModel>();
+        // ДОБАВЬ В CreateMauiApp():
+        builder.Services.AddSingleton<FilterStateService>();
 
         // Регистрируем Pages
         builder.Services.AddTransient<LoginPage>();
@@ -63,6 +66,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<Converters.StringNotEmptyConverter>();
         builder.Services.AddSingleton<Converters.IsNotNullOrEmptyConverter>();
         builder.Services.AddSingleton<Converters.InverseBoolConverter>();
+
 
 
 
