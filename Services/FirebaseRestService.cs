@@ -8,15 +8,14 @@ public class FirebaseRestService
 {
     private readonly HttpClient _httpClient;
     private const string FirebaseUrl = "https://point-v1-default-rtdb.firebaseio.com/";
-    private const string ApiKey = "AIzaSyARDY_p3yQRGIeGcS7w5FSQs075Kh2OQiU";
+    private const string ApiKey = "AIzaSyAEzmKGE5xr4u2ggze_eTuYyKfVr823vJs"; // Используем правильный ключ
 
     public FirebaseRestService()
     {
         _httpClient = new HttpClient();
     }
 
-    // Аутентификация через REST API
-    public async Task<string> SignInWithEmailAndPassword(string email, string password)
+    public async Task<FirebaseAuthResponse> SignInWithEmailAndPassword(string email, string password)
     {
         try
         {
@@ -38,7 +37,12 @@ public class FirebaseRestService
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var authResult = JsonConvert.DeserializeObject<FirebaseAuthResponse>(responseContent);
-                return authResult?.IdToken;
+                return authResult;
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка Firebase: {errorContent}");
             }
 
             return null;
@@ -50,7 +54,7 @@ public class FirebaseRestService
         }
     }
 
-    public async Task<string> CreateUserWithEmailAndPassword(string email, string password, string displayName)
+    public async Task<FirebaseAuthResponse> CreateUserWithEmailAndPassword(string email, string password, string displayName)
     {
         try
         {
@@ -73,7 +77,12 @@ public class FirebaseRestService
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var authResult = JsonConvert.DeserializeObject<FirebaseAuthResponse>(responseContent);
-                return authResult?.IdToken;
+                return authResult;
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка Firebase: {errorContent}");
             }
 
             return null;

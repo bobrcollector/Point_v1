@@ -33,6 +33,12 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<IAuthService, FirebaseAuthService>();
         builder.Services.AddSingleton<IDataService, FirestoreDataService>();
+        builder.Services.AddSingleton<IAuthService, FirebaseAuthService>();
+        builder.Services.AddSingleton<IAuthStateService, AuthStateService>();
+        builder.Services.AddSingleton<IDataService, FirestoreDataService>();
+        builder.Services.AddSingleton<ISearchService, SearchService>();
+        builder.Services.AddSingleton<INavigationService, NavigationService>();
+        builder.Services.AddSingleton<IMessagingService, MessagingService>();
 
 
 

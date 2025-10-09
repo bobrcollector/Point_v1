@@ -8,6 +8,6 @@ public interface IAuthService
     Task<bool> SignIn(string email, string password);
     Task SignOut();
 
-    // ”прощаем событие
+    // ”прощаем событие‘
     event EventHandler AuthStateChanged;
 }

@@ -1,4 +1,6 @@
-﻿namespace Point_v1.Services;
+﻿using Newtonsoft.Json;
+
+namespace Point_v1.Services;
 
 public class FirebaseAuthService : IAuthService
 {
@@ -21,12 +23,11 @@ public class FirebaseAuthService : IAuthService
     {
         try
         {
-            var token = await _firebaseRest.CreateUserWithEmailAndPassword(email, password, displayName);
-            if (!string.IsNullOrEmpty(token))
+            var authResult = await _firebaseRest.CreateUserWithEmailAndPassword(email, password, displayName);
+            if (authResult != null && !string.IsNullOrEmpty(authResult.IdToken))
             {
-                _currentUserToken = token;
-                // Получаем userId из токена (в реальном приложении нужно парсить JWT)
-                _currentUserId = Guid.NewGuid().ToString(); // Временное решение
+                _currentUserToken = authResult.IdToken;
+                _currentUserId = authResult.LocalId; // Используем реальный ID из Firebase
 
                 await SaveSession();
                 AuthStateChanged?.Invoke(this, EventArgs.Empty);
@@ -45,11 +46,11 @@ public class FirebaseAuthService : IAuthService
     {
         try
         {
-            var token = await _firebaseRest.SignInWithEmailAndPassword(email, password);
-            if (!string.IsNullOrEmpty(token))
+            var authResult = await _firebaseRest.SignInWithEmailAndPassword(email, password);
+            if (authResult != null && !string.IsNullOrEmpty(authResult.IdToken))
             {
-                _currentUserToken = token;
-                _currentUserId = Guid.NewGuid().ToString(); // Временное решение
+                _currentUserToken = authResult.IdToken;
+                _currentUserId = authResult.LocalId; // Используем реальный ID из Firebase
 
                 await SaveSession();
                 AuthStateChanged?.Invoke(this, EventArgs.Empty);
@@ -64,6 +65,7 @@ public class FirebaseAuthService : IAuthService
         }
     }
 
+    // Остальные методы остаются без изменений...
     public async Task SignOut()
     {
         _currentUserToken = null;
