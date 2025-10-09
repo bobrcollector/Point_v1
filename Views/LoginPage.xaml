@@ -46,7 +46,7 @@
 
                 <!-- Сообщение об успехе -->
                         <Label Text="{Binding SuccessMessage}" 
-               IsVisible="{Binding SuccessMessage, Converter={x:Static converters:IsNotNullOrEmptyConverter}}"
+               IsVisible="{Binding SuccessMessage, Converter={converters:IsNotNullOrEmptyConverter}}"
                TextColor="#2E7D32" 
                FontSize="14"
                HorizontalOptions="Center"
@@ -55,7 +55,7 @@
 
                         <!-- Сообщения об ошибках -->
                         <Label Text="{Binding ErrorMessage}" 
-               IsVisible="{Binding ErrorMessage, Converter={x:Static converters:IsNotNullOrEmptyConverter}}"
+               IsVisible="{Binding ErrorMessage, Converter={converters:IsNotNullOrEmptyConverter}}"
                TextColor="#D32F2F" 
                FontSize="14"
                HorizontalOptions="Center"

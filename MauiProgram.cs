@@ -23,13 +23,16 @@ public static class MauiProgram
 #endif
 
         // Регистрируем сервисы
-        builder.Services.AddSingleton<IAuthService, AuthService>();
+        //builder.Services.AddSingleton<IAuthService, AuthService>();
         builder.Services.AddSingleton<IAuthStateService, AuthStateService>();
-        builder.Services.AddSingleton<IDataService, DataService>();
+        //builder.Services.AddSingleton<IDataService, DataService>();
         builder.Services.AddSingleton<ISearchService, SearchService>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();
         builder.Services.AddSingleton<ISearchService, SearchService>();
         builder.Services.AddSingleton<IMessagingService, MessagingService>();
+
+        builder.Services.AddSingleton<IAuthService, FirebaseAuthService>();
+        builder.Services.AddSingleton<IDataService, FirestoreDataService>();
 
 
 
@@ -44,6 +47,7 @@ public static class MauiProgram
         builder.Services.AddTransient<SearchViewModel>();
         // ДОБАВЬ В CreateMauiApp():
         builder.Services.AddSingleton<FilterStateService>();
+
 
         // Регистрируем Pages
         builder.Services.AddTransient<LoginPage>();

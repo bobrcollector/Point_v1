@@ -1,3 +1,6 @@
 <Solution>
-  <Project Path="Point_v1.csproj" />
+  <Project Path="Point_v1.csproj">
+    <BuildType Project="Debug" />
+    <Deploy />
+  </Project>
 </Solution>

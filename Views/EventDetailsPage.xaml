@@ -112,7 +112,7 @@
                                            Margin="10,0,0,0"/>
 
                                     <Label Grid.Column="2" 
-                                           Text="{Binding IsParticipating, Converter={x:Static converters:InverseBoolConverter}, ConverterParameter='Вы участвуете'}" 
+                                           Text="{Binding IsParticipating, Converter={converters:InverseBoolConverter}, ConverterParameter='Вы участвуете'}"
                                            FontSize="14"
                                            TextColor="#512BD4"
                                            FontAttributes="Bold"
@@ -123,7 +123,7 @@
 
                             <!-- Прогресс бар -->
                             <VerticalStackLayout Spacing="8" 
-                                                IsVisible="{Binding Event.IsFull, Converter={x:Static converters:InverseBoolConverter}}">
+                                                IsVisible="{Binding Event.IsFull, Converter={converters:InverseBoolConverter}}">
                                 <ProgressBar Progress="{Binding Event.ParticipationProgress}"
                                              ProgressColor="#512BD4"
                                              BackgroundColor="#E0E0E0"
