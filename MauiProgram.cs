@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Point_v1.Converters;
 using Point_v1.Services;
 using Point_v1.ViewModels;
 using Point_v1.Views;
@@ -52,7 +53,11 @@ public static class MauiProgram
 
         builder.Services.AddTransient<SearchViewModel>();
         // ДОБАВЬ В CreateMauiApp():
-        builder.Services.AddSingleton<FilterStateService>();
+        builder.Services.AddSingleton<FilterStateService>(); 
+        builder.Services.AddTransient<EditProfilePage>();
+
+        // Добавь маршрут
+        
 
 
         // Регистрируем Pages
@@ -81,10 +86,44 @@ public static class MauiProgram
 
 
         Routing.RegisterRoute(nameof(EventDetailsPage), typeof(EventDetailsPage));
+        Routing.RegisterRoute(nameof(EditProfilePage), typeof(EditProfilePage));
 
         builder.Services.AddSingleton<AppShell>();
+        builder.Services.AddTransient<SelectInterestsPage>();
 
+        // Регистрируем маршрут
+        Routing.RegisterRoute(nameof(SelectInterestsPage), typeof(SelectInterestsPage));
+
+        // Регистрируем конвертеры
+        builder.Services.AddSingleton<InterestSelectionToColorConverter>();
+        builder.Services.AddSingleton<InterestSelectionToTextColorConverter>();
+
+        builder.Services.AddTransient<SelectInterestsPage>();
+
+        // Регистрируем маршрут
+        Routing.RegisterRoute(nameof(SelectInterestsPage), typeof(SelectInterestsPage));
+
+        // Регистрируем конвертеры
+        builder.Services.AddSingleton<InterestSelectionToColorConverter>();
+        builder.Services.AddSingleton<InterestSelectionToTextColorConverter>();
+        builder.Services.AddSingleton<BoolToSymbolConverter>();// Регистрируем ViewModel
+        builder.Services.AddTransient<SelectInterestsViewModel>();
+
+        // Должно быть так:
+        builder.Services.AddTransient<SelectInterestsPage>();
+        builder.Services.AddTransient<ProfileViewModel>();
+
+        // И маршрут:
+        Routing.RegisterRoute(nameof(SelectInterestsPage), typeof(SelectInterestsPage));
+
+        // Регистрируем страницу
+        builder.Services.AddTransient<SelectInterestsPage>();
+        // Добавь регистрацию
+        builder.Services.AddTransient<TestInterestsPage>();
+        Routing.RegisterRoute(nameof(TestInterestsPage), typeof(TestInterestsPage));
 
         return builder.Build();
+
+
     }
 }

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Point_v1.Views.SelectInterestsPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Выбор интересов">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="15" Padding="20">
+
+            <Label Text="Выберите ваши интересы" 
+                   FontSize="20" 
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+
+            <!-- ПРОСТОЙ СПИСОК ДЛЯ ТЕСТА -->
+            <Label Text="🎲 Настольные игры" 
+                   BackgroundColor="#DFD8F7"
+                   Padding="15,10"
+                   
+                   HorizontalOptions="Fill"/>
+
+            <Label Text="🎭 Косплей" 
+                   BackgroundColor="#DFD8F7"
+                   Padding="15,10"
+                   
+                   HorizontalOptions="Fill"/>
+
+            <Label Text="🎨 Искусство" 
+                   BackgroundColor="#DFD8F7"
+                   Padding="15,10"
+                   
+                   HorizontalOptions="Fill"/>
+
+            <Label Text="💻 Программирование" 
+                   BackgroundColor="#DFD8F7"
+                   Padding="15,10"
+                   
+                   HorizontalOptions="Fill"/>
+
+            <Label Text="📺 Аниме" 
+                   BackgroundColor="#DFD8F7"
+                   Padding="15,10"
+                   
+                   HorizontalOptions="Fill"/>
+
+            <!-- Кнопки -->
+            <Button Text="Сохранить интересы" 
+                    Command="{Binding SaveInterestsCommand}"
+                    BackgroundColor="#512BD4"
+                    TextColor="White"
+                    HeightRequest="50"
+                    Margin="0,20,0,0"/>
+
+            <Button Text="Отмена" 
+                    Command="{Binding CancelCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="#512BD4"
+                    HeightRequest="45"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

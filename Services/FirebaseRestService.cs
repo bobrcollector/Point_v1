@@ -7,14 +7,15 @@ namespace Point_v1.Services;
 public class FirebaseRestService
 {
     private readonly HttpClient _httpClient;
-    private const string FirebaseUrl = "https://point-v1-default-rtdb.firebaseio.com/";
-    private const string ApiKey = "AIzaSyAEzmKGE5xr4u2ggze_eTuYyKfVr823vJs"; // Используем правильный ключ
+    private const string FirebaseUrl = "https://point-v1-default-rtdb.europe-west1.firebasedatabase.app/"; // ОБНОВИ ЭТУ СТРОКУ
+    private const string ApiKey = "AIzaSyAEzmKGE5xr4u2ggze_eTuYyKfVr823vJs";
 
     public FirebaseRestService()
     {
         _httpClient = new HttpClient();
     }
 
+    // Аутентификация через REST API
     public async Task<FirebaseAuthResponse> SignInWithEmailAndPassword(string email, string password)
     {
         try
@@ -94,7 +95,7 @@ public class FirebaseRestService
         }
     }
 
-    // Работа с данными
+    // Работа с событиями
     public async Task<List<Event>> GetEventsAsync()
     {
         try
@@ -139,6 +140,65 @@ public class FirebaseRestService
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка добавления события: {ex.Message}");
+            return false;
+        }
+    }
+
+    // Работа с пользователями
+    public async Task<List<User>> GetUsersAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"{FirebaseUrl}users.json");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var usersDict = JsonConvert.DeserializeObject<Dictionary<string, User>>(content);
+
+                if (usersDict != null)
+                {
+                    return usersDict.Select(kvp =>
+                    {
+                        kvp.Value.Id = kvp.Key;
+                        return kvp.Value;
+                    }).ToList();
+                }
+            }
+            return new List<User>();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки пользователей: {ex.Message}");
+            return new List<User>();
+        }
+    }
+
+    public async Task<bool> AddOrUpdateUserAsync(User user)
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine($"🔗 Отправка запроса к: {FirebaseUrl}users/{user.Id}.json");
+
+            var json = JsonConvert.SerializeObject(user);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync(
+                $"{FirebaseUrl}users/{user.Id}.json",
+                content);
+
+            System.Diagnostics.Debug.WriteLine($"📡 Ответ сервера: {response.StatusCode}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка Firebase: {errorContent}");
+            }
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка сохранения пользователя: {ex.Message}");
             return false;
         }
     }

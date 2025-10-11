@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Point_v1.Views.EditProfilePage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Редактирование профиля">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="20">
+
+            <!-- Заголовок -->
+            <Label Text="Редактирование профиля" 
+                   FontSize="20" 
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+
+            <!-- Аватар -->
+            <Frame HorizontalOptions="Center" 
+                   Padding="20" 
+                   CornerRadius="75"
+                   BackgroundColor="#512BD4"
+                   HeightRequest="150"
+                   WidthRequest="150">
+                <Label Text="👤" 
+                       FontSize="50"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+            </Frame>
+
+            <Button Text="Изменить аватар" 
+                    BackgroundColor="Transparent"
+                    TextColor="#512BD4"
+                    HorizontalOptions="Center"/>
+
+            <!-- Основная информация -->
+            <VerticalStackLayout Spacing="15">
+                <Label Text="Основная информация" 
+                       FontSize="16" 
+                       FontAttributes="Bold"/>
+
+                <!-- Имя -->
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Имя пользователя" 
+                           FontSize="14"/>
+                    <Entry Text="{Binding DisplayName}"
+                           Placeholder="Введите ваше имя"
+                           BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
+                           HeightRequest="50"/>
+                </VerticalStackLayout>
+
+                <!-- Город -->
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Город" 
+                           FontSize="14"/>
+                    <Entry Text="{Binding City}"
+                           Placeholder="Введите ваш город"
+                           BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
+                           HeightRequest="50"/>
+                </VerticalStackLayout>
+
+                <!-- О себе -->
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="О себе" 
+                           FontSize="14"/>
+                    <Editor Text="{Binding About}"
+                            Placeholder="Расскажите о себе..."
+                            BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
+                            HeightRequest="100"/>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Интересы -->
+            <VerticalStackLayout Spacing="15">
+                <Label Text="Мои интересы" 
+                       FontSize="16" 
+                       FontAttributes="Bold"/>
+
+                <Button Text="Выбрать интересы ➕"
+                        Command="{Binding SelectInterestsCommand}"
+                        BackgroundColor="#E8E8E8"
+                        TextColor="Black"
+                        HeightRequest="45"/>
+
+                <!-- Список выбранных интересов -->
+                <CollectionView ItemsSource="{Binding SelectedInterests}"
+                                SelectionMode="None"
+                                HeightRequest="80">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame BackgroundColor="#DFD8F7"
+                                   Padding="10,5"
+                                   CornerRadius="15"
+                                   Margin="2">
+                                <Label Text="{Binding Name}"
+                                       TextColor="#512BD4"
+                                       FontSize="12"/>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <!-- Кнопки действий -->
+            <VerticalStackLayout Spacing="10" Margin="0,20,0,0">
+                <Button Text="Сохранить изменения" 
+                        Command="{Binding SaveProfileCommand}"
+                        BackgroundColor="#512BD4"
+                        TextColor="White"
+                        HeightRequest="50"
+                        FontAttributes="Bold"/>
+
+                <Button Text="Отмена" 
+                        Command="{Binding CancelCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="#512BD4"
+                        HeightRequest="45"/>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

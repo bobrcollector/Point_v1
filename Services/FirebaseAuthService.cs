@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Point_v1.Models;
 
 namespace Point_v1.Services;
 
@@ -27,7 +28,10 @@ public class FirebaseAuthService : IAuthService
             if (authResult != null && !string.IsNullOrEmpty(authResult.IdToken))
             {
                 _currentUserToken = authResult.IdToken;
-                _currentUserId = authResult.LocalId; // Используем реальный ID из Firebase
+                _currentUserId = authResult.LocalId;
+
+           
+                await CreateUserProfile(_currentUserId, email, displayName);
 
                 await SaveSession();
                 AuthStateChanged?.Invoke(this, EventArgs.Empty);
@@ -42,6 +46,35 @@ public class FirebaseAuthService : IAuthService
         }
     }
 
+    private async Task CreateUserProfile(string userId, string email, string displayName)
+    {
+        try
+        {
+            // Используем Dependency Injection чтобы получить DataService
+            var dataService = MauiProgram.CreateMauiApp().Services.GetService<IDataService>();
+            if (dataService != null)
+            {
+                var user = new User
+                {
+                    Id = userId,
+                    Email = email,
+                    DisplayName = displayName,
+                    City = "",
+                    About = "",
+                    InterestIds = new List<string>(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await dataService.UpdateUserAsync(user);
+                System.Diagnostics.Debug.WriteLine($"✅ Профиль создан: {displayName}");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"⚠️ Ошибка создания профиля: {ex.Message}");
+        }
+    }
     public async Task<bool> SignIn(string email, string password)
     {
         try

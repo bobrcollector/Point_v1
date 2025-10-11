@@ -6,12 +6,18 @@
              Title="Регистрация"
              BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}">
 
+    <ContentPage.Resources>
+        <converters:PasswordLengthToColorConverter x:Key="PasswordLengthToColorConverter" />
+        <converters:PasswordMatchConverter x:Key="PasswordMatchConverter" />
+        <converters:PasswordMatchTextConverter x:Key="PasswordMatchTextConverter" />
+    </ContentPage.Resources>
+
     <ScrollView>
         <Grid RowDefinitions="Auto,*,Auto" 
               VerticalOptions="Start"
               Padding="30">
 
-            <!-- Верхний баннер -->
+            <!-- Верхний баннер (без изменений) -->
             <Frame Grid.Row="0"
                    BackgroundColor="#512BD4"
                    Padding="40,60"
@@ -43,21 +49,21 @@
 
                 <!-- Сообщения -->
                 <Label Text="{Binding SuccessMessage}" 
-       IsVisible="{Binding SuccessMessage, Converter={converters:IsNotNullOrEmptyConverter}}"
-       TextColor="#2E7D32" 
-       FontSize="14"
-       HorizontalOptions="Center"
-       Padding="15,10"
-       HorizontalTextAlignment="Center"/>
+                       IsVisible="{Binding SuccessMessage, Converter={converters:IsNotNullOrEmptyConverter}}"
+                       TextColor="#2E7D32" 
+                       FontSize="14"
+                       HorizontalOptions="Center"
+                       Padding="15,10"
+                       HorizontalTextAlignment="Center"/>
 
-                <!-- Сообщения об ошибках -->
                 <Label Text="{Binding ErrorMessage}" 
-       IsVisible="{Binding ErrorMessage, Converter={converters:IsNotNullOrEmptyConverter}}"
-       TextColor="#D32F2F" 
-       FontSize="14"
-       HorizontalOptions="Center"
-       Padding="15,10"
-       HorizontalTextAlignment="Center"/>
+                       IsVisible="{Binding ErrorMessage, Converter={converters:IsNotNullOrEmptyConverter}}"
+                       TextColor="#D32F2F" 
+                       FontSize="14"
+                       HorizontalOptions="Center"
+                       Padding="15,10"
+                       HorizontalTextAlignment="Center"/>
+
                 <!-- Поля формы -->
                 <VerticalStackLayout Spacing="15">
                     <!-- Имя пользователя -->
@@ -99,6 +105,13 @@
                                BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
                                TextColor="{AppThemeBinding Light=Black, Dark=White}"
                                HeightRequest="50"/>
+
+                        <!-- Валидация пароля -->
+                        <Label Text="{Binding PasswordValidationMessage}" 
+                               FontSize="12" 
+                               TextColor="{Binding Password.Length, Converter={StaticResource PasswordLengthToColorConverter}}"
+                               IsVisible="{Binding Password, Converter={converters:IsNotNullOrEmptyConverter}}"
+                               Margin="0,5,0,0"/>
                     </VerticalStackLayout>
 
                     <!-- Подтверждение пароля -->
@@ -113,6 +126,13 @@
                                BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
                                TextColor="{AppThemeBinding Light=Black, Dark=White}"
                                HeightRequest="50"/>
+
+                        <!-- Валидация подтверждения пароля -->
+                        <Label Text="{Binding ConfirmPasswordValidationMessage}" 
+                               FontSize="12" 
+                               TextColor="{Binding PasswordsMatch, Converter={x:Static converters:BoolToColorConverter}}"
+                               IsVisible="{Binding ConfirmPassword, Converter={converters:IsNotNullOrEmptyConverter}}"
+                               Margin="0,5,0,0"/>
                     </VerticalStackLayout>
                 </VerticalStackLayout>
 
@@ -129,13 +149,13 @@
 
                 <!-- Переход ко входу -->
                 <Button Text="Войти в аккаунт" 
-                    Command="{Binding GoToLoginPageCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="#512BD4"
-                    BorderColor="#512BD4"
-                    BorderWidth="1"
-                    HeightRequest="45"
-                    Margin="0,20,0,0"/>
+                        Command="{Binding GoToLoginPageCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="#512BD4"
+                        BorderColor="#512BD4"
+                        BorderWidth="1"
+                        HeightRequest="45"
+                        Margin="0,20,0,0"/>
 
             </VerticalStackLayout>
 

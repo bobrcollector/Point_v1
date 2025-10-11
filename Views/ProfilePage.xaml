@@ -154,7 +154,7 @@
                                    FontAttributes="Bold"/>
 
                             <Button Text="✏️ Редактировать профиль" 
-                                    Clicked="OnEditProfileClicked"
+                                    Command="{Binding EditProfileCommand}"
                                     BackgroundColor="Transparent"
                                     TextColor="{AppThemeBinding Light=Black, Dark=White}"
                                     HorizontalOptions="Fill"

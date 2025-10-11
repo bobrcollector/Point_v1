@@ -28,4 +28,6 @@
     <ShellContent Route="RegisterPage" ContentTemplate="{DataTemplate views:RegisterPage}" />
     <ShellContent Route="EventDetailsPage" ContentTemplate="{DataTemplate views:EventDetailsPage}" />
     <ShellContent Route="SearchPage" ContentTemplate="{DataTemplate views:SearchPage}" />
+    <!-- Добавь эту строку вместе с другими маршрутами -->
+    <ShellContent Route="EditProfilePage" ContentTemplate="{DataTemplate views:EditProfilePage}" />
 </Shell>

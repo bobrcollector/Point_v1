@@ -1,14 +1,16 @@
-using System.Globalization;
+﻿using System.Globalization;
 
-public class BoolToColorConverter : IValueConverter
+namespace Point_v1.Converters;
+
+public class BoolToSymbolConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is bool boolValue)
+        if (value is bool isSelected)
         {
-            return boolValue ? "#2E7D32" : "#D32F2F";
+            return isSelected ? "✓" : "+";
         }
-        return "#666666";
+        return "+";
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

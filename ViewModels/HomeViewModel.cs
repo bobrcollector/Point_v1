@@ -115,7 +115,7 @@ public class HomeViewModel : BaseViewModel
     public ICommand ClearSearchCommand { get; }
     public ICommand ClearAllFiltersCommand { get; }
 
-    protected override void OnPropertyChanged(string propertyName = null)
+    public override void OnPropertyChanged(string propertyName = null)
     {
         base.OnPropertyChanged(propertyName);
 
