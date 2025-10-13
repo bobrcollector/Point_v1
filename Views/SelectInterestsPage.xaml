@@ -2,54 +2,69 @@
 <ContentPage x:Class="Point_v1.Views.SelectInterestsPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:Point_v1.Converters"
              Title="Выбор интересов">
 
+    <ContentPage.Resources>
+        <converters:InterestSelectionToColorConverter x:Key="InterestSelectionToColorConverter" />
+        <converters:InterestSelectionToTextColorConverter x:Key="InterestSelectionToTextColorConverter" />
+        <converters:BoolToBorderColorConverter x:Key="BoolToBorderColorConverter" />
+    </ContentPage.Resources>
+
     <ScrollView>
-        <VerticalStackLayout Spacing="15" Padding="20">
+        <VerticalStackLayout Spacing="20" Padding="20">
 
             <Label Text="Выберите ваши интересы" 
                    FontSize="20" 
                    FontAttributes="Bold"
                    HorizontalOptions="Center"/>
 
-            <!-- ПРОСТОЙ СПИСОК ДЛЯ ТЕСТА -->
-            <Label Text="🎲 Настольные игры" 
-                   BackgroundColor="#DFD8F7"
-                   Padding="15,10"
-                   
-                   HorizontalOptions="Fill"/>
+            <!-- ВЕРНЕМ FLEXLayout -->
+            <FlexLayout BindableLayout.ItemsSource="{Binding TempAllInterests}"
+                        Direction="Row"
+                        Wrap="Wrap"
+                        JustifyContent="Start"
+                        AlignItems="Start">
 
-            <Label Text="🎭 Косплей" 
-                   BackgroundColor="#DFD8F7"
-                   Padding="15,10"
-                   
-                   HorizontalOptions="Fill"/>
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BackgroundColor="{Binding IsSelected, Converter={StaticResource InterestSelectionToColorConverter}}"
+                               BorderColor="{Binding IsSelected, Converter={StaticResource BoolToBorderColorConverter}}"
+                               Padding="15,10"
+                               Margin="5"
+                               CornerRadius="8"
+                               HasShadow="False">
 
-            <Label Text="🎨 Искусство" 
-                   BackgroundColor="#DFD8F7"
-                   Padding="15,10"
-                   
-                   HorizontalOptions="Fill"/>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer 
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ToggleInterestCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Frame.GestureRecognizers>
 
-            <Label Text="💻 Программирование" 
-                   BackgroundColor="#DFD8F7"
-                   Padding="15,10"
-                   
-                   HorizontalOptions="Fill"/>
+                            <Label Text="{Binding Name}"
+                                   TextColor="{Binding IsSelected, Converter={StaticResource InterestSelectionToTextColorConverter}}"
+                                   FontSize="14"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Frame>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </FlexLayout>
 
-            <Label Text="📺 Аниме" 
-                   BackgroundColor="#DFD8F7"
-                   Padding="15,10"
-                   
-                   HorizontalOptions="Fill"/>
+            <!-- Статус выбора -->
+            <Frame BackgroundColor="#F0F0F0" Padding="10" CornerRadius="8">
+                <Label Text="{Binding TempSelectedInterests.Count, StringFormat='Выбрано интересов: {0}'}"
+                       FontSize="14"
+                       HorizontalOptions="Center"/>
+            </Frame>
 
             <!-- Кнопки -->
             <Button Text="Сохранить интересы" 
                     Command="{Binding SaveInterestsCommand}"
                     BackgroundColor="#512BD4"
                     TextColor="White"
-                    HeightRequest="50"
-                    Margin="0,20,0,0"/>
+                    HeightRequest="50"/>
 
             <Button Text="Отмена" 
                     Command="{Binding CancelCommand}"

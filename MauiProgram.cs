@@ -43,21 +43,24 @@ public static class MauiProgram
 
 
 
+
         // Регистрируем ViewModels
         builder.Services.AddTransient<AuthViewModel>();
         builder.Services.AddTransient<HomeViewModel>();
         builder.Services.AddTransient<CreateEventViewModel>();
         builder.Services.AddTransient<FilterViewModel>();
-        builder.Services.AddTransient<ProfileViewModel>();
         builder.Services.AddTransient<EventDetailsViewModel>();
 
         builder.Services.AddTransient<SearchViewModel>();
         // ДОБАВЬ В CreateMauiApp():
         builder.Services.AddSingleton<FilterStateService>(); 
         builder.Services.AddTransient<EditProfilePage>();
-
+        // Регистрируем конвертеры (добавь эти строки)
+        builder.Services.AddSingleton<InterestSelectionToColorConverter>();
+        builder.Services.AddSingleton<InterestSelectionToTextColorConverter>();
+        builder.Services.AddSingleton<BoolToBorderColorConverter>();
         // Добавь маршрут
-        
+
 
 
         // Регистрируем Pages
@@ -111,7 +114,7 @@ public static class MauiProgram
 
         // Должно быть так:
         builder.Services.AddTransient<SelectInterestsPage>();
-        builder.Services.AddTransient<ProfileViewModel>();
+        builder.Services.AddSingleton<ProfileViewModel>();
 
         // И маршрут:
         Routing.RegisterRoute(nameof(SelectInterestsPage), typeof(SelectInterestsPage));
@@ -121,6 +124,10 @@ public static class MauiProgram
         // Добавь регистрацию
         builder.Services.AddTransient<TestInterestsPage>();
         Routing.RegisterRoute(nameof(TestInterestsPage), typeof(TestInterestsPage));
+        builder.Services.AddSingleton<InterestSelectionToColorConverter>();
+        builder.Services.AddSingleton<InterestSelectionToTextColorConverter>();
+        builder.Services.AddSingleton<BoolToBorderColorConverter>();
+
 
         return builder.Build();
 

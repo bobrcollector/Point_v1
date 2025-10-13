@@ -10,23 +10,38 @@ public partial class SelectInterestsPage : ContentPage
         BindingContext = viewModel;
 
         System.Diagnostics.Debug.WriteLine("🔄 SelectInterestsPage создана");
+
+        // СРАЗУ КОПИРУЕМ ДАННЫЕ ПРИ СОЗДАНИИ СТРАНИЦЫ
+        if (BindingContext is ProfileViewModel vm)
+        {
+            vm.CopyToTempData();
+        }
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
         System.Diagnostics.Debug.WriteLine("👀 SelectInterestsPage появилась на экране");
 
         if (BindingContext is ProfileViewModel vm)
         {
-            System.Diagnostics.Debug.WriteLine($"📊 OnAppearing - AllInterests: {vm.AllInterests?.Count ?? 0}");
-
-            // ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ИНТЕРФЕЙС ПРИ ПОЯВЛЕНИИ СТРАНИЦЫ
-            Device.BeginInvokeOnMainThread(() =>
+            // ЕСЛИ ВРЕМЕННЫЕ ДАННЫЕ ПУСТЫЕ - ЗАГРУЖАЕМ
+            if (vm.TempAllInterests?.Count == 0)
             {
-                vm.OnPropertyChanged(nameof(vm.AllInterests));
-                vm.OnPropertyChanged(nameof(vm.SelectedInterests));
-            });
+                System.Diagnostics.Debug.WriteLine("🔄 Временные данные пустые, загружаем...");
+                await vm.LoadInterestsForSelection();
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"✅ Временные данные уже есть: {vm.TempAllInterests.Count} интересов");
+
+                // ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ПРИВЯЗКИ
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    vm.OnPropertyChanged(nameof(vm.TempAllInterests));
+                    vm.OnPropertyChanged(nameof(vm.TempSelectedInterests));
+                });
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using Point_v1.Services;
 using Point_v1.Views;
 using System.Windows.Input;
 
+
 namespace Point_v1.ViewModels;
 
 public class ProfileViewModel : BaseViewModel
@@ -29,6 +30,22 @@ public class ProfileViewModel : BaseViewModel
 
         // Загружаем данные пользователя
         _ = LoadUserData();
+    }
+
+    // ДОБАВЬ ЭТИ СВОЙСТВА В КЛАСС ProfileViewModel:
+
+    private List<Interest> _tempSelectedInterests = new();
+    public List<Interest> TempSelectedInterests
+    {
+        get => _tempSelectedInterests;
+        set => SetProperty(ref _tempSelectedInterests, value);
+    }
+
+    private List<Interest> _tempAllInterests = new();
+    public List<Interest> TempAllInterests
+    {
+        get => _tempAllInterests;
+        set => SetProperty(ref _tempAllInterests, value);
     }
 
     private string _userName = "Пользователь";
@@ -120,26 +137,41 @@ public class ProfileViewModel : BaseViewModel
                 DisplayName = user.DisplayName;
                 City = user.City;
                 About = user.About;
+
+                // ВАЖНО: Загружаем интересы пользователя и сохраняем в SelectedInterests
                 SelectedInterests = await GetUserInterests(user.InterestIds);
+                System.Diagnostics.Debug.WriteLine($"👤 Загружено интересов пользователя: {SelectedInterests.Count}");
             }
             else
             {
                 // Если пользователь не найден в базе, используем базовые данные
                 UserName = "Пользователь";
                 UserEmail = _authService.CurrentUserId;
+                SelectedInterests = new List<Interest>(); // Инициализируем пустым списком
             }
         }
         else
         {
             IsAuthenticated = false;
             IsGuestMode = true;
+            SelectedInterests = new List<Interest>(); // Инициализируем пустым списком
         }
     }
 
     private async Task<List<Interest>> GetUserInterests(List<string> interestIds)
     {
+        if (interestIds == null || interestIds.Count == 0)
+        {
+            System.Diagnostics.Debug.WriteLine("👤 У пользователя нет выбранных интересов");
+            return new List<Interest>();
+        }
+
         var allInterests = await _dataService.GetInterestsAsync();
-        return allInterests.Where(i => interestIds.Contains(i.Id)).ToList();
+        var userInterests = allInterests.Where(i => interestIds.Contains(i.Id)).ToList();
+
+        System.Diagnostics.Debug.WriteLine($"👤 Найдено интересов пользователя: {userInterests.Count} из {interestIds.Count} ID");
+
+        return userInterests;
     }
 
     private async Task EditProfile()
@@ -183,7 +215,10 @@ public class ProfileViewModel : BaseViewModel
 
     private async Task Cancel()
     {
-        await _navigationService.GoToProfileAsync();
+        // ПРОСТО ВОЗВРАЩАЕМСЯ БЕЗ СОХРАНЕНИЯ
+        // Временные данные будут отброшены
+        System.Diagnostics.Debug.WriteLine("❌ Отмена выбора интересов - изменения не сохранены");
+        await _navigationService.GoToAsync($"../{nameof(EditProfilePage)}");
     }
 
     private async Task SelectInterests()
@@ -192,19 +227,17 @@ public class ProfileViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine("🔄 Начало загрузки интересов...");
 
+            // ЗАГРУЖАЕМ ДАННЫЕ ПЕРЕД ПЕРЕХОДОМ
             await LoadAllInterests();
 
-            System.Diagnostics.Debug.WriteLine($"📊 Загружено интересов: {AllInterests?.Count ?? 0}");
+            // КОПИРУЕМ ДАННЫЕ ВО ВРЕМЕННЫЕ СПИСКИ
+            CopyToTempData();
 
-            if (AllInterests?.Count > 0)
+            System.Diagnostics.Debug.WriteLine($"📊 Загружено интересов во временном списке: {TempAllInterests?.Count ?? 0}");
+
+            if (TempAllInterests?.Count > 0)
             {
                 System.Diagnostics.Debug.WriteLine("✅ Интересы загружены, переходим на страницу выбора");
-
-                // ДОБАВИМ ЗАДЕРЖКУ И ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ
-                await Task.Delay(100);
-                OnPropertyChanged(nameof(AllInterests));
-                OnPropertyChanged(nameof(SelectedInterests));
-
                 await _navigationService.GoToAsync(nameof(SelectInterestsPage));
             }
             else
@@ -231,27 +264,62 @@ public class ProfileViewModel : BaseViewModel
         await _navigationService.GoToLoginAsync();
     }
 
+    // Публичный метод для загрузки интересов (из страницы)
+    public async Task LoadInterestsForSelection()
+    {
+        await LoadAllInterests();
+    }
+
     private async Task LoadAllInterests()
     {
         try
         {
             System.Diagnostics.Debug.WriteLine("🔄 Загрузка интересов из DataService...");
 
+            // ОТЛАДКА: проверяем текущее состояние
+            System.Diagnostics.Debug.WriteLine($"📊 Текущее состояние - SelectedInterests: {SelectedInterests?.Count ?? 0}");
+
             var interests = await _dataService.GetInterestsAsync();
-            AllInterests = interests;
 
-            System.Diagnostics.Debug.WriteLine($"📥 Получено интересов: {interests?.Count ?? 0}");
-
-            // Помечаем выбранные интересы
-            foreach (var interest in AllInterests)
+            if (interests == null || interests.Count == 0)
             {
-                interest.IsSelected = SelectedInterests.Any(si => si.Id == interest.Id);
+                System.Diagnostics.Debug.WriteLine("❌ Не удалось загрузить интересы из базы");
+                return;
             }
 
-            System.Diagnostics.Debug.WriteLine($"🎯 Помечено выбранных: {AllInterests.Count(i => i.IsSelected)}");
+            // ВАЖНО: ЕСЛИ SelectedInterests ПУСТОЙ - ЗАГРУЖАЕМ ИЗ БАЗЫ
+            if (SelectedInterests?.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine("🔄 SelectedInterests пустой, загружаем из базы данных пользователя...");
+                await LoadUserInterestsFromDatabase();
+            }
 
-            // Принудительно обновляем привязку
-            OnPropertyChanged(nameof(AllInterests));
+            // СОХРАНЯЕМ ВЫБРАННЫЕ ID ИЗ ОСНОВНОГО СПИСКА
+            var selectedIds = SelectedInterests?.Select(si => si.Id).ToList() ?? new List<string>();
+
+            System.Diagnostics.Debug.WriteLine($"🎯 Сохранено выбранных ID: {selectedIds.Count}");
+
+            // ИСПОЛЬЗУЕМ ВРЕМЕННЫЙ СПИСОК ДЛЯ ВЫБОРА
+            TempAllInterests = interests;
+            System.Diagnostics.Debug.WriteLine($"📥 Получено интересов из базы: {interests.Count}");
+
+            // Помечаем выбранные интересы ВО ВРЕМЕННОМ СПИСКЕ
+            foreach (var interest in TempAllInterests)
+            {
+                interest.IsSelected = selectedIds.Contains(interest.Id);
+                System.Diagnostics.Debug.WriteLine($"🎯 Интерес '{interest.Name}': {interest.IsSelected} (ID: {interest.Id})");
+            }
+
+            // ОБНОВЛЯЕМ ВРЕМЕННЫЙ SelectedInterests
+            TempSelectedInterests = TempAllInterests.Where(i => i.IsSelected).ToList();
+
+            System.Diagnostics.Debug.WriteLine($"🎯 Итоговое количество выбранных во временном списке: {TempSelectedInterests.Count}");
+
+            // ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ПРИВЯЗКУ ДЛЯ ВРЕМЕННЫХ ДАННЫХ
+            OnPropertyChanged(nameof(TempAllInterests));
+            OnPropertyChanged(nameof(TempSelectedInterests));
+
+            System.Diagnostics.Debug.WriteLine("✅ Временные привязки обновлены");
         }
         catch (Exception ex)
         {
@@ -259,35 +327,132 @@ public class ProfileViewModel : BaseViewModel
         }
     }
 
+    // Новый метод для загрузки интересов пользователя из базы
+    private async Task LoadUserInterestsFromDatabase()
+    {
+        try
+        {
+            if (_authService.IsAuthenticated)
+            {
+                var user = await _dataService.GetUserAsync(_authService.CurrentUserId);
+                if (user != null && user.InterestIds?.Count > 0)
+                {
+                    System.Diagnostics.Debug.WriteLine($"👤 Загружаем интересы пользователя из базы: {user.InterestIds.Count} ID");
+                    SelectedInterests = await GetUserInterests(user.InterestIds);
+                    System.Diagnostics.Debug.WriteLine($"👤 Загружено интересов: {SelectedInterests.Count}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки интересов пользователя: {ex.Message}");
+        }
+    }
+
     private void ToggleInterest(Interest interest)
     {
         if (interest != null)
         {
+            System.Diagnostics.Debug.WriteLine($"🎯 Переключаем интерес: {interest.Name} -> {!interest.IsSelected}");
+
+            // ПЕРЕКЛЮЧАЕМ ВЫБОР
             interest.IsSelected = !interest.IsSelected;
 
-            // Обновляем выбранные интересы
-            SelectedInterests = AllInterests.Where(i => i.IsSelected).ToList();
+            // ОБНОВЛЯЕМ ВРЕМЕННЫЕ ВЫБРАННЫЕ ИНТЕРЕСЫ
+            TempSelectedInterests = TempAllInterests.Where(i => i.IsSelected).ToList();
 
-            System.Diagnostics.Debug.WriteLine($"🎯 Интерес '{interest.Name}' {(interest.IsSelected ? "выбран" : "удален")}");
+            System.Diagnostics.Debug.WriteLine($"📊 Теперь выбрано во временном списке: {TempSelectedInterests.Count} интересов");
+
+            // ВАЖНО: ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ВСЕГО СПИСКА
+            // Создаем новый список, чтобы заставить FlexLayout перерисоваться
+            var newList = new List<Interest>(TempAllInterests);
+            TempAllInterests = null;
+            TempAllInterests = newList;
+
+            // ОБНОВЛЯЕМ ПРИВЯЗКИ
+            OnPropertyChanged(nameof(TempAllInterests));
+            OnPropertyChanged(nameof(TempSelectedInterests));
+
+            System.Diagnostics.Debug.WriteLine("🔄 Привязки обновлены после переключения");
         }
     }
+
 
     private async Task SaveInterests()
     {
         try
         {
-            // Обновляем выбранные интересы
-            SelectedInterests = AllInterests.Where(i => i.IsSelected).ToList();
+            // ПЕРЕНОСИМ ДАННЫЕ ИЗ ВРЕМЕННОГО СПИСКА В ОСНОВНОЙ
+            SelectedInterests = new List<Interest>(TempSelectedInterests);
 
-            // Сохраняем профиль
-            await SaveProfile();
-            await _navigationService.GoToAsync("..");
+            System.Diagnostics.Debug.WriteLine($"💾 Сохранение {SelectedInterests.Count} интересов...");
 
-            await Application.Current.MainPage.DisplayAlert("Успех", "Интересы сохранены", "OK");
+            // Сохраняем ВЕСЬ профиль с обновленными интересами
+            var user = new User
+            {
+                Id = _authService.CurrentUserId,
+                DisplayName = DisplayName,
+                Email = UserEmail,
+                City = City,
+                About = About,
+                InterestIds = SelectedInterests.Select(i => i.Id).ToList(),
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            // ОТЛАДКА: выводим какие интересы сохраняются
+            System.Diagnostics.Debug.WriteLine("💾 Сохраняемые интересы:");
+            foreach (var interest in SelectedInterests)
+            {
+                System.Diagnostics.Debug.WriteLine($"💾 - {interest.Name} (ID: {interest.Id})");
+            }
+
+            var success = await _dataService.UpdateUserAsync(user);
+
+            if (success)
+            {
+                System.Diagnostics.Debug.WriteLine("✅ Интересы успешно сохранены в базу");
+
+                // Возвращаемся в редактирование профиля
+                await _navigationService.GoToAsync($"../{nameof(EditProfilePage)}");
+                await Application.Current.MainPage.DisplayAlert("Успех", "Интересы сохранены", "OK");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("❌ Не удалось сохранить интересы в базу");
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось сохранить интересы", "OK");
+            }
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка сохранения интересов: {ex.Message}");
             await Application.Current.MainPage.DisplayAlert("Ошибка", ex.Message, "OK");
         }
+    }
+
+    public void CopyToTempData()
+    {
+        System.Diagnostics.Debug.WriteLine($"📋 Копируем данные в временные списки: {SelectedInterests?.Count ?? 0} выбранных интересов");
+
+        // Копируем основные данные во временные
+        if (AllInterests?.Count > 0)
+        {
+            TempAllInterests = new List<Interest>(AllInterests);
+            TempSelectedInterests = new List<Interest>(SelectedInterests ?? new List<Interest>());
+
+            System.Diagnostics.Debug.WriteLine($"📋 Скопировано: {TempAllInterests.Count} интересов, {TempSelectedInterests.Count} выбранных");
+
+            // ОБНОВЛЯЕМ ПРИВЯЗКИ
+            OnPropertyChanged(nameof(TempAllInterests));
+            OnPropertyChanged(nameof(TempSelectedInterests));
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine("📋 Нет данных для копирования");
+        }
+    }
+
+    public void PrepareForInterestSelection()
+    {
+        System.Diagnostics.Debug.WriteLine($"🎯 PrepareForInterestSelection - SelectedInterests: {SelectedInterests?.Count ?? 0}, TempAllInterests: {TempAllInterests?.Count ?? 0}");
     }
 }
