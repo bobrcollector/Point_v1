@@ -57,37 +57,93 @@
                                    IsVisible="{Binding IsAuthenticated}">
 
                     <!-- Аватар и информация -->
+                    <!-- Аватар и информация -->
                     <Frame Padding="20" 
-                           CornerRadius="15" 
-                           HasShadow="True"
-                           BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
+       CornerRadius="15" 
+       HasShadow="True"
+       BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
                         <VerticalStackLayout Spacing="15">
                             <Grid ColumnDefinitions="Auto,*">
+                                <!-- Аватар -->
                                 <Frame Grid.Column="0"
-                                       BackgroundColor="#512BD4"
-                                       Padding="20"
-                                       CornerRadius="50"
-                                       HeightRequest="60"
-                                       WidthRequest="60"
-                                       HorizontalOptions="Start">
-                                    <Label Text="👤" 
-                                           FontSize="20"
-                                           HorizontalOptions="Center"
-                                           VerticalOptions="Center"/>
+                   BackgroundColor="#512BD4"
+                   Padding="0"
+                   CornerRadius="50"
+                   HeightRequest="80"
+                   WidthRequest="80"
+                   HorizontalOptions="Start">
+                                    <Image Source="{Binding AvatarImage}"
+                       Aspect="AspectFill"
+                       HeightRequest="80"
+                       WidthRequest="80">
+                                        <Image.Clip>
+                                            <RoundRectangleGeometry Rect="0,0,80,80" CornerRadius="40"/>
+                                        </Image.Clip>
+                                    </Image>
                                 </Frame>
 
                                 <VerticalStackLayout Grid.Column="1" 
-                                                   Spacing="5"
-                                                   VerticalOptions="Center"
-                                                   Margin="15,0,0,0">
+                               Spacing="8"
+                               VerticalOptions="Center"
+                               Margin="15,0,0,0">
                                     <Label Text="{Binding UserName}" 
-                                           FontSize="18"
-                                           FontAttributes="Bold"/>
-                                    <Label Text="{Binding UserEmail}" 
-                                           FontSize="14"
-                                           TextColor="Gray"/>
+                       FontSize="20"
+                       FontAttributes="Bold"/>
+
+                                    <!-- ГОРОД - ТОЛЬКО ОДИН LABEL -->
+                                    <Label Text="{Binding City, StringFormat='📍 {0}'}" 
+                       FontSize="14"
+                       TextColor="Gray"
+                       IsVisible="{Binding City, Converter={x:StaticResource IsNotNullOrEmptyConverter}}"/>
+
                                 </VerticalStackLayout>
                             </Grid>
+
+                            <!-- О себе -->
+                            <Label Text="{Binding About}" 
+               FontSize="14"
+               TextColor="Gray"
+               LineBreakMode="WordWrap"
+               IsVisible="{Binding About, Converter={x:StaticResource IsNotNullOrEmptyConverter}}"/>
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Интересы пользователя -->
+                    <!-- Интересы пользователя -->
+                    <Frame Padding="20" 
+       CornerRadius="15" 
+       HasShadow="True"
+       BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
+       IsVisible="{Binding SelectedInterests.Count, Converter={x:StaticResource IsNotNullOrEmptyConverter}}">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="Мои интересы" 
+               FontSize="16"
+               FontAttributes="Bold"/>
+
+                            <FlexLayout BindableLayout.ItemsSource="{Binding SelectedInterests}"
+                    Direction="Row"
+                    Wrap="Wrap"
+                    JustifyContent="Start"
+                    AlignItems="Start">
+
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <!-- ДОБАВИМ ОТЛАДОЧНЫЙ ТЕКСТ -->
+                                        <Frame BackgroundColor="#DFD8F7"
+                           Padding="12,6"
+                           CornerRadius="12"
+                           Margin="4,2"
+                           HasShadow="False">
+                                            <Label Text="{Binding Name}"
+                               TextColor="#512BD4"
+                               FontSize="12"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                                        </Frame>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </FlexLayout>
                         </VerticalStackLayout>
                     </Frame>
 

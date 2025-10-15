@@ -2,6 +2,7 @@
 using Point_v1.Services;
 using Point_v1.Views;
 using System.Windows.Input;
+using CommunityToolkit.Maui; 
 
 
 namespace Point_v1.ViewModels;
@@ -17,6 +18,8 @@ public class ProfileViewModel : BaseViewModel
         _authService = authService;
         _dataService = dataService;
         _navigationService = navigationService;
+        _ = LoadUserData();
+        LoadAvatar(); // ДОБАВЬ ЭТУ СТРОКУ
 
         // Инициализация команд
         EditProfileCommand = new Command(async () => await EditProfile());
@@ -27,6 +30,7 @@ public class ProfileViewModel : BaseViewModel
         ToggleInterestCommand = new Command<Interest>((interest) => ToggleInterest(interest));
         SaveInterestsCommand = new Command(async () => await SaveInterests());
         GoToLoginCommand = new Command(async () => await GoToLogin());
+        ChangeAvatarCommand = new Command(async () => await ChangeAvatar());
 
         // Загружаем данные пользователя
         _ = LoadUserData();
@@ -199,6 +203,15 @@ public class ProfileViewModel : BaseViewModel
 
             if (success)
             {
+                // ОБНОВЛЯЕМ ДАННЫЕ НА СТРАНИЦЕ ПРОФИЛЯ
+                UserName = DisplayName;
+
+                // СОХРАНЯЕМ ПУТЬ К АВАТАРУ (если он был изменен)
+                if (!string.IsNullOrEmpty(AvatarPath))
+                {
+                    Preferences.Set("UserAvatarPath", AvatarPath);
+                }
+
                 await Application.Current.MainPage.DisplayAlert("Успех", "Профиль сохранен", "OK");
                 await _navigationService.GoToProfileAsync();
             }
@@ -455,4 +468,98 @@ public class ProfileViewModel : BaseViewModel
     {
         System.Diagnostics.Debug.WriteLine($"🎯 PrepareForInterestSelection - SelectedInterests: {SelectedInterests?.Count ?? 0}, TempAllInterests: {TempAllInterests?.Count ?? 0}");
     }
+
+
+private ImageSource _avatarImage = "👤";
+public ImageSource AvatarImage
+{
+    get => _avatarImage;
+    set => SetProperty(ref _avatarImage, value);
+}
+
+public ICommand ChangeAvatarCommand { get; }
+
+    // В конструкторе добавь:
+
+
+    // УБЕРИ эту строку:
+    // using CommunityToolkit.Maui;
+
+    // И обнови метод ChangeAvatar:
+    private string _avatarPath;
+    public string AvatarPath
+    {
+        get => _avatarPath;
+        set => SetProperty(ref _avatarPath, value);
+    }
+
+    // Обнови метод ChangeAvatar:
+    private async Task ChangeAvatar()
+    {
+        try
+        {
+            if (MediaPicker.Default.IsCaptureSupported)
+            {
+                var file = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
+                {
+                    Title = "Выберите аватар"
+                });
+
+                if (file != null)
+                {
+                    // СОХРАНЯЕМ ФАЙЛ ЛОКАЛЬНО
+                    var localFilePath = Path.Combine(FileSystem.CacheDirectory, $"avatar_{_authService.CurrentUserId}.jpg");
+
+                    using (var sourceStream = await file.OpenReadAsync())
+                    using (var localStream = File.OpenWrite(localFilePath))
+                    {
+                        await sourceStream.CopyToAsync(localStream);
+                    }
+
+                    // Сохраняем путь к файлу
+                    AvatarPath = localFilePath;
+                    AvatarImage = ImageSource.FromFile(localFilePath);
+
+                    // Сохраняем путь в настройках
+                    Preferences.Set("UserAvatarPath", localFilePath);
+
+                    System.Diagnostics.Debug.WriteLine($"📸 Аватар сохранен: {localFilePath}");
+                    await Application.Current.MainPage.DisplayAlert("Успех", "Аватар изменен", "OK");
+                }
+            }
+            else
+            {
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "Функция выбора фото не поддерживается на этом устройстве", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка выбора аватара: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось выбрать фото", "OK");
+        }
+    }
+    private void LoadAvatar()
+    {
+        try
+        {
+            var savedAvatarPath = Preferences.Get("UserAvatarPath", string.Empty);
+            if (!string.IsNullOrEmpty(savedAvatarPath) && File.Exists(savedAvatarPath))
+            {
+                AvatarPath = savedAvatarPath;
+                AvatarImage = ImageSource.FromFile(savedAvatarPath);
+                System.Diagnostics.Debug.WriteLine($"📸 Аватар загружен: {savedAvatarPath}");
+            }
+            else
+            {
+                AvatarImage = "👤"; // Дефолтный аватар
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки аватара: {ex.Message}");
+            AvatarImage = "👤";
+        }
+    }
+
+
 }

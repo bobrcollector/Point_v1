@@ -127,7 +127,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<InterestSelectionToColorConverter>();
         builder.Services.AddSingleton<InterestSelectionToTextColorConverter>();
         builder.Services.AddSingleton<BoolToBorderColorConverter>();
-
+        builder.Services.AddSingleton<IsNotStringConverter>();
+        builder.Services.AddSingleton<IsNotNullConverter>();
 
         return builder.Build();
 

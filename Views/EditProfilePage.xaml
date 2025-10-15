@@ -15,23 +15,36 @@
 
             <!-- Аватар -->
             <Frame HorizontalOptions="Center" 
-                   Padding="20" 
+                   Padding="0"
                    CornerRadius="75"
-                   BackgroundColor="#512BD4"
+                   BackgroundColor="Transparent"
                    HeightRequest="150"
-                   WidthRequest="150">
-                <Label Text="👤" 
-                       FontSize="50"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"/>
+                   WidthRequest="150"
+                   HasShadow="True">
+
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ChangeAvatarCommand}" />
+                </Frame.GestureRecognizers>
+
+                <!-- Просто показываем Image, он сам разберется с источником -->
+                <Image Source="{Binding AvatarImage}"
+                       Aspect="AspectFill"
+                       BackgroundColor="#512BD4"
+                       HeightRequest="150"
+                       WidthRequest="150">
+                    <Image.Clip>
+                        <RoundRectangleGeometry Rect="0,0,150,150" CornerRadius="75"/>
+                    </Image.Clip>
+                </Image>
             </Frame>
 
             <Button Text="Изменить аватар" 
+                    Command="{Binding ChangeAvatarCommand}"
                     BackgroundColor="Transparent"
                     TextColor="#512BD4"
                     HorizontalOptions="Center"/>
 
-            <!-- Основная информация -->
+            <!-- Остальной код без изменений -->
             <VerticalStackLayout Spacing="15">
                 <Label Text="Основная информация" 
                        FontSize="16" 
