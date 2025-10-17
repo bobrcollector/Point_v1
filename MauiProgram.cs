@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CommunityToolkit.Maui;
+using Microsoft.Extensions.Logging;
 using Point_v1.Converters;
 using Point_v1.Services;
 using Point_v1.ViewModels;
@@ -13,6 +14,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -73,6 +75,8 @@ public static class MauiProgram
         builder.Services.AddTransient<RegisterPage>();
         builder.Services.AddTransient<EventDetailsPage>();
         builder.Services.AddTransient<SearchPage>();
+        builder.Services.AddTransient<MyEventsViewModel>();
+        builder.Services.AddTransient<MyEventsPage>();
         // Добавьте эти строки в метод ConfigureServices:
 
         builder.Services.AddTransient<HomeViewModel>();
@@ -129,6 +133,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<BoolToBorderColorConverter>();
         builder.Services.AddSingleton<IsNotStringConverter>();
         builder.Services.AddSingleton<IsNotNullConverter>();
+        builder.Services.AddTransient<MyEventsViewModel>();
+        builder.Services.AddTransient<MyEventsPage>();
 
         return builder.Build();
 

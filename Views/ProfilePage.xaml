@@ -2,7 +2,13 @@
 <ContentPage x:Class="Point_v1.Views.ProfilePage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:Point_v1.Models"
+             xmlns:converters="clr-namespace:Point_v1.Converters"
              Title="Профиль">
+
+    <ContentPage.Resources>
+        <converters:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter" />
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*,Auto">
 

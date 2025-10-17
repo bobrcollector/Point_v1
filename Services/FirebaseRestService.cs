@@ -7,7 +7,7 @@ namespace Point_v1.Services;
 public class FirebaseRestService
 {
     private readonly HttpClient _httpClient;
-    private const string FirebaseUrl = "https://point-v1-default-rtdb.europe-west1.firebasedatabase.app/"; // ОБНОВИ ЭТУ СТРОКУ
+    private const string FirebaseUrl = "https://point-v1-default-rtdb.europe-west1.firebasedatabase.app/";
     private const string ApiKey = "AIzaSyAEzmKGE5xr4u2ggze_eTuYyKfVr823vJs";
 
     public FirebaseRestService()
@@ -140,6 +140,75 @@ public class FirebaseRestService
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка добавления события: {ex.Message}");
+            return false;
+        }
+    }
+
+    // НОВЫЕ МЕТОДЫ ДЛЯ ОБНОВЛЕНИЯ И УДАЛЕНИЯ СОБЫТИЙ
+    public async Task<bool> UpdateEventAsync(Event eventItem)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(eventItem.Id))
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Не удалось обновить событие: отсутствует ID");
+                return false;
+            }
+
+            var json = JsonConvert.SerializeObject(eventItem);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync(
+                $"{FirebaseUrl}events/{eventItem.Id}.json",
+                content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                System.Diagnostics.Debug.WriteLine($"✅ Событие {eventItem.Id} успешно обновлено");
+                return true;
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка обновления события: {errorContent}");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка обновления события: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteEventAsync(string eventId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(eventId))
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Не удалось удалить событие: отсутствует ID");
+                return false;
+            }
+
+            var response = await _httpClient.DeleteAsync(
+                $"{FirebaseUrl}events/{eventId}.json");
+
+            if (response.IsSuccessStatusCode)
+            {
+                System.Diagnostics.Debug.WriteLine($"✅ Событие {eventId} успешно удалено");
+                return true;
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка удаления события: {errorContent}");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка удаления события: {ex.Message}");
             return false;
         }
     }

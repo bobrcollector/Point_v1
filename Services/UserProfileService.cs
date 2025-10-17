@@ -30,22 +30,36 @@ public class UserProfileService
             };
 
             var success = await _dataService.UpdateUserAsync(user);
-            
+
             if (success)
             {
                 System.Diagnostics.Debug.WriteLine($"✅ Профиль создан: {displayName} ({userId})");
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"❌ Ошибка создания профиля");
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка создания профиля для {userId}");
             }
-            
+
             return success;
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка создания профиля: {ex.Message}");
             return false;
+        }
+    }
+
+    // Добавим метод для получения профиля
+    public async Task<User> GetUserProfile(string userId)
+    {
+        try
+        {
+            return await _dataService.GetUserAsync(userId);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка получения профиля: {ex.Message}");
+            return null;
         }
     }
 }

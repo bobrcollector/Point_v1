@@ -1,25 +1,25 @@
-﻿using Point_v1.Models;
+﻿
+using Point_v1.Models;
 using Point_v1.Services;
 using Point_v1.Views;
 using System.Windows.Input;
-using CommunityToolkit.Maui; 
-
 
 namespace Point_v1.ViewModels;
 
 public class ProfileViewModel : BaseViewModel
 {
-    private readonly IAuthService _authService;
+    private readonly IAuthStateService _authStateService;
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
 
-    public ProfileViewModel(IAuthService authService, IDataService dataService, INavigationService navigationService)
+    public ProfileViewModel(IAuthStateService authStateService, IDataService dataService, INavigationService navigationService)
     {
-        _authService = authService;
+        _authStateService = authStateService;
         _dataService = dataService;
         _navigationService = navigationService;
-        _ = LoadUserData();
-        LoadAvatar(); // ДОБАВЬ ЭТУ СТРОКУ
+
+        // Подписываемся на изменение состояния аутентификации
+        _authStateService.AuthenticationStateChanged += OnAuthenticationStateChanged;
 
         // Инициализация команд
         EditProfileCommand = new Command(async () => await EditProfile());
@@ -34,10 +34,10 @@ public class ProfileViewModel : BaseViewModel
 
         // Загружаем данные пользователя
         _ = LoadUserData();
+        LoadAvatar();
     }
 
-    // ДОБАВЬ ЭТИ СВОЙСТВА В КЛАСС ProfileViewModel:
-
+    // Свойства для временных данных
     private List<Interest> _tempSelectedInterests = new();
     public List<Interest> TempSelectedInterests
     {
@@ -52,6 +52,7 @@ public class ProfileViewModel : BaseViewModel
         set => SetProperty(ref _tempAllInterests, value);
     }
 
+    // Основные свойства профиля
     private string _userName = "Пользователь";
     public string UserName
     {
@@ -115,6 +116,21 @@ public class ProfileViewModel : BaseViewModel
         set => SetProperty(ref _isGuestMode, value);
     }
 
+    // Свойства для аватара
+    private ImageSource _avatarImage = "👤";
+    public ImageSource AvatarImage
+    {
+        get => _avatarImage;
+        set => SetProperty(ref _avatarImage, value);
+    }
+
+    private string _avatarPath;
+    public string AvatarPath
+    {
+        get => _avatarPath;
+        set => SetProperty(ref _avatarPath, value);
+    }
+
     // Команды
     public ICommand EditProfileCommand { get; }
     public ICommand SaveProfileCommand { get; }
@@ -124,16 +140,46 @@ public class ProfileViewModel : BaseViewModel
     public ICommand GoToLoginCommand { get; }
     public ICommand ToggleInterestCommand { get; }
     public ICommand SaveInterestsCommand { get; }
+    public ICommand ChangeAvatarCommand { get; }
+
+    private void OnAuthenticationStateChanged(object sender, EventArgs e)
+    {
+        UpdateAuthState();
+    }
+
+    private void UpdateAuthState()
+    {
+        IsGuestMode = !_authStateService.IsAuthenticated;
+        IsAuthenticated = _authStateService.IsAuthenticated;
+
+        if (IsAuthenticated)
+        {
+            _ = LoadUserData();
+        }
+        else
+        {
+            // Сбрасываем данные при выходе
+            UserName = "Пользователь";
+            UserEmail = "";
+            DisplayName = "";
+            City = "";
+            About = "";
+            SelectedInterests = new List<Interest>();
+        }
+    }
 
     private async Task LoadUserData()
     {
-        if (_authService.IsAuthenticated)
+        if (_authStateService.IsAuthenticated)
         {
             IsAuthenticated = true;
             IsGuestMode = false;
 
+            var userId = _authStateService.CurrentUserId;
+            System.Diagnostics.Debug.WriteLine($"🔄 Загрузка профиля для пользователя: {userId}");
+
             // Загружаем данные пользователя из базы
-            var user = await _dataService.GetUserAsync(_authService.CurrentUserId);
+            var user = await _dataService.GetUserAsync(userId);
             if (user != null)
             {
                 UserName = user.DisplayName;
@@ -142,23 +188,26 @@ public class ProfileViewModel : BaseViewModel
                 City = user.City;
                 About = user.About;
 
-                // ВАЖНО: Загружаем интересы пользователя и сохраняем в SelectedInterests
+                // Загружаем интересы пользователя
                 SelectedInterests = await GetUserInterests(user.InterestIds);
                 System.Diagnostics.Debug.WriteLine($"👤 Загружено интересов пользователя: {SelectedInterests.Count}");
+                System.Diagnostics.Debug.WriteLine($"👤 Данные профиля: {user.DisplayName}, {user.Email}, {user.City}");
             }
             else
             {
                 // Если пользователь не найден в базе, используем базовые данные
                 UserName = "Пользователь";
-                UserEmail = _authService.CurrentUserId;
-                SelectedInterests = new List<Interest>(); // Инициализируем пустым списком
+                UserEmail = userId;
+                SelectedInterests = new List<Interest>();
+                System.Diagnostics.Debug.WriteLine($"❌ Профиль не найден для пользователя: {userId}");
             }
         }
         else
         {
             IsAuthenticated = false;
             IsGuestMode = true;
-            SelectedInterests = new List<Interest>(); // Инициализируем пустым списком
+            SelectedInterests = new List<Interest>();
+            System.Diagnostics.Debug.WriteLine("🔐 Пользователь не авторизован");
         }
     }
 
@@ -187,10 +236,11 @@ public class ProfileViewModel : BaseViewModel
     {
         try
         {
+            var userId = _authStateService.CurrentUserId;
             // Сохраняем данные пользователя
             var user = new User
             {
-                Id = _authService.CurrentUserId,
+                Id = userId,
                 DisplayName = DisplayName,
                 Email = UserEmail,
                 City = City,
@@ -228,8 +278,6 @@ public class ProfileViewModel : BaseViewModel
 
     private async Task Cancel()
     {
-        // ПРОСТО ВОЗВРАЩАЕМСЯ БЕЗ СОХРАНЕНИЯ
-        // Временные данные будут отброшены
         System.Diagnostics.Debug.WriteLine("❌ Отмена выбора интересов - изменения не сохранены");
         await _navigationService.GoToAsync($"../{nameof(EditProfilePage)}");
     }
@@ -268,7 +316,9 @@ public class ProfileViewModel : BaseViewModel
 
     private async Task SignOut()
     {
-        await _authService.SignOut();
+        // Нужно использовать IAuthService для выхода
+        var authService = Application.Current.Handler.MauiContext.Services.GetService<IAuthService>();
+        await authService.SignOut();
         await _navigationService.GoToLoginAsync();
     }
 
@@ -345,9 +395,9 @@ public class ProfileViewModel : BaseViewModel
     {
         try
         {
-            if (_authService.IsAuthenticated)
+            if (_authStateService.IsAuthenticated)
             {
-                var user = await _dataService.GetUserAsync(_authService.CurrentUserId);
+                var user = await _dataService.GetUserAsync(_authStateService.CurrentUserId);
                 if (user != null && user.InterestIds?.Count > 0)
                 {
                     System.Diagnostics.Debug.WriteLine($"👤 Загружаем интересы пользователя из базы: {user.InterestIds.Count} ID");
@@ -390,7 +440,6 @@ public class ProfileViewModel : BaseViewModel
         }
     }
 
-
     private async Task SaveInterests()
     {
         try
@@ -403,7 +452,7 @@ public class ProfileViewModel : BaseViewModel
             // Сохраняем ВЕСЬ профиль с обновленными интересами
             var user = new User
             {
-                Id = _authService.CurrentUserId,
+                Id = _authStateService.CurrentUserId,
                 DisplayName = DisplayName,
                 Email = UserEmail,
                 City = City,
@@ -469,31 +518,6 @@ public class ProfileViewModel : BaseViewModel
         System.Diagnostics.Debug.WriteLine($"🎯 PrepareForInterestSelection - SelectedInterests: {SelectedInterests?.Count ?? 0}, TempAllInterests: {TempAllInterests?.Count ?? 0}");
     }
 
-
-private ImageSource _avatarImage = "👤";
-public ImageSource AvatarImage
-{
-    get => _avatarImage;
-    set => SetProperty(ref _avatarImage, value);
-}
-
-public ICommand ChangeAvatarCommand { get; }
-
-    // В конструкторе добавь:
-
-
-    // УБЕРИ эту строку:
-    // using CommunityToolkit.Maui;
-
-    // И обнови метод ChangeAvatar:
-    private string _avatarPath;
-    public string AvatarPath
-    {
-        get => _avatarPath;
-        set => SetProperty(ref _avatarPath, value);
-    }
-
-    // Обнови метод ChangeAvatar:
     private async Task ChangeAvatar()
     {
         try
@@ -507,8 +531,9 @@ public ICommand ChangeAvatarCommand { get; }
 
                 if (file != null)
                 {
+                    var userId = _authStateService.CurrentUserId;
                     // СОХРАНЯЕМ ФАЙЛ ЛОКАЛЬНО
-                    var localFilePath = Path.Combine(FileSystem.CacheDirectory, $"avatar_{_authService.CurrentUserId}.jpg");
+                    var localFilePath = Path.Combine(FileSystem.CacheDirectory, $"avatar_{userId}.jpg");
 
                     using (var sourceStream = await file.OpenReadAsync())
                     using (var localStream = File.OpenWrite(localFilePath))
@@ -538,6 +563,7 @@ public ICommand ChangeAvatarCommand { get; }
             await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось выбрать фото", "OK");
         }
     }
+
     private void LoadAvatar()
     {
         try
@@ -560,6 +586,4 @@ public ICommand ChangeAvatarCommand { get; }
             AvatarImage = "👤";
         }
     }
-
-
 }

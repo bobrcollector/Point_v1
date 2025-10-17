@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿﻿using System.Text;
 using Newtonsoft.Json;
 using Point_v1.Models;
 
@@ -36,7 +36,113 @@ public class FirestoreDataService : IDataService
         return await _firebaseRest.AddEventAsync(eventItem);
     }
 
-    // УДАЛИМ заглушки и добавим реальную реализацию
+    // НОВЫЕ МЕТОДЫ ДЛЯ МОИХ СОБЫТИЙ
+    public async Task<List<Event>> GetUserEventsAsync(string userId)
+    {
+        try
+        {
+            var events = await GetEventsAsync();
+            var userEvents = events.Where(e => e.CreatorId == userId && e.IsActive).ToList();
+            System.Diagnostics.Debug.WriteLine($"📥 Загружено созданных событий пользователя: {userEvents.Count}");
+            return userEvents;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки созданных событий: {ex.Message}");
+            return new List<Event>();
+        }
+    }
+
+    public async Task<List<Event>> GetParticipatingEventsAsync(string userId)
+    {
+        try
+        {
+            var events = await GetEventsAsync();
+            var participatingEvents = events.Where(e =>
+                e.ParticipantIds.Contains(userId) &&
+                e.CreatorId != userId && // исключаем события, где пользователь создатель
+                e.IsActive &&
+                e.EventDate > DateTime.Now // только будущие события
+            ).ToList();
+
+            System.Diagnostics.Debug.WriteLine($"📥 Загружено событий для участия: {participatingEvents.Count}");
+            return participatingEvents;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки событий для участия: {ex.Message}");
+            return new List<Event>();
+        }
+    }
+
+    public async Task<List<Event>> GetArchivedEventsAsync(string userId)
+    {
+        try
+        {
+            var events = await GetEventsAsync();
+            var archivedEvents = events.Where(e =>
+                (e.CreatorId == userId || e.ParticipantIds.Contains(userId)) &&
+                (!e.IsActive || e.EventDate < DateTime.Now) // завершенные или прошедшие события
+            ).ToList();
+
+            System.Diagnostics.Debug.WriteLine($"📥 Загружено архивных событий: {archivedEvents.Count}");
+            return archivedEvents;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки архивных событий: {ex.Message}");
+            return new List<Event>();
+        }
+    }
+
+    // РЕАЛИЗАЦИЯ МЕТОДОВ УЧАСТИЯ В СОБЫТИЯХ
+    public async Task<bool> JoinEventAsync(string eventId, string userId)
+    {
+        try
+        {
+            var events = await GetEventsAsync();
+            var eventItem = events.FirstOrDefault(e => e.Id == eventId);
+
+            if (eventItem != null && !eventItem.ParticipantIds.Contains(userId))
+            {
+                eventItem.ParticipantIds.Add(userId);
+                // Обновляем событие в базе данных
+                return await _firebaseRest.UpdateEventAsync(eventItem);
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка присоединения к событию: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> LeaveEventAsync(string eventId, string userId)
+    {
+        try
+        {
+            var events = await GetEventsAsync();
+            var eventItem = events.FirstOrDefault(e => e.Id == eventId);
+
+            if (eventItem != null && eventItem.ParticipantIds.Contains(userId))
+            {
+                eventItem.ParticipantIds.Remove(userId);
+                // Обновляем событие в базе данных
+                return await _firebaseRest.UpdateEventAsync(eventItem);
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка выхода из события: {ex.Message}");
+            return false;
+        }
+    }
+
+    // СУЩЕСТВУЮЩИЕ МЕТОДЫ
     public async Task<List<Interest>> GetInterestsAsync()
     {
         return await Task.FromResult(GetDefaultInterests());
@@ -44,10 +150,32 @@ public class FirestoreDataService : IDataService
 
     public Task<bool> AddInterestAsync(Interest interest) => Task.FromResult(true);
     public Task<List<Event>> GetEventsByInterestAsync(string interestId) => Task.FromResult(new List<Event>());
-    public Task<bool> UpdateEventAsync(Event eventItem) => Task.FromResult(true);
-    public Task<bool> DeleteEventAsync(string eventId) => Task.FromResult(true);
-    public Task<bool> JoinEventAsync(string eventId, string userId) => Task.FromResult(true);
-    public Task<bool> LeaveEventAsync(string eventId, string userId) => Task.FromResult(true);
+
+    public async Task<bool> UpdateEventAsync(Event eventItem)
+    {
+        try
+        {
+            return await _firebaseRest.UpdateEventAsync(eventItem);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка обновления события: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteEventAsync(string eventId)
+    {
+        try
+        {
+            return await _firebaseRest.DeleteEventAsync(eventId);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка удаления события: {ex.Message}");
+            return false;
+        }
+    }
 
     // РЕАЛЬНАЯ РЕАЛИЗАЦИЯ для работы с пользователями
     public async Task<User> GetUserAsync(string userId)

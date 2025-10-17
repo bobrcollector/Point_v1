@@ -23,4 +23,9 @@ public interface IDataService
     // Event participation
     Task<bool> JoinEventAsync(string eventId, string userId);
     Task<bool> LeaveEventAsync(string eventId, string userId);
+
+    // мнбше лерндш дкъ лнху янашрхи
+    Task<List<Event>> GetUserEventsAsync(string userId);
+    Task<List<Event>> GetParticipatingEventsAsync(string userId);
+    Task<List<Event>> GetArchivedEventsAsync(string userId);
 }

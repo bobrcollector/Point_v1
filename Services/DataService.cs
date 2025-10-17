@@ -87,6 +87,63 @@ public class DataService : IDataService
         return true;
     }
 
+    public async Task<List<Event>> GetUserEventsAsync(string userId)
+    {
+        try
+        {
+            await Task.Delay(100);
+            var userEvents = _events.Where(e => e.CreatorId == userId && e.IsActive).ToList();
+            System.Diagnostics.Debug.WriteLine($"📥 Загружено созданных событий пользователя: {userEvents.Count}");
+            return userEvents;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки созданных событий: {ex.Message}");
+            return new List<Event>();
+        }
+    }
+
+    public async Task<List<Event>> GetParticipatingEventsAsync(string userId)
+    {
+        try
+        {
+            await Task.Delay(100);
+            var participatingEvents = _events.Where(e =>
+                e.ParticipantIds.Contains(userId) &&
+                e.CreatorId != userId && // исключаем события, где пользователь создатель
+                e.IsActive &&
+                e.EventDate > DateTime.Now // только будущие события
+            ).ToList();
+
+            System.Diagnostics.Debug.WriteLine($"📥 Загружено событий для участия: {participatingEvents.Count}");
+            return participatingEvents;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки событий для участия: {ex.Message}");
+            return new List<Event>();
+        }
+    }
+
+    public async Task<List<Event>> GetArchivedEventsAsync(string userId)
+    {
+        try
+        {
+            await Task.Delay(100);
+            var archivedEvents = _events.Where(e =>
+                (e.CreatorId == userId || e.ParticipantIds.Contains(userId)) &&
+                (!e.IsActive || e.EventDate < DateTime.Now) // завершенные или прошедшие события
+            ).ToList();
+
+            System.Diagnostics.Debug.WriteLine($"📥 Загружено архивных событий: {archivedEvents.Count}");
+            return archivedEvents;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки архивных событий: {ex.Message}");
+            return new List<Event>();
+        }
+    }
     public async Task<Event> GetEventAsync(string eventId)
     {
         try
