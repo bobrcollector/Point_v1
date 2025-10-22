@@ -1,15 +1,15 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Hosting;
 using Point_v1.Converters;
 using Point_v1.Services;
 using Point_v1.ViewModels;
 using Point_v1.Views;
 
 namespace Point_v1;
-
 public static class MauiProgram
 {
-    public static MauiApp CreateMauiApp()
+public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
         builder
@@ -42,6 +42,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<ISearchService, SearchService>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();
         builder.Services.AddSingleton<IMessagingService, MessagingService>();
+        builder.Services.AddSingleton<IMapService, MapService>();
+        builder.Services.AddSingleton<MapHtmlService>();
 
 
 
@@ -55,7 +57,7 @@ public static class MauiProgram
 
         builder.Services.AddTransient<SearchViewModel>();
         // ДОБАВЬ В CreateMauiApp():
-        builder.Services.AddSingleton<FilterStateService>(); 
+        builder.Services.AddSingleton<FilterStateService>();
         builder.Services.AddTransient<EditProfilePage>();
         // Регистрируем конвертеры (добавь эти строки)
         builder.Services.AddSingleton<InterestSelectionToColorConverter>();
@@ -88,6 +90,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<Converters.StringNotEmptyConverter>();
         builder.Services.AddSingleton<Converters.IsNotNullOrEmptyConverter>();
         builder.Services.AddSingleton<Converters.InverseBoolConverter>();
+        builder.Services.AddSingleton<BoolToColorConverter>();
+        builder.Services.AddSingleton<BoolToTextColorConverter>();
 
 
 

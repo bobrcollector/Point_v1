@@ -11,16 +11,21 @@ public class HomeViewModel : BaseViewModel
     private readonly INavigationService _navigationService;
     private readonly ISearchService _searchService;
     private readonly FilterStateService _filterStateService;
+    private readonly IMapService _mapService;
+    private readonly MapHtmlService _mapHtmlService;
 
     public HomeViewModel(IAuthStateService authStateService, IDataService dataService,
                         INavigationService navigationService, ISearchService searchService,
-                        FilterStateService filterStateService)
+                        FilterStateService filterStateService, IMapService mapService,
+                        MapHtmlService mapHtmlService)
     {
         _authStateService = authStateService;
         _dataService = dataService;
         _navigationService = navigationService;
         _searchService = searchService;
         _filterStateService = filterStateService;
+        _mapService = mapService;
+        _mapHtmlService = mapHtmlService;
 
         _authStateService.AuthenticationStateChanged += OnAuthenticationStateChanged;
 
@@ -34,6 +39,26 @@ public class HomeViewModel : BaseViewModel
         SearchCommand = new Command(async () => await PerformSearch());
         ClearSearchCommand = new Command(async () => await ClearSearch());
         ClearAllFiltersCommand = new Command(async () => await ClearAllFilters());
+
+        // ДОБАВЬ новые команды
+        SwitchToMapCommand = new Command(async () => await SwitchToMap());
+        SwitchToListCommand = new Command(() => SwitchToList());
+
+        SwitchToMapCommand = new Command(async () =>
+        {
+            System.Diagnostics.Debug.WriteLine("🎯 SwitchToMapCommand ВЫЗВАН!");
+            await SwitchToMap();
+        });
+
+        SwitchToListCommand = new Command(() =>
+        {
+            System.Diagnostics.Debug.WriteLine("🎯 SwitchToListCommand ВЫЗВАН!");
+            SwitchToList();
+        });
+
+        System.Diagnostics.Debug.WriteLine($"🎯 HomeViewModel создан: " +
+    $"MapService: {_mapService != null}, " +
+    $"MapHtmlService: {_mapHtmlService != null}");
 
         UpdateAuthState();
         LoadEventsCommand.Execute(null);
@@ -104,6 +129,23 @@ public class HomeViewModel : BaseViewModel
         set => SetProperty(ref _emptyViewMessage, value);
     }
 
+    private bool _isMapView = false;
+    public bool IsMapView
+    {
+        get => _isMapView;
+        set => SetProperty(ref _isMapView, value);
+    }
+
+    public bool IsListView => !IsMapView;
+
+    private string _mapHtmlContent;
+    public string MapHtmlContent
+    {
+        get => _mapHtmlContent;
+        set => SetProperty(ref _mapHtmlContent, value);
+    }
+
+
     // КОМАНДЫ
     public ICommand GoToLoginCommand { get; }
     public ICommand CreateEventCommand { get; }
@@ -114,6 +156,64 @@ public class HomeViewModel : BaseViewModel
     public ICommand SearchCommand { get; }
     public ICommand ClearSearchCommand { get; }
     public ICommand ClearAllFiltersCommand { get; }
+    public ICommand SwitchToMapCommand { get; }
+    public ICommand SwitchToListCommand { get; }
+
+
+    private async Task SwitchToMap()
+    {
+        System.Diagnostics.Debug.WriteLine("🎯 SwitchToMap начат");
+        IsMapView = true;
+
+        // Принудительно обновляем свойства
+        OnPropertyChanged(nameof(IsListView));
+        OnPropertyChanged(nameof(IsMapView));
+
+        await LoadMapEvents();
+        System.Diagnostics.Debug.WriteLine("🎯 SwitchToMap завершен");
+    }
+
+    private void SwitchToList()
+    {
+        System.Diagnostics.Debug.WriteLine("🎯 SwitchToList начат");
+        IsMapView = false;
+
+        // Принудительно обновляем свойства
+        OnPropertyChanged(nameof(IsListView));
+        OnPropertyChanged(nameof(IsMapView));
+
+        System.Diagnostics.Debug.WriteLine("🎯 SwitchToList завершен");
+    }
+    private async Task LoadMapEvents()
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("🗺️ LoadMapEvents начат");
+            IsLoading = true;
+
+            var location = await _mapService.GetCurrentLocationAsync();
+            System.Diagnostics.Debug.WriteLine($"📍 Получена локация: {location.Latitude}, {location.Longitude}");
+
+            var mapEvents = await _mapService.GetEventsNearbyAsync(location);
+            System.Diagnostics.Debug.WriteLine($"🎯 Найдено событий для карты: {mapEvents?.Count ?? 0}");
+
+            // Генерируем HTML с картой
+            MapHtmlContent = _mapHtmlService.GenerateMapHtml(mapEvents, location.Latitude, location.Longitude);
+            System.Diagnostics.Debug.WriteLine($"🗺️ HTML карты сгенерирован, длина: {MapHtmlContent?.Length ?? 0}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки событий на карту: {ex.Message}");
+            // Генерируем карту по умолчанию
+            MapHtmlContent = _mapHtmlService.GenerateMapHtml(new List<MapEvent>());
+        }
+        finally
+        {
+            IsLoading = false;
+            System.Diagnostics.Debug.WriteLine("🗺️ LoadMapEvents завершен");
+        }
+    }
+
 
     public override void OnPropertyChanged(string propertyName = null)
     {
@@ -197,26 +297,28 @@ public class HomeViewModel : BaseViewModel
         {
             IsLoading = true;
 
-            // есть ли активные филтры
-            if (_filterStateService.HasActiveFilters)
+            if (IsMapView)
             {
-                System.Diagnostics.Debug.WriteLine("🎯 Применяем сохраненные фильтры");
-
-                // применяем фильтры через SearchService
-                var filteredEvents = await _searchService.SearchEventsAsync(
-                    _filterStateService.SearchText,
-                    _filterStateService.SelectedCategory,
-                    _filterStateService.SelectedDate
-                );
-
-                Events = filteredEvents;
-                SearchQuery = _filterStateService.SearchText;
+                await LoadMapEvents();
             }
             else
             {
-                // Загружаем все события
-                var events = await _dataService.GetEventsAsync();
-                Events = events ?? new List<Event>();
+                // существующая логика для списка
+                if (_filterStateService.HasActiveFilters)
+                {
+                    var filteredEvents = await _searchService.SearchEventsAsync(
+                        _filterStateService.SearchText,
+                        _filterStateService.SelectedCategory,
+                        _filterStateService.SelectedDate
+                    );
+                    Events = filteredEvents;
+                    SearchQuery = _filterStateService.SearchText;
+                }
+                else
+                {
+                    var events = await _dataService.GetEventsAsync();
+                    Events = events ?? new List<Event>();
+                }
             }
 
             UpdateEmptyView();
@@ -233,6 +335,7 @@ public class HomeViewModel : BaseViewModel
             IsLoading = false;
         }
     }
+
 
     private async Task PerformSearch()
     {
