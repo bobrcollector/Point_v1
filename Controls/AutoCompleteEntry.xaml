@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentView x:Class="Point_v1.Controls.AutoCompleteEntry"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Grid RowDefinitions="Auto,Auto">
+        <!-- Поле ввода -->
+        <Entry x:Name="MainEntry"
+               Grid.Row="0"
+               Text="{Binding Text, Source={RelativeSource AncestorType={x:Type controls:AutoCompleteEntry}}}"
+               Placeholder="{Binding Placeholder, Source={RelativeSource AncestorType={x:Type controls:AutoCompleteEntry}}}"
+               BackgroundColor="{Binding BackgroundColor, Source={RelativeSource AncestorType={x:Type controls:AutoCompleteEntry}}}"
+               TextColor="{Binding TextColor, Source={RelativeSource AncestorType={x:Type controls:AutoCompleteEntry}}}"
+               HeightRequest="50"
+               Completed="OnEntryCompleted"
+               TextChanged="OnTextChanged"/>
+
+        <!-- Выпадающий список подсказок -->
+        <CollectionView x:Name="SuggestionsList"
+                        Grid.Row="1"
+                        IsVisible="False"
+                        BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
+                        MaximumHeightRequest="200"
+                        SelectionMode="Single"
+                        SelectionChanged="OnSuggestionSelected">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="15,10">
+                        <Label Text="{Binding .}"
+                               FontSize="14"
+                               TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                               LineBreakMode="TailTruncation"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentView>

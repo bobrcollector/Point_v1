@@ -113,14 +113,100 @@
                 <!-- Местоположение -->
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Местоположение *" 
-                           FontSize="14" 
-                           FontAttributes="Bold"
-                           TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
-                    <Entry Placeholder="Например: кафе 'Сталинка', ул. Ленина, 777" 
-                           Text="{Binding Address}"
-                           BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
-                           TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                           HeightRequest="50"/>
+           FontSize="14" 
+           FontAttributes="Bold"
+           TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+
+                    <!-- Поле ввода адреса -->
+                    <Entry Placeholder="Введите адрес или название места..." 
+           Text="{Binding Address}"
+           BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
+           TextColor="{AppThemeBinding Light=Black, Dark=White}"
+           HeightRequest="50"
+           x:Name="AddressEntry"/>
+
+                    <!-- Выпадающий список подсказок -->
+                    <Frame IsVisible="{Binding AddressSuggestions.Count, Converter={converters:IsNotNullOrEmptyConverter}}"
+           BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
+           BorderColor="{AppThemeBinding Light=#E0E0E0, Dark=#444}"
+           Padding="0"
+           CornerRadius="5"
+           HasShadow="True">
+
+                        <CollectionView HeightRequest="150"
+                        SelectionMode="Single"
+                        ItemsSource="{Binding AddressSuggestions}"
+                        SelectedItem="{Binding SelectedSuggestion}">
+
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Padding="15,12" HeightRequest="44">
+                                        <Label Text="{Binding .}"
+                               FontSize="14"
+                               TextColor="{AppThemeBinding Light=#333, Dark=White}"
+                               LineBreakMode="TailTruncation"
+                               VerticalOptions="Center"/>
+
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor" Value="Transparent"/>
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Selected">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor" Value="#DFD8F7"/>
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateManager.VisualStateGroups>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Frame>
+
+                    <!-- Статус выбора -->
+                    <Label Text="{Binding SelectionStatus}"
+           IsVisible="{Binding SelectionStatus, Converter={converters:IsNotNullOrEmptyConverter}}"
+           FontSize="12"
+           TextColor="#512BD4"
+           FontAttributes="Bold"
+           HorizontalOptions="Center"/>
+
+                    <!-- Кнопки для работы с адресом -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,10,0,0">
+                        <Button Grid.Column="0"
+                Text="🎯 Мое местоположение"
+                Command="{Binding GetCurrentLocationCommand}"
+                BackgroundColor="#DFD8F7"
+                TextColor="#512BD4"
+                FontSize="12"
+                FontAttributes="Bold"
+                HeightRequest="40"
+                CornerRadius="20"/>
+
+                        <Button Grid.Column="1"
+                Text="📌 На карте"
+                Command="{Binding OpenMapSearchCommand}"
+                BackgroundColor="#E3F2FD"
+                TextColor="#1976D2"
+                FontSize="12"
+                FontAttributes="Bold"
+                HeightRequest="40"
+                CornerRadius="20"/>
+                    </Grid>
+
+                    <!-- Подсказка -->
+                    <Label Text="Начните вводить адрес (минимум 2 символа)"
+           FontSize="11"
+           TextColor="Gray"
+           HorizontalOptions="Center"/>
+
+                    <!-- Скрытые поля для координат -->
+                    <Entry Text="{Binding Latitude}" IsVisible="False"/>
+                    <Entry Text="{Binding Longitude}" IsVisible="False"/>
                 </VerticalStackLayout>
 
                 <!-- Максимум участников -->
