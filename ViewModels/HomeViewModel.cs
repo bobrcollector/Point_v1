@@ -40,9 +40,6 @@ public class HomeViewModel : BaseViewModel
         ClearSearchCommand = new Command(async () => await ClearSearch());
         ClearAllFiltersCommand = new Command(async () => await ClearAllFilters());
 
-        // ДОБАВЬ новые команды
-        SwitchToMapCommand = new Command(async () => await SwitchToMap());
-        SwitchToListCommand = new Command(() => SwitchToList());
 
         SwitchToMapCommand = new Command(async () =>
         {
@@ -184,7 +181,7 @@ public class HomeViewModel : BaseViewModel
 
         System.Diagnostics.Debug.WriteLine("🎯 SwitchToList завершен");
     }
-    private async Task LoadMapEvents()
+    public async Task LoadMapEvents()
     {
         try
         {
@@ -303,7 +300,8 @@ public class HomeViewModel : BaseViewModel
             }
             else
             {
-                // существующая логика для списка
+                List<Event> events;
+
                 if (_filterStateService.HasActiveFilters)
                 {
                     var filteredEvents = await _searchService.SearchEventsAsync(
@@ -311,13 +309,22 @@ public class HomeViewModel : BaseViewModel
                         _filterStateService.SelectedCategory,
                         _filterStateService.SelectedDate
                     );
-                    Events = filteredEvents;
+                    events = filteredEvents;
                     SearchQuery = _filterStateService.SearchText;
                 }
                 else
                 {
-                    var events = await _dataService.GetEventsAsync();
-                    Events = events ?? new List<Event>();
+                    events = await _dataService.GetEventsAsync();
+                }
+
+                // ФИЛЬТРАЦИЯ: убираем прошедшие события
+                if (events != null)
+                {
+                    Events = events.Where(e => e.EventDate > DateTime.Now).ToList();
+                }
+                else
+                {
+                    Events = new List<Event>();
                 }
             }
 
@@ -335,7 +342,6 @@ public class HomeViewModel : BaseViewModel
             IsLoading = false;
         }
     }
-
 
     private async Task PerformSearch()
     {

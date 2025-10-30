@@ -31,11 +31,14 @@ public class FirestoreDataService : IDataService
         if (string.IsNullOrEmpty(eventItem.CreatorId) && _authService.IsAuthenticated)
         {
             eventItem.CreatorId = _authService.CurrentUserId;
+
+            // ИСПРАВЛЕНИЕ: получаем пользователя по ID
+            var currentUser = await GetUserAsync(_authService.CurrentUserId);
+            eventItem.CreatorName = currentUser?.DisplayName ?? "Организатор";
         }
 
         return await _firebaseRest.AddEventAsync(eventItem);
     }
-
     // НОВЫЕ МЕТОДЫ ДЛЯ МОИХ СОБЫТИЙ
     public async Task<List<Event>> GetUserEventsAsync(string userId)
     {

@@ -20,14 +20,28 @@ public class Event
     // Вычисляемые свойства
     public int ParticipantsCount => ParticipantIds?.Count ?? 0;
     public bool HasFreeSpots => ParticipantsCount < MaxParticipants;
-    public string DateDisplay => EventDate.ToString("dd.MM.yyyy HH:mm");
-    public string ShortDescription => Description?.Length > 100
-        ? Description.Substring(0, 100) + "..."
-        : Description;
+    public string DateDisplay
+    {
+        get
+        {
+            var culture = new System.Globalization.CultureInfo("ru-RU");
+            return EventDate.ToString("dd MMMM HH:mm", culture);
+        }
+    }
+    public string ShortDescription => string.IsNullOrEmpty(Description)
+        ? "Описание отсутствует"
+        : (Description.Length > 100 ? Description.Substring(0, 100) + "..." : Description);
 
-    // Новые свойства для деталей
-    public string DetailedDateDisplay => EventDate.ToString("dd MMMM yyyy 'в' HH:mm");
+    // Новые свойства для деталей с проверками
+    public string DetailedDateDisplay
+    {
+        get
+        {
+            var culture = new System.Globalization.CultureInfo("ru-RU");
+            return EventDate.ToString("dd MMMM yyyy 'в' HH:mm", culture);
+        }
+    }
     public string ParticipantsDisplay => $"{ParticipantsCount} из {MaxParticipants}";
-    public double ParticipationProgress => (double)ParticipantsCount / MaxParticipants;
+    public double ParticipationProgress => MaxParticipants > 0 ? (double)ParticipantsCount / MaxParticipants : 0;
     public bool IsFull => ParticipantsCount >= MaxParticipants;
 }

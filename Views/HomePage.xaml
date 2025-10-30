@@ -260,18 +260,19 @@
 
                 <!-- WebView с Яндекс Картами -->
                 <WebView x:Name="MapWebView"
-                         IsVisible="{Binding IsMapView}"
-                         Navigating="OnMapNavigating"
-                         VerticalOptions="Fill"
-                         HorizontalOptions="Fill"/>
+                 IsVisible="{Binding IsMapView}"
+                 Navigating="OnMapNavigating"
+                 Navigated="OnMapNavigated"
+                 VerticalOptions="Fill"
+                 HorizontalOptions="Fill"/> 
 
                 <!-- Индикатор загрузки для карты -->
                 <ActivityIndicator IsVisible="{Binding IsLoading}"
-                                   IsRunning="{Binding IsLoading}"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center"
-                                   Color="#512BD4"
-                                   Scale="2.0"/>
+                       IsRunning="{Binding IsLoading}"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       Color="#512BD4"
+                       Scale="2.0"/>
             </Grid>
         </Grid>
 

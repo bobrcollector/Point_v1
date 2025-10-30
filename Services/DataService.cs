@@ -192,13 +192,14 @@ public class DataService : IDataService
 
             eventItem.Id = Guid.NewGuid().ToString();
             eventItem.CreatorId = _authStateService.CurrentUserId;
-            eventItem.CreatorName = "тестовый организатор";
+
+            // ИСПРАВЛЕНИЕ: получаем пользователя по ID
+            var currentUser = await GetUserAsync(_authStateService.CurrentUserId);
+            eventItem.CreatorName = currentUser?.DisplayName ?? "Организатор";
+
             eventItem.ParticipantIds = new List<string> { _authStateService.CurrentUserId };
 
             _events.Add(eventItem);
-
-            //System.Diagnostics.Debug.WriteLine($"✅ Событие создано: {eventItem.Title}");
-            //System.Diagnostics.Debug.WriteLine($"📊 Всего событий: {_events.Count}");
 
             System.Diagnostics.Debug.WriteLine($"событие сохранилось в бд!!!: {eventItem.Title}");
             System.Diagnostics.Debug.WriteLine($"айди: {eventItem.Id}");
@@ -208,7 +209,7 @@ public class DataService : IDataService
         }
         catch (Exception ex)
         {
-            //System.Diagnostics.Debug.WriteLine($"❌ Ошибка добавления события: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка добавления события: {ex.Message}");
             return false;
         }
     }

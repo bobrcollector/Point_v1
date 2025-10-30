@@ -102,22 +102,23 @@
 
                                 <Grid ColumnDefinitions="Auto,*,Auto">
                                     <Label Grid.Column="0" 
-                                           Text="👥" 
-                                           FontSize="16"
-                                           VerticalOptions="Center"/>
-                                    <Label Grid.Column="1" 
-                                           Text="{Binding Event.ParticipantsDisplay}" 
-                                           FontSize="16"
-                                           TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                                           Margin="10,0,0,0"/>
+                                       Text="👥" 
+                                       FontSize="16"
+                                       VerticalOptions="Center"/>
+                                     <Label Grid.Column="1" 
+                                       Text="{Binding Event.ParticipantsDisplay}" 
+                                       FontSize="16"
+                                       TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                       Margin="10,0,0,0"/>
 
-                                    <Label Grid.Column="2" 
-                                           Text="{Binding IsParticipating, Converter={converters:InverseBoolConverter}, ConverterParameter='Вы участвуете'}"
-                                           FontSize="14"
-                                           TextColor="#512BD4"
-                                           FontAttributes="Bold"
-                                           IsVisible="{Binding IsAuthenticated}"/>
-                                </Grid>
+                                                               
+                                     <Label Grid.Column="2" 
+                                       Text="Вы участвуете"
+                                       FontSize="14"
+                                       TextColor="#512BD4"
+                                       FontAttributes="Bold"
+                                       IsVisible="{Binding IsParticipating}"/>
+                                 </Grid>
                             </VerticalStackLayout>
 
 
@@ -249,7 +250,7 @@
                         FontAttributes="Bold"
                         HeightRequest="50"
                         CornerRadius="10"
-                        IsVisible="{Binding IsAuthenticated}"/>
+                        IsVisible="{Binding CanParticipate}"/>
 
                 <Button Grid.Column="1" 
                         Text="💬 Чат"

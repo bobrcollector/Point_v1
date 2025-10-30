@@ -325,7 +325,7 @@ public class CreateEventViewModel : BaseViewModel
                 Longitude = Longitude,
                 MaxParticipants = MaxParticipants,
                 CreatorId = _authStateService.CurrentUserId,
-                CreatorName = "Тестовый Организатор"
+                CreatorName = await GetCurrentUserNameAsync()
             };
 
             System.Diagnostics.Debug.WriteLine($"🎯 Создается событие с координатами: {Latitude}, {Longitude}");
@@ -350,6 +350,20 @@ public class CreateEventViewModel : BaseViewModel
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task<string> GetCurrentUserNameAsync()
+    {
+        try
+        {
+            var user = await _dataService.GetUserAsync(_authStateService.CurrentUserId);
+            return user?.DisplayName ?? "Организатор";
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка получения имени пользователя: {ex.Message}");
+            return "Организатор";
         }
     }
 

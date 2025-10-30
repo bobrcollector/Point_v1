@@ -14,7 +14,8 @@ public class MapHtmlService
 <head>
     <meta charset='utf-8'>
     <title>Карта событий</title>
-    <script src='https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=3550421c-56bd-406c-bbb1-1eda751ee0f0' type='text/javascript'></script>
+    <!-- ЗАМЕНИ API КЛЮЧ НА ТВОЙ НОВЫЙ -->
+    <script src='https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=1a0b162d-9aa4-4d51-8441-151469a3c82a' type='text/javascript'></script>
     <style>
         body, html, #map {{
             width: 100%; 
@@ -22,6 +23,37 @@ public class MapHtmlService
             padding: 0; 
             margin: 0;
             font-family: Arial, sans-serif;
+        }}
+        .event-info {{
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            max-width: 300px;
+        }}
+        .event-title {{
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #512BD4;
+        }}
+        .event-details {{
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }}
+        .event-button {{
+            background: #512BD4;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+        }}
+        .event-button:hover {{
+            background: #3a1d9c;
         }}
     </style>
 </head>
@@ -32,6 +64,7 @@ public class MapHtmlService
         ymaps.ready(init);
         
         var events = {eventsJson};
+        var selectedEventId = '';
         
         function init() {{
             var map = new ymaps.Map('map', {{
@@ -47,20 +80,51 @@ public class MapHtmlService
                         event.Latitude, 
                         event.Longitude
                     ], {{
-                        balloonContentHeader: event.Title,
-                        balloonContentBody: event.Description + '<br><br>' +
-                                          '📅 ' + event.DateDisplay + '<br>' +
-                                          '📍 ' + event.Address + '<br>' +
-                                          '🎯 ' + event.ParticipantsCount + ' участников',
-                        balloonContentFooter: 'Категория: ' + event.CategoryId
+                        balloonContentHeader: '<div class=""event-title"">' + event.Title + '</div>',
+                        balloonContentBody: 
+                            '<div class=""event-details"">' +
+                            '📅 ' + event.DateDisplay + '<br>' +
+                            '📍 ' + event.Address + '<br>' +
+                            '🎯 ' + event.ParticipantsCount + ' участников<br>' +
+                            '🏷️ ' + event.CategoryId +
+                            '</div>' +
+                            '<button class=""event-button"" onclick=""openEventDetails(\'' + event.EventId + '\')"">Перейти к событию</button>',
+                        balloonContentFooter: ''
                     }}, {{
-                        preset: 'islands#violetIcon'
+                        preset: 'islands#violetIcon',
+                        balloonCloseButton: true,
+                        hideIconOnBalloonOpen: false
+                    }});
+                    
+                    // Обработчик клика по метке
+                    placemark.events.add('click', function (e) {{
+                        selectedEventId = event.EventId;
+                        console.log('🎯 Клик по событию: ' + event.EventId);
                     }});
                     
                     map.geoObjects.add(placemark);
                 }}
             }});
         }}
+        
+        // Функция для открытия деталей события
+        function openEventDetails(eventId) {{
+            console.log('🚀 Переход к событию: ' + eventId);
+            // Отправляем сообщение в C# код
+            if (window.chrome && window.chrome.webview) {{
+                window.chrome.webview.postMessage(eventId);
+            }} else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webviewHandler) {{
+                window.webkit.messageHandlers.webviewHandler.postMessage(eventId);
+            }} else {{
+                // Fallback для других платформ
+                window.location = 'pointapp://event/' + eventId;
+            }}
+        }}
+        
+        // Глобальная функция для C# вызовов
+        window.getSelectedEventId = function() {{
+            return selectedEventId;
+        }};
     </script>
 </body>
 </html>";

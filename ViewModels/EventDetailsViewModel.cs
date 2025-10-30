@@ -15,12 +15,16 @@ public class EventDetailsViewModel : BaseViewModel
         _dataService = dataService;
         _authStateService = authStateService;
 
+        // Проверяем инициализацию сервисов
+        System.Diagnostics.Debug.WriteLine($"✅ EventDetailsViewModel создан");
+        System.Diagnostics.Debug.WriteLine($"✅ DataService: {_dataService != null}");
+        System.Diagnostics.Debug.WriteLine($"✅ AuthStateService: {_authStateService != null}");
+        System.Diagnostics.Debug.WriteLine($"✅ IsAuthenticated: {IsAuthenticated}");
+
         ToggleParticipationCommand = new Command(async () => await ToggleParticipation());
         GoBackCommand = new Command(async () => await GoToHome());
         GoToLoginCommand = new Command(async () => await GoToLogin());
         OpenChatCommand = new Command(async () => await OpenChat());
-
-        System.Diagnostics.Debug.WriteLine("✅ EventDetailsViewModel создан");
     }
 
     public string EventId
@@ -45,8 +49,15 @@ public class EventDetailsViewModel : BaseViewModel
         {
             SetProperty(ref _event, value);
             System.Diagnostics.Debug.WriteLine($"📦 Event установлен: {value?.Title ?? "null"}");
+
+            // Обновляем состояние при изменении события
+            if (value != null)
+            {
+                UpdateParticipationState();
+            }
         }
     }
+
 
     private bool _isParticipating;
     public bool IsParticipating
@@ -88,6 +99,16 @@ public class EventDetailsViewModel : BaseViewModel
     public ICommand GoToLoginCommand { get; }
     public ICommand OpenChatCommand { get; }
 
+
+
+    private bool _isCreator;
+    public bool IsCreator
+    {
+        get => _isCreator;
+        set => SetProperty(ref _isCreator, value);
+    }
+
+    public bool CanParticipate => IsAuthenticated && !IsCreator && (Event?.IsFull == false);
     private async Task GoToHome()
     {
         System.Diagnostics.Debug.WriteLine("🔙 Выполняется команда Назад (на главную)");
@@ -129,20 +150,29 @@ public class EventDetailsViewModel : BaseViewModel
             {
                 System.Diagnostics.Debug.WriteLine($"❌ Событие {_eventId} не найдено в DataService");
                 await Application.Current.MainPage.DisplayAlert("Ошибка", "Событие не найдено", "OK");
+                await GoToHome(); // Возвращаем на главную если событие не найдено
                 return;
             }
+
+            // ОТЛАДОЧНАЯ ИНФОРМАЦИЯ
+            System.Diagnostics.Debug.WriteLine($"✅ Событие загружено: {eventItem.Title}");
+            System.Diagnostics.Debug.WriteLine($"👤 CreatorId: {eventItem.CreatorId}");
+            System.Diagnostics.Debug.WriteLine($"👤 CreatorName: {eventItem.CreatorName}");
+            System.Diagnostics.Debug.WriteLine($"📅 EventDate: {eventItem.EventDate}");
+            System.Diagnostics.Debug.WriteLine($"📍 Address: {eventItem.Address ?? "NULL"}");
+            System.Diagnostics.Debug.WriteLine($"📝 Description: {eventItem.Description ?? "NULL"}");
+            System.Diagnostics.Debug.WriteLine($"👥 Participants: {eventItem.ParticipantIds?.Count ?? 0}");
 
             Event = eventItem;
             UpdateParticipationState();
 
-            System.Diagnostics.Debug.WriteLine($"✅ Событие загружено: {Event.Title}");
-            System.Diagnostics.Debug.WriteLine($"📝 Описание: {Event.Description ?? "NULL"}");
-            System.Diagnostics.Debug.WriteLine($"📍 Адрес: {Event.Address ?? "NULL"}");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки события: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
             await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось загрузить событие", "OK");
+            await GoToHome();
         }
         finally
         {
@@ -152,14 +182,28 @@ public class EventDetailsViewModel : BaseViewModel
 
     private void UpdateParticipationState()
     {
-        if (Event == null || !IsAuthenticated)
+        if (Event == null || !IsAuthenticated || string.IsNullOrEmpty(_authStateService.CurrentUserId))
         {
             IsParticipating = false;
+            IsCreator = false;
             return;
         }
 
-        IsParticipating = Event.ParticipantIds?.Contains(_authStateService.CurrentUserId) == true;
-        System.Diagnostics.Debug.WriteLine($"🎯 Статус участия: {IsParticipating}");
+        try
+        {
+            IsParticipating = Event.ParticipantIds?.Contains(_authStateService.CurrentUserId) == true;
+            IsCreator = Event.CreatorId == _authStateService.CurrentUserId;
+
+            System.Diagnostics.Debug.WriteLine($"🎯 Статус участия: {IsParticipating}, Организатор: {IsCreator}");
+            System.Diagnostics.Debug.WriteLine($"🎯 CurrentUserId: {_authStateService.CurrentUserId}");
+            System.Diagnostics.Debug.WriteLine($"🎯 Event.CreatorId: {Event.CreatorId}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка в UpdateParticipationState: {ex.Message}");
+            IsParticipating = false;
+            IsCreator = false;
+        }
     }
 
     private void UpdateParticipationButton()
@@ -225,6 +269,7 @@ public class EventDetailsViewModel : BaseViewModel
 
             if (success)
             {
+                // Перезагружаем данные события
                 await LoadEventDetails();
             }
             else
@@ -235,6 +280,7 @@ public class EventDetailsViewModel : BaseViewModel
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка участия: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
             await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось изменить участие", "OK");
         }
     }
