@@ -221,50 +221,47 @@
             </VerticalStackLayout>
         </ScrollView>
 
+
         <!-- Кнопки -->
         <Frame Grid.Row="2"
-               BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
-               Padding="20,15"
-               CornerRadius="0"
-               HasShadow="True">
+       BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+       Padding="20,15"
+       CornerRadius="0"
+       HasShadow="True">
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
-                <Button Grid.Column="0" 
-                        Grid.ColumnSpan="2"
-                        Text="Войдите, чтобы участвовать"
-                        Command="{Binding GoToLoginCommand}"
-                        BackgroundColor="#512BD4"
-                        TextColor="White"
-                        FontSize="16"
-                        FontAttributes="Bold"
-                        HeightRequest="50"
-                        CornerRadius="10"
-                        IsVisible="{Binding IsGuestMode}"/>
+            <Grid ColumnDefinitions="*">
+                <!-- УБИРАЕМ второй столбец -->
+                <!-- Кнопка для гостей -->
+                <Button Text="Войдите, чтобы участвовать"
+                Command="{Binding GoToLoginCommand}"
+                BackgroundColor="#512BD4"
+                TextColor="White"
+                FontSize="16"
+                FontAttributes="Bold"
+                HeightRequest="50"
+                CornerRadius="10"
+                IsVisible="{Binding IsGuestMode}"/>
 
-                <Button Grid.Column="0" 
-                        Text="{Binding ParticipationButtonText}"
-                        Command="{Binding ToggleParticipationCommand}"
-                        BackgroundColor="{Binding ParticipationButtonColor}"
-                        TextColor="White"
-                        FontSize="16"
-                        FontAttributes="Bold"
-                        HeightRequest="50"
-                        CornerRadius="10"
-                        IsVisible="{Binding CanParticipate}"/>
+                <!-- Кнопка участия для авторизованных пользователей (НЕ организаторов) -->
+                <Button Text="{Binding ParticipationButtonText}"
+                Command="{Binding ToggleParticipationCommand}"
+                BackgroundColor="{Binding ParticipationButtonColor}"
+                TextColor="White"
+                FontSize="16"
+                FontAttributes="Bold"
+                HeightRequest="50"
+                CornerRadius="10"
+                IsVisible="{Binding CanParticipate}"/>
 
-                <Button Grid.Column="1" 
-                        Text="💬 Чат"
-                        Command="{Binding OpenChatCommand}"
-                        BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#444444}"
-                        TextColor="{AppThemeBinding Light=#333333, Dark=White}"
-                        FontSize="16"
-                        HeightRequest="50"
-                        CornerRadius="10"
-                        IsVisible="{Binding IsAuthenticated}"/>
-
+                <!-- Сообщение для организатора -->
+                <Label Text="Вы организатор этого события"
+               FontSize="16"
+               TextColor="Gray"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               IsVisible="{Binding IsCreator}"/>
             </Grid>
         </Frame>
-
         <!-- Загрузка -->
         <ActivityIndicator Grid.Row="1"
                          IsVisible="{Binding IsLoading}"

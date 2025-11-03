@@ -52,7 +52,6 @@ public class MapService : IMapService
 
     public async Task<List<MapEvent>> GetEventsNearbyAsync(Location center, double radiusKm = 5)
     {
-        // Этот метод НЕ требует WaitForRateLimit, так как работает с локальной БД
         try
         {
             var events = await _dataService.GetEventsAsync();
@@ -62,6 +61,10 @@ public class MapService : IMapService
 
             foreach (var eventItem in events)
             {
+                // ФИЛЬТРАЦИЯ: добавляем только будущие события
+                if (eventItem.EventDate <= DateTime.Now)
+                    continue;
+
                 if (eventItem.Latitude.HasValue && eventItem.Longitude.HasValue)
                 {
                     var mapEvent = new MapEvent

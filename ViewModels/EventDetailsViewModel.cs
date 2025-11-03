@@ -27,6 +27,7 @@ public class EventDetailsViewModel : BaseViewModel
         OpenChatCommand = new Command(async () => await OpenChat());
     }
 
+
     public string EventId
     {
         get => _eventId;
@@ -55,6 +56,9 @@ public class EventDetailsViewModel : BaseViewModel
             {
                 UpdateParticipationState();
             }
+
+            // ДОБАВЛЯЕМ ОБНОВЛЕНИЕ CanParticipate
+            OnPropertyChanged(nameof(CanParticipate));
         }
     }
 
@@ -67,8 +71,10 @@ public class EventDetailsViewModel : BaseViewModel
         {
             SetProperty(ref _isParticipating, value);
             UpdateParticipationButton();
+            OnPropertyChanged(nameof(CanParticipate));
         }
     }
+
 
     private string _participationButtonText = "Я пойду!";
     public string ParticipationButtonText
@@ -105,10 +111,31 @@ public class EventDetailsViewModel : BaseViewModel
     public bool IsCreator
     {
         get => _isCreator;
-        set => SetProperty(ref _isCreator, value);
+        set
+        {
+            SetProperty(ref _isCreator, value);
+            OnPropertyChanged(nameof(CanParticipate));
+        }
+    }
+    public bool CanParticipate
+    {
+        get
+        {
+            var canParticipate = IsAuthenticated &&
+                               !IsCreator &&
+                               Event != null &&
+                               !Event.IsFull &&
+                               Event.EventDate > DateTime.Now;
+
+            System.Diagnostics.Debug.WriteLine($"🎯 CanParticipate вычислено: {canParticipate} " +
+                                             $"(Auth: {IsAuthenticated}, Creator: {IsCreator}, " +
+                                             $"Event: {Event != null}, Full: {Event?.IsFull}, " +
+                                             $"Future: {Event?.EventDate > DateTime.Now})");
+
+            return canParticipate;
+        }
     }
 
-    public bool CanParticipate => IsAuthenticated && !IsCreator && (Event?.IsFull == false);
     private async Task GoToHome()
     {
         System.Diagnostics.Debug.WriteLine("🔙 Выполняется команда Назад (на главную)");
@@ -197,6 +224,9 @@ public class EventDetailsViewModel : BaseViewModel
             System.Diagnostics.Debug.WriteLine($"🎯 Статус участия: {IsParticipating}, Организатор: {IsCreator}");
             System.Diagnostics.Debug.WriteLine($"🎯 CurrentUserId: {_authStateService.CurrentUserId}");
             System.Diagnostics.Debug.WriteLine($"🎯 Event.CreatorId: {Event.CreatorId}");
+
+            // ДОБАВЛЯЕМ ОБНОВЛЕНИЕ CanParticipate
+            OnPropertyChanged(nameof(CanParticipate));
         }
         catch (Exception ex)
         {
@@ -228,6 +258,13 @@ public class EventDetailsViewModel : BaseViewModel
         if (!IsAuthenticated)
         {
             await Application.Current.MainPage.DisplayAlert("Требуется вход", "Войдите, чтобы участвовать в событиях", "OK");
+            return;
+        }
+
+        // ДОБАВЛЯЕМ ПРОВЕРКУ НА ПРОШЕДШИЕ СОБЫТИЯ
+        if (Event?.EventDate <= DateTime.Now)
+        {
+            await Application.Current.MainPage.DisplayAlert("Событие завершено", "Нельзя участвовать в прошедших событиях", "OK");
             return;
         }
 
