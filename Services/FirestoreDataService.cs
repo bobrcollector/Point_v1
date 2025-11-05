@@ -1,4 +1,4 @@
-﻿﻿using System.Text;
+﻿using System.Text;
 using Newtonsoft.Json;
 using Point_v1.Models;
 
@@ -39,6 +39,7 @@ public class FirestoreDataService : IDataService
 
         return await _firebaseRest.AddEventAsync(eventItem);
     }
+
     // НОВЫЕ МЕТОДЫ ДЛЯ МОИХ СОБЫТИЙ
     public async Task<List<Event>> GetUserEventsAsync(string userId)
     {
@@ -109,7 +110,7 @@ public class FirestoreDataService : IDataService
             if (eventItem != null && !eventItem.ParticipantIds.Contains(userId))
             {
                 eventItem.ParticipantIds.Add(userId);
-                // Обновляем событие в базе данных
+                // Обновляем событие в базе данных через FirebaseRestService
                 return await _firebaseRest.UpdateEventAsync(eventItem);
             }
 
@@ -132,7 +133,7 @@ public class FirestoreDataService : IDataService
             if (eventItem != null && eventItem.ParticipantIds.Contains(userId))
             {
                 eventItem.ParticipantIds.Remove(userId);
-                // Обновляем событие в базе данных
+                // Обновляем событие в базе данных через FirebaseRestService
                 return await _firebaseRest.UpdateEventAsync(eventItem);
             }
 
@@ -145,19 +146,12 @@ public class FirestoreDataService : IDataService
         }
     }
 
-    // СУЩЕСТВУЮЩИЕ МЕТОДЫ
-    public async Task<List<Interest>> GetInterestsAsync()
-    {
-        return await Task.FromResult(GetDefaultInterests());
-    }
-
-    public Task<bool> AddInterestAsync(Interest interest) => Task.FromResult(true);
-    public Task<List<Event>> GetEventsByInterestAsync(string interestId) => Task.FromResult(new List<Event>());
-
+    // ИСПРАВЛЕННЫЕ МЕТОДЫ ДЛЯ РЕДАКТИРОВАНИЯ И УДАЛЕНИЯ
     public async Task<bool> UpdateEventAsync(Event eventItem)
     {
         try
         {
+            // Используем FirebaseRestService для обновления
             return await _firebaseRest.UpdateEventAsync(eventItem);
         }
         catch (Exception ex)
@@ -171,6 +165,7 @@ public class FirestoreDataService : IDataService
     {
         try
         {
+            // Используем FirebaseRestService для удаления
             return await _firebaseRest.DeleteEventAsync(eventId);
         }
         catch (Exception ex)
@@ -179,6 +174,15 @@ public class FirestoreDataService : IDataService
             return false;
         }
     }
+
+    // СУЩЕСТВУЮЩИЕ МЕТОДЫ
+    public async Task<List<Interest>> GetInterestsAsync()
+    {
+        return await Task.FromResult(GetDefaultInterests());
+    }
+
+    public Task<bool> AddInterestAsync(Interest interest) => Task.FromResult(true);
+    public Task<List<Event>> GetEventsByInterestAsync(string interestId) => Task.FromResult(new List<Event>());
 
     // РЕАЛЬНАЯ РЕАЛИЗАЦИЯ для работы с пользователями
     public async Task<User> GetUserAsync(string userId)
@@ -226,22 +230,22 @@ public class FirestoreDataService : IDataService
     private List<Interest> GetDefaultInterests()
     {
         return new List<Interest>
-    {
-        new Interest { Id = "1", Name = "🎲 Настольные игры" },
-        new Interest { Id = "2", Name = "🎭 Косплей" },
-        new Interest { Id = "3", Name = "🎨 Искусство" },
-        new Interest { Id = "4", Name = "💻 Программирование" },
-        new Interest { Id = "5", Name = "📺 Аниме" },
-        new Interest { Id = "6", Name = "📚 Комиксы" },
-        new Interest { Id = "7", Name = "🎬 Кино" },
-        new Interest { Id = "8", Name = "🎵 Музыка" },
-        new Interest { Id = "9", Name = "⚽ Спорт" },
-        new Interest { Id = "10", Name = "✈️ Путешествия" },
-        new Interest { Id = "11", Name = "🍳 Кулинария" },
-        new Interest { Id = "12", Name = "📸 Фотография" },
-        new Interest { Id = "13", Name = "🎮 Видеоигры" },
-        new Interest { Id = "14", Name = "📖 Книги" },
-        new Interest { Id = "15", Name = "🚗 Автомобили" }
-    };
+        {
+            new Interest { Id = "1", Name = "🎲 Настольные игры" },
+            new Interest { Id = "2", Name = "🎭 Косплей" },
+            new Interest { Id = "3", Name = "🎨 Искусство" },
+            new Interest { Id = "4", Name = "💻 Программирование" },
+            new Interest { Id = "5", Name = "📺 Аниме" },
+            new Interest { Id = "6", Name = "📚 Комиксы" },
+            new Interest { Id = "7", Name = "🎬 Кино" },
+            new Interest { Id = "8", Name = "🎵 Музыка" },
+            new Interest { Id = "9", Name = "⚽ Спорт" },
+            new Interest { Id = "10", Name = "✈️ Путешествия" },
+            new Interest { Id = "11", Name = "🍳 Кулинария" },
+            new Interest { Id = "12", Name = "📸 Фотография" },
+            new Interest { Id = "13", Name = "🎮 Видеоигры" },
+            new Interest { Id = "14", Name = "📖 Книги" },
+            new Interest { Id = "15", Name = "🚗 Автомобили" }
+        };
     }
 }

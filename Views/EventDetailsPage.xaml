@@ -217,12 +217,66 @@
                         </Grid>
                     </VerticalStackLayout>
                 </Frame>
+                <!-- Поля редактирования (только в режиме редактирования) -->
+                <Frame Margin="20,15,20,0"
+       Padding="25"
+       CornerRadius="15"
+       HasShadow="True"
+       BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
+       IsVisible="{Binding IsEditing}">
 
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Редактирование события" 
+               FontSize="18" 
+               FontAttributes="Bold"
+               TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+
+                        <!-- Поле названия -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Название" 
+                   FontSize="14" 
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                            <Entry Text="{Binding EditTitle}"
+                   BackgroundColor="{AppThemeBinding Light=White, Dark=#3C3C3E}"
+                   TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                   HeightRequest="45"/>
+                        </VerticalStackLayout>
+
+                        <!-- Поле описания -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Описание" 
+                   FontSize="14" 
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                            <Editor Text="{Binding EditDescription}"
+                    BackgroundColor="{AppThemeBinding Light=White, Dark=#3C3C3E}"
+                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                    HeightRequest="100"
+                    AutoSize="TextChanges"/>
+                        </VerticalStackLayout>
+
+                        <!-- Максимум участников -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Максимум участников" 
+                   FontSize="14" 
+                   FontAttributes="Bold"
+                   TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
+                            <Stepper Value="{Binding EditMaxParticipants}"
+                     Minimum="2"
+                     Maximum="50"
+                     Increment="1"/>
+                            <Label Text="{Binding EditMaxParticipants, StringFormat='{0} участников'}"
+                   FontSize="14"
+                   TextColor="#512BD4"
+                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Frame>
             </VerticalStackLayout>
         </ScrollView>
 
 
-        <!-- Кнопки -->
         <Frame Grid.Row="2"
        BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
        Padding="20,15"
@@ -230,8 +284,7 @@
        HasShadow="True">
 
             <Grid ColumnDefinitions="*">
-                <!-- УБИРАЕМ второй столбец -->
-                <!-- Кнопка для гостей -->
+                <!-- Режим гостя -->
                 <Button Text="Войдите, чтобы участвовать"
                 Command="{Binding GoToLoginCommand}"
                 BackgroundColor="#512BD4"
@@ -242,7 +295,7 @@
                 CornerRadius="10"
                 IsVisible="{Binding IsGuestMode}"/>
 
-                <!-- Кнопка участия для авторизованных пользователей (НЕ организаторов) -->
+                <!-- Режим участия -->
                 <Button Text="{Binding ParticipationButtonText}"
                 Command="{Binding ToggleParticipationCommand}"
                 BackgroundColor="{Binding ParticipationButtonColor}"
@@ -253,13 +306,56 @@
                 CornerRadius="10"
                 IsVisible="{Binding CanParticipate}"/>
 
-                <!-- Сообщение для организатора -->
-                <Label Text="Вы организатор этого события"
-               FontSize="16"
-               TextColor="Gray"
-               HorizontalOptions="Center"
-               VerticalOptions="Center"
-               IsVisible="{Binding IsCreator}"/>
+                <!-- Режим организатора (просмотр) -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="15" 
+              IsVisible="{Binding ShowOrganizerButtons}">
+                    <Button Grid.Column="0"
+                    Text="✏️ Редактировать"
+                    Command="{Binding EditEventCommand}"
+                    BackgroundColor="#FFA000"
+                    TextColor="White"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    HeightRequest="50"
+                    CornerRadius="10"/>
+
+                    <Button Grid.Column="1"
+                    Text="🗑️ Удалить"
+                    Command="{Binding DeleteEventCommand}"
+                    BackgroundColor="#D32F2F"
+                    TextColor="White"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    HeightRequest="50"
+                    CornerRadius="10"/>
+                </Grid>
+
+                <!-- Режим организатора (редактирование) -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="15" 
+              IsVisible="{Binding IsEditing}">
+                    <Button Grid.Column="0"
+                    Text="❌ Отмена"
+                    Command="{Binding CancelEditCommand}"
+                    BackgroundColor="#757575"
+                    TextColor="White"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    HeightRequest="50"
+                    CornerRadius="10"/>
+
+                    <Button Grid.Column="1"
+                    Text="💾 Сохранить"
+                    Command="{Binding SaveEditCommand}"
+                    BackgroundColor="#388E3C"
+                    TextColor="White"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    HeightRequest="50"
+                    CornerRadius="10"/>
+                </Grid>
+
+                <!-- Сообщение для организатора (только просмотр) -->
+               
             </Grid>
         </Frame>
         <!-- Загрузка -->

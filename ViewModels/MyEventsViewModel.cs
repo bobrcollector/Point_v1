@@ -134,10 +134,18 @@ public class MyEventsViewModel : BaseViewModel
 
     private async Task EditEvent(string eventId)
     {
-        // Позже реализуем редактирование
-        await Application.Current.MainPage.DisplayAlert("Редактирование", "Функция редактирования будет доступна скоро", "OK");
+        try
+        {
+            // Устанавливаем ID события и переходим к деталям
+            GlobalEventId.EventId = eventId;
+            await Shell.Current.GoToAsync("//EventDetailsPage");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка перехода к редактированию: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось открыть событие для редактирования", "OK");
+        }
     }
-
     private async Task LeaveEvent(string eventId)
     {
         try

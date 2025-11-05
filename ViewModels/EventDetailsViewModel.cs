@@ -24,10 +24,29 @@ public class EventDetailsViewModel : BaseViewModel
         ToggleParticipationCommand = new Command(async () => await ToggleParticipation());
         GoBackCommand = new Command(async () => await GoToHome());
         GoToLoginCommand = new Command(async () => await GoToLogin());
-        OpenChatCommand = new Command(async () => await OpenChat());
+        EditEventCommand = new Command(() => StartEditing());
+        SaveEditCommand = new Command(async () => await SaveEvent());
+        CancelEditCommand = new Command(() => CancelEditing());
+        DeleteEventCommand = new Command(async () => await DeleteEvent());
     }
 
+    public bool ShowOrganizerButtons
+    {
+        get
+        {
+            var show = IsAuthenticated && IsCreator && !IsEditing;
+            System.Diagnostics.Debug.WriteLine($"🎯 ShowOrganizerButtons: {show} " +
+                                             $"(Auth: {IsAuthenticated}, Creator: {IsCreator}, Editing: {IsEditing})");
+            return show;
+        }
+    }
 
+    private bool _isEditing = false;
+    public bool IsEditing
+    {
+        get => _isEditing;
+        set => SetProperty(ref _isEditing, value);
+    }
     public string EventId
     {
         get => _eventId;
@@ -90,6 +109,27 @@ public class EventDetailsViewModel : BaseViewModel
         set => SetProperty(ref _participationButtonColor, value);
     }
 
+    private string _editTitle;
+    public string EditTitle
+    {
+        get => _editTitle;
+        set => SetProperty(ref _editTitle, value);
+    }
+
+    private string _editDescription;
+    public string EditDescription
+    {
+        get => _editDescription;
+        set => SetProperty(ref _editDescription, value);
+    }
+
+    private int _editMaxParticipants;
+    public int EditMaxParticipants
+    {
+        get => _editMaxParticipants;
+        set => SetProperty(ref _editMaxParticipants, value);
+    }
+
     private bool _isLoading;
     public bool IsLoading
     {
@@ -104,7 +144,10 @@ public class EventDetailsViewModel : BaseViewModel
     public ICommand GoBackCommand { get; }
     public ICommand GoToLoginCommand { get; }
     public ICommand OpenChatCommand { get; }
-
+    public ICommand EditEventCommand { get; }
+    public ICommand SaveEditCommand { get; }
+    public ICommand CancelEditCommand { get; }
+    public ICommand DeleteEventCommand { get; }
 
 
     private bool _isCreator;
@@ -157,11 +200,114 @@ public class EventDetailsViewModel : BaseViewModel
         await Shell.Current.GoToAsync("//LoginPage");
     }
 
-    private async Task OpenChat()
+    private void StartEditing()
     {
-        await Application.Current.MainPage.DisplayAlert("Чат", "Функция чата будет доступна в ближайшее время", "OK");
+        if (Event == null) return;
+
+        System.Diagnostics.Debug.WriteLine($"✏️ Начало редактирования события: {Event.Title}");
+
+   
+        EditTitle = Event.Title;
+        EditDescription = Event.Description;
+        EditMaxParticipants = Event.MaxParticipants;
+
+        IsEditing = true;
+        OnPropertyChanged(nameof(ShowOrganizerButtons));
+        System.Diagnostics.Debug.WriteLine($"✏️ Режим редактирования: {IsEditing}");
     }
 
+    private void CancelEditing()
+    {
+        System.Diagnostics.Debug.WriteLine($"❌ Отмена редактирования");
+        IsEditing = false;
+        // Очищаем поля редактирования
+        EditTitle = "";
+        EditDescription = "";
+        EditMaxParticipants = 20;
+        OnPropertyChanged(nameof(ShowOrganizerButtons));
+        System.Diagnostics.Debug.WriteLine($"✏️ Режим редактирования: {IsEditing}");
+    }
+
+    private async Task SaveEvent()
+    {
+        if (Event == null || IsLoading) return;
+
+        try
+        {
+            IsLoading = true;
+
+            // Обновляем событие из полей редактирования
+            Event.Title = EditTitle?.Trim() ?? Event.Title;
+            Event.Description = EditDescription?.Trim() ?? Event.Description;
+            Event.MaxParticipants = EditMaxParticipants;
+
+            var success = await _dataService.UpdateEventAsync(Event);
+
+            if (success)
+            {
+                await Application.Current.MainPage.DisplayAlert("Успех!", "Событие обновлено", "OK");
+                IsEditing = false;
+                OnPropertyChanged(nameof(ShowOrganizerButtons));
+
+                // Обновляем отображение
+                OnPropertyChanged(nameof(Event));
+            }
+            else
+            {
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось обновить событие", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка сохранения события: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось обновить событие", "OK");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+
+    private async Task DeleteEvent()
+    {
+        if (Event == null) return;
+
+        bool confirm = await Application.Current.MainPage.DisplayAlert(
+            "Подтверждение удаления",
+            $"Вы уверены, что хотите удалить событие \"{Event.Title}\"? Это действие нельзя отменить.",
+            "Удалить",
+            "Отмена"
+        );
+
+        if (!confirm) return;
+
+        try
+        {
+            IsLoading = true;
+
+            var success = await _dataService.DeleteEventAsync(Event.Id);
+
+            if (success)
+            {
+                await Application.Current.MainPage.DisplayAlert("Успех!", "Событие удалено", "OK");
+                await GoToHome();
+            }
+            else
+            {
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось удалить событие", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка удаления события: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось удалить событие", "OK");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
     public async Task LoadEventDetails()
     {
         if (string.IsNullOrEmpty(_eventId) || IsLoading) return;
@@ -225,8 +371,9 @@ public class EventDetailsViewModel : BaseViewModel
             System.Diagnostics.Debug.WriteLine($"🎯 CurrentUserId: {_authStateService.CurrentUserId}");
             System.Diagnostics.Debug.WriteLine($"🎯 Event.CreatorId: {Event.CreatorId}");
 
-            // ДОБАВЛЯЕМ ОБНОВЛЕНИЕ CanParticipate
+            // ДОБАВЛЯЕМ ОБНОВЛЕНИЕ CanParticipate И ShowOrganizerButtons
             OnPropertyChanged(nameof(CanParticipate));
+            OnPropertyChanged(nameof(ShowOrganizerButtons));
         }
         catch (Exception ex)
         {
@@ -250,6 +397,7 @@ public class EventDetailsViewModel : BaseViewModel
         }
         System.Diagnostics.Debug.WriteLine($"🔄 Текст кнопки обновлен: {ParticipationButtonText}");
     }
+
 
     private async Task ToggleParticipation()
     {
@@ -335,4 +483,6 @@ public class EventDetailsViewModel : BaseViewModel
             await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось загрузить событие", "OK");
         }
     }
+
+
 }
