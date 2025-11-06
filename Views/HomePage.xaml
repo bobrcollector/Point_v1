@@ -237,16 +237,34 @@
                                                    TextColor="Gray"/>
                                         </Grid>
 
-                                        <!-- Категория -->
-                                        <Frame BackgroundColor="#DFD8F7"
-                                               Padding="8,4"
-                                               CornerRadius="8"
-                                               HasShadow="False"
-                                               HorizontalOptions="Start">
-                                            <Label Text="{Binding CategoryId}" 
-                                                   FontSize="12"
-                                                   TextColor="#512BD4"/>
-                                        </Frame>
+                                        <!-- Категория и метка "Это интересно" -->
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <!-- Категория -->
+                                            <Frame Grid.Column="0"
+                                                   BackgroundColor="#DFD8F7"
+                                                   Padding="8,4"
+                                                   CornerRadius="8"
+                                                   HasShadow="False"
+                                                   HorizontalOptions="Start">
+                                                <Label Text="{Binding CategoryId}" 
+                                                       FontSize="12"
+                                                       TextColor="#512BD4"/>
+                                            </Frame>
+
+                                            <!-- Метка "Это интересно" -->
+                                            <Frame Grid.Column="1"
+                                                   BackgroundColor="#4CAF50"
+                                                   Padding="8,4"
+                                                   CornerRadius="8"
+                                                   HasShadow="False"
+                                                   HorizontalOptions="End"
+                                                   IsVisible="{Binding IsRelevant}">
+                                                <Label Text="🎯 Это интересно" 
+                                                       FontSize="12"
+                                                       TextColor="White"
+                                                       FontAttributes="Bold"/>
+                                            </Frame>
+                                        </Grid>
                                     </VerticalStackLayout>
                                 </Frame>
                             </Grid>
@@ -264,7 +282,7 @@
                  Navigating="OnMapNavigating"
                  Navigated="OnMapNavigated"
                  VerticalOptions="Fill"
-                 HorizontalOptions="Fill"/> 
+                 HorizontalOptions="Fill"/>
 
                 <!-- Индикатор загрузки для карты -->
                 <ActivityIndicator IsVisible="{Binding IsLoading}"

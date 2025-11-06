@@ -6,6 +6,7 @@ public class MapHtmlService
 {
     public string GenerateMapHtml(List<MapEvent> events, double centerLat = 55.7558, double centerLon = 37.6173)
     {
+
         var eventsJson = System.Text.Json.JsonSerializer.Serialize(events);
 
         return $@"

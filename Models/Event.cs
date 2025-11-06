@@ -44,5 +44,6 @@ public class Event
     public string ParticipantsDisplay => $"{ParticipantsCount} из {MaxParticipants}";
     public double ParticipationProgress => MaxParticipants > 0 ? (double)ParticipantsCount / MaxParticipants : 0;
     public bool IsFull => ParticipantsCount >= MaxParticipants;
+    public bool IsRelevant { get; set; }
 
 }

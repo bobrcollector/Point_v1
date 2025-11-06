@@ -294,6 +294,12 @@ public class HomeViewModel : BaseViewModel
         {
             IsLoading = true;
 
+            // ЗАГРУЖАЕМ ИНТЕРЕСЫ ПОЛЬЗОВАТЕЛЯ
+            if (IsAuthenticated)
+            {
+                await LoadUserInterests();
+            }
+
             if (IsMapView)
             {
                 await LoadMapEvents();
@@ -320,7 +326,13 @@ public class HomeViewModel : BaseViewModel
                 // ФИЛЬТРАЦИЯ: убираем прошедшие события
                 if (events != null)
                 {
-                    Events = events.Where(e => e.EventDate > DateTime.Now).ToList();
+                    var filteredEvents = events.Where(e => e.EventDate > DateTime.Now).ToList();
+
+                    // ОБНОВЛЯЕМ РЕЛЕВАНТНОСТЬ СОБЫТИЙ
+                    UpdateEventsRelevance(filteredEvents);
+
+                    // СОРТИРУЕМ ПО РЕЛЕВАНТНОСТИ
+                    Events = SortEventsByRelevance(filteredEvents);
                 }
                 else
                 {
@@ -343,6 +355,14 @@ public class HomeViewModel : BaseViewModel
         }
     }
 
+    private List<Event> SortEventsByRelevance(List<Event> events)
+    {
+        if (!IsAuthenticated || UserInterestIds.Count == 0) return events;
+
+        return events.OrderByDescending(e => e.IsRelevant)
+                    .ThenBy(e => e.EventDate)
+                    .ToList();
+    }
     private async Task PerformSearch()
     {
         if (IsLoading) return;
@@ -448,5 +468,107 @@ public class HomeViewModel : BaseViewModel
             EmptyViewTitle = "";
             EmptyViewMessage = "";
         }
+    }
+
+    private List<string> _userInterestIds = new List<string>();
+    public List<string> UserInterestIds
+    {
+        get => _userInterestIds;
+        set => SetProperty(ref _userInterestIds, value);
+    }
+
+    private async Task LoadUserInterests()
+    {
+        if (!IsAuthenticated) return;
+
+        try
+        {
+            var user = await _dataService.GetUserAsync(_authStateService.CurrentUserId);
+            if (user?.InterestIds != null)
+            {
+                UserInterestIds = user.InterestIds;
+
+                // ОТЛАДОЧНАЯ ИНФОРМАЦИЯ
+                var allInterests = GetDefaultInterests();
+                var userInterestNames = allInterests
+                    .Where(i => UserInterestIds.Contains(i.Id))
+                    .Select(i => i.Name)
+                    .ToList();
+
+                System.Diagnostics.Debug.WriteLine($"🎯 Загружено интересов пользователя: {UserInterestIds.Count}");
+                System.Diagnostics.Debug.WriteLine($"🎯 Названия интересов: {string.Join(", ", userInterestNames)}");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки интересов пользователя: {ex.Message}");
+        }
+    }
+
+    // Метод для проверки, подходит ли событие по интересам
+    private void UpdateEventsRelevance(List<Event> events)
+    {
+        if (!IsAuthenticated || UserInterestIds.Count == 0)
+        {
+            // Сбрасываем релевантность если пользователь не авторизован
+            foreach (var eventItem in events)
+            {
+                eventItem.IsRelevant = false;
+            }
+            return;
+        }
+
+        // ЗАГРУЖАЕМ ВСЕ ИНТЕРЕСЫ ДЛЯ СРАВНЕНИЯ
+        var allInterests = GetDefaultInterests(); // Используем тот же список что в CreateEvent
+
+        System.Diagnostics.Debug.WriteLine($"🎯 Сравниваем события с интересами пользователя: {UserInterestIds.Count} интересов");
+
+        foreach (var eventItem in events)
+        {
+            try
+            {
+                // Находим интерес по ID из UserInterestIds
+                var userInterests = allInterests
+                    .Where(interest => UserInterestIds.Contains(interest.Id))
+                    .Select(interest => interest.Name)
+                    .ToList();
+
+                System.Diagnostics.Debug.WriteLine($"🎯 Интересы пользователя: {string.Join(", ", userInterests)}");
+                System.Diagnostics.Debug.WriteLine($"🎯 Категория события: {eventItem.CategoryId}");
+
+                // Сравниваем категорию события с названиями интересов пользователя
+                eventItem.IsRelevant = userInterests.Any(userInterest =>
+                    eventItem.CategoryId?.Contains(userInterest) == true ||
+                    userInterest.Contains(eventItem.CategoryId ?? ""));
+
+                System.Diagnostics.Debug.WriteLine($"🎯 Событие '{eventItem.Title}': релевантно = {eventItem.IsRelevant}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка проверки релевантности: {ex.Message}");
+                eventItem.IsRelevant = false;
+            }
+        }
+    }
+    private List<Interest> GetDefaultInterests()
+    {
+        return new List<Interest>
+    {
+        new Interest { Id = "1", Name = "🎲 Настольные игры" },
+        new Interest { Id = "2", Name = "🎭 Косплей" },
+        new Interest { Id = "3", Name = "🎨 Искусство" },
+        new Interest { Id = "4", Name = "💻 Программирование" },
+        new Interest { Id = "5", Name = "📺 Аниме" },
+        new Interest { Id = "6", Name = "📚 Комиксы" },
+        new Interest { Id = "7", Name = "🎬 Кино" },
+        new Interest { Id = "8", Name = "🎵 Музыка" },
+        new Interest { Id = "9", Name = "⚽ Спорт" },
+        new Interest { Id = "10", Name = "✈️ Путешествия" },
+        new Interest { Id = "11", Name = "🍳 Кулинария" },
+        new Interest { Id = "12", Name = "📸 Фотография" },
+        new Interest { Id = "13", Name = "🎮 Видеоигры" },
+        new Interest { Id = "14", Name = "📖 Книги" },
+        new Interest { Id = "15", Name = "🚗 Автомобили" }
+    };
     }
 }
