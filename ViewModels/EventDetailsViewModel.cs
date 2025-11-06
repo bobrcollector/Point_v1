@@ -291,6 +291,8 @@ public class EventDetailsViewModel : BaseViewModel
             if (success)
             {
                 await Application.Current.MainPage.DisplayAlert("Успех!", "Событие удалено", "OK");
+
+                await UpdateUserStatistics();
                 await GoToHome();
             }
             else
@@ -454,6 +456,7 @@ public class EventDetailsViewModel : BaseViewModel
 
             if (success)
             {
+                await UpdateUserStatistics();
                 // Перезагружаем данные события
                 await LoadEventDetails();
             }
@@ -471,6 +474,18 @@ public class EventDetailsViewModel : BaseViewModel
     }
 
 
+    private async Task UpdateUserStatistics()
+    {
+        try
+        {
+            // Просто логируем - статистика обновится при следующем открытии профиля
+            System.Diagnostics.Debug.WriteLine("📊 Статистика будет обновлена при следующем открытии профиля");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка обновления статистики: {ex.Message}");
+        }
+    }
     private async Task CheckDataServiceAndLoadEvent(string eventId)
     {
         try

@@ -28,4 +28,7 @@ public interface IDataService
     Task<List<Event>> GetUserEventsAsync(string userId);
     Task<List<Event>> GetParticipatingEventsAsync(string userId);
     Task<List<Event>> GetArchivedEventsAsync(string userId);
+    Task<int> GetUserCreatedEventsCountAsync(string userId);
+    Task<int> GetUserParticipatedEventsCountAsync(string userId);
+    Task<int> GetUserUpcomingEventsCountAsync(string userId);
 }

@@ -6,13 +6,13 @@ namespace Point_v1.ViewModels;
 
 public class MyEventsViewModel : BaseViewModel
 {
-    private readonly IAuthStateService _authStateService; // ИЗМЕНИЛ ТИП
+    private readonly IAuthStateService _authStateService;
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
 
-    public MyEventsViewModel(IAuthStateService authStateService, IDataService dataService, INavigationService navigationService) // ИЗМЕНИЛ ПАРАМЕТР
+    public MyEventsViewModel(IAuthStateService authStateService, IDataService dataService, INavigationService navigationService)
     {
-        _authStateService = authStateService; // ИЗМЕНИЛ
+        _authStateService = authStateService;
         _dataService = dataService;
         _navigationService = navigationService;
 
@@ -22,11 +22,12 @@ public class MyEventsViewModel : BaseViewModel
         EditEventCommand = new Command<string>(async (eventId) => await EditEvent(eventId));
         LeaveEventCommand = new Command<string>(async (eventId) => await LeaveEvent(eventId));
 
-        // Инициализация
-        SelectedTab = "Created";
+        SetCurrentEventCommand = new Command<Event>((eventItem) => { /* ничего не делаем */ });
+
+        // Инициализация - ТЕПЕРЬ ПЕРВАЯ ВКЛАДКА "Participating"
+        SelectedTab = "Participating";
         _ = LoadEvents();
     }
-
 
     private string _selectedTab;
     public string SelectedTab
@@ -61,6 +62,7 @@ public class MyEventsViewModel : BaseViewModel
     public ICommand LoadEventsCommand { get; }
     public ICommand EditEventCommand { get; }
     public ICommand LeaveEventCommand { get; }
+    public ICommand SetCurrentEventCommand { get; }
 
     public bool ShowEditButton => SelectedTab == "Created";
     public bool ShowLeaveButton => SelectedTab == "Participating";
@@ -93,33 +95,32 @@ public class MyEventsViewModel : BaseViewModel
 
             switch (SelectedTab)
             {
-                case "Created":
-                    events = await _dataService.GetUserEventsAsync(userId);
-                    EmptyViewMessage = "Вы еще не создали ни одного события";
-                    System.Diagnostics.Debug.WriteLine($"📥 Запрошены созданные события, получено: {events.Count}");
-                    break;
-
-                case "Participating":
+                case "Participating": // ТЕПЕРЬ ПЕРВАЯ ВКЛАДКА
                     events = await _dataService.GetParticipatingEventsAsync(userId);
                     EmptyViewMessage = "Вы еще не участвуете ни в одном событии";
                     System.Diagnostics.Debug.WriteLine($"📥 Запрошены события участия, получено: {events.Count}");
+                    break;
+
+                case "Created": // ТЕПЕРЬ ВТОРАЯ ВКЛАДКА
+                    events = await _dataService.GetUserEventsAsync(userId);
+                    // СОРТИРОВКА: сначала новейшие события (по дате события)
+                    events = events.OrderByDescending(e => e.EventDate).ToList();
+                    EmptyViewMessage = "Вы еще не создали ни одного события";
+                    System.Diagnostics.Debug.WriteLine($"📥 Запрошены созданные события, получено: {events.Count}, отсортировано: {events.Count}");
                     break;
 
                 case "Archived":
                     events = await _dataService.GetArchivedEventsAsync(userId);
                     EmptyViewMessage = "У вас нет завершенных событий";
                     System.Diagnostics.Debug.WriteLine($"📥 Запрошены архивные события, получено: {events.Count}");
+
+                    // ВАЖНО: ВЫЗЫВАЕМ ОБНОВЛЕНИЕ СВОЙСТВ ДЛЯ АРХИВНЫХ СОБЫТИЙ
+                    UpdateArchiveEventsProperties(events, userId);
                     break;
             }
 
             CurrentEvents = events;
             System.Diagnostics.Debug.WriteLine($"✅ Загружено событий: {events.Count} для вкладки {SelectedTab}");
-
-            // Отладочная информация о каждом событии
-            foreach (var eventItem in events)
-            {
-                System.Diagnostics.Debug.WriteLine($"📄 Событие: {eventItem.Title}, Creator: {eventItem.CreatorId}, Participants: {eventItem.ParticipantIds?.Count ?? 0}");
-            }
         }
         catch (Exception ex)
         {
@@ -132,11 +133,27 @@ public class MyEventsViewModel : BaseViewModel
         }
     }
 
+    // Метод для обновления свойств архивных событий
+    private void UpdateArchiveEventsProperties(List<Event> events, string userId)
+    {
+        foreach (var eventItem in events)
+        {
+            // Устанавливаем свойства для отображения в UI
+            eventItem.ShowMyEventBadge = eventItem.CreatorId == userId;
+
+            if (eventItem.CreatorId == userId)
+                eventItem.EventTypeText = "🎯 Вы организовали это событие";
+            else if (eventItem.ParticipantIds?.Contains(userId) == true)
+                eventItem.EventTypeText = "✅ Вы участвовали в этом событии";
+            else
+                eventItem.EventTypeText = string.Empty;
+        }
+    }
+
     private async Task EditEvent(string eventId)
     {
         try
         {
-            // Устанавливаем ID события и переходим к деталям
             GlobalEventId.EventId = eventId;
             await Shell.Current.GoToAsync("//EventDetailsPage");
         }
@@ -146,11 +163,12 @@ public class MyEventsViewModel : BaseViewModel
             await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось открыть событие для редактирования", "OK");
         }
     }
+
     private async Task LeaveEvent(string eventId)
     {
         try
         {
-            var success = await _dataService.LeaveEventAsync(eventId, _authStateService.CurrentUserId); // ИЗМЕНИЛ
+            var success = await _dataService.LeaveEventAsync(eventId, _authStateService.CurrentUserId);
             if (success)
             {
                 await Application.Current.MainPage.DisplayAlert("Успех", "Вы вышли из события", "OK");

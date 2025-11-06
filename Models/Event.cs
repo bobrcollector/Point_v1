@@ -1,4 +1,4 @@
-namespace Point_v1.Models;
+ï»¿namespace Point_v1.Models;
 
 public class Event
 {
@@ -17,7 +17,7 @@ public class Event
     public List<string> ParticipantIds { get; set; } = new List<string>();
     public bool IsActive { get; set; } = true;
 
-    // Âû÷èñëÿåìûå ñâîéñòâà
+    // Ð’Ñ‹Ñ‡Ð¸ÑÐ»ÑÐµÐ¼Ñ‹Ðµ ÑÐ²Ð¾Ð¹ÑÑ‚Ð²Ð°
     public int ParticipantsCount => ParticipantIds?.Count ?? 0;
     public bool HasFreeSpots => ParticipantsCount < MaxParticipants;
     public string DateDisplay
@@ -29,21 +29,26 @@ public class Event
         }
     }
     public string ShortDescription => string.IsNullOrEmpty(Description)
-        ? "Îïèñàíèå îòñóòñòâóåò"
+        ? "ÐžÐ¿Ð¸ÑÐ°Ð½Ð¸Ðµ Ð¾Ñ‚ÑÑƒÑ‚ÑÑ‚Ð²ÑƒÐµÑ‚"
         : (Description.Length > 100 ? Description.Substring(0, 100) + "..." : Description);
 
-    // Íîâûå ñâîéñòâà äëÿ äåòàëåé ñ ïðîâåðêàìè
+    // ÐÐ¾Ð²Ñ‹Ðµ ÑÐ²Ð¾Ð¹ÑÑ‚Ð²Ð° Ð´Ð»Ñ Ð´ÐµÑ‚Ð°Ð»ÐµÐ¹ Ñ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ°Ð¼Ð¸
     public string DetailedDateDisplay
     {
         get
         {
             var culture = new System.Globalization.CultureInfo("ru-RU");
-            return EventDate.ToString("dd MMMM yyyy 'â' HH:mm", culture);
+            return EventDate.ToString("dd MMMM yyyy 'Ð²' HH:mm", culture);
         }
     }
-    public string ParticipantsDisplay => $"{ParticipantsCount} èç {MaxParticipants}";
+    public string ParticipantsDisplay => $"{ParticipantsCount} Ð¸Ð· {MaxParticipants}";
     public double ParticipationProgress => MaxParticipants > 0 ? (double)ParticipantsCount / MaxParticipants : 0;
     public bool IsFull => ParticipantsCount >= MaxParticipants;
     public bool IsRelevant { get; set; }
+
+    // Ð¡Ð²Ð¾Ð¹ÑÑ‚Ð²Ð¾ Ð´Ð»Ñ Ð±Ñ‹ÑÑ‚Ñ€Ð¾Ð¹ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ¸ - ÑÐ²Ð»ÑÐµÑ‚ÑÑ Ð»Ð¸ ÑÐ¾Ð±Ñ‹Ñ‚Ð¸Ðµ ÑÐ¾Ð·Ð´Ð°Ð½Ð½Ñ‹Ð¼ Ð¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÐµÐ»ÐµÐ¼
+    public bool IsCreatedByUser(string userId) => CreatorId == userId;
+    public bool ShowMyEventBadge { get; set; }
+    public string EventTypeText { get; set; } = string.Empty;
 
 }

@@ -19,4 +19,14 @@ public partial class ProfilePage : ContentPage
     {
         DisplayAlert("Настройки", "Настройки приложения будут доступны скоро", "OK");
     }
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        if (BindingContext is ProfileViewModel viewModel && viewModel.IsAuthenticated)
+        {
+            // Обновляем статистику при каждом открытии профиля
+            _ = viewModel.LoadUserStatistics(viewModel.GetCurrentUserId());
+        }
+    }
 }

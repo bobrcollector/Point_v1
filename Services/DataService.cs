@@ -14,6 +14,21 @@ public class DataService : IDataService
         InitializeSampleData();
     }
 
+    public Task<int> GetUserCreatedEventsCountAsync(string userId)
+    {
+        // Если это абстрактный класс или заглушка, просто вернем 0
+        return Task.FromResult(0);
+    }
+
+    public Task<int> GetUserParticipatedEventsCountAsync(string userId)
+    {
+        return Task.FromResult(0);
+    }
+
+    public Task<int> GetUserUpcomingEventsCountAsync(string userId)
+    {
+        return Task.FromResult(0);
+    }
     private void InitializeSampleData()
     {
         // Тестовые интересы
@@ -26,7 +41,7 @@ public class DataService : IDataService
         new Interest { Id = "5", Name = "Аниме" }
     };
 
-        // ОБНОВЛЕННЫЕ тестовые события с полными данными
+        // ОБНОВЛЕННЫЕ тестовые события
         _events = new List<Event>
     {
         new Event

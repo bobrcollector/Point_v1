@@ -335,6 +335,9 @@ public class CreateEventViewModel : BaseViewModel
             if (success)
             {
                 await Application.Current.MainPage.DisplayAlert("Успех!", "Событие создано!", "OK");
+
+                await UpdateUserStatistics();
+
                 await Shell.Current.GoToAsync("//HomePage");
             }
             else
@@ -475,6 +478,19 @@ public class CreateEventViewModel : BaseViewModel
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка открытия карты: {ex.Message}");
+        }
+    }
+    private async Task UpdateUserStatistics()
+    {
+        try
+        {
+            // Просто перезагружаем данные профиля при возврате на главную
+            // Статистика обновится автоматически при следующем открытии профиля
+            System.Diagnostics.Debug.WriteLine("📊 Статистика будет обновлена при следующем открытии профиля");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка обновления статистики: {ex.Message}");
         }
     }
 

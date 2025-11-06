@@ -46,6 +46,7 @@ public class FirestoreDataService : IDataService
         try
         {
             var events = await GetEventsAsync();
+            // Все активные созданные события (и прошлые и будущие)
             var userEvents = events.Where(e => e.CreatorId == userId && e.IsActive).ToList();
             System.Diagnostics.Debug.WriteLine($"📥 Загружено созданных событий пользователя: {userEvents.Count}");
             return userEvents;
@@ -66,7 +67,7 @@ public class FirestoreDataService : IDataService
                 e.ParticipantIds.Contains(userId) &&
                 e.CreatorId != userId && // исключаем события, где пользователь создатель
                 e.IsActive &&
-                e.EventDate > DateTime.Now // только будущие события
+                e.EventDate > DateTime.Now // только БУДУЩИЕ события для участия
             ).ToList();
 
             System.Diagnostics.Debug.WriteLine($"📥 Загружено событий для участия: {participatingEvents.Count}");
@@ -84,9 +85,14 @@ public class FirestoreDataService : IDataService
         try
         {
             var events = await GetEventsAsync();
+
+            // ВКЛЮЧАЕМ В АРХИВ:
+            // 1. Созданные пользователем И завершенные события
+            // 2. События, в которых пользователь участвовал И которые завершены
             var archivedEvents = events.Where(e =>
-                (e.CreatorId == userId || e.ParticipantIds.Contains(userId)) &&
-                (!e.IsActive || e.EventDate < DateTime.Now) // завершенные или прошедшие события
+                e.EventDate < DateTime.Now && // ТОЛЬКО ЗАВЕРШЕННЫЕ события
+                (e.CreatorId == userId ||
+                 (e.ParticipantIds != null && e.ParticipantIds.Contains(userId)))
             ).ToList();
 
             System.Diagnostics.Debug.WriteLine($"📥 Загружено архивных событий: {archivedEvents.Count}");
@@ -247,5 +253,64 @@ public class FirestoreDataService : IDataService
             new Interest { Id = "14", Name = "📖 Книги" },
             new Interest { Id = "15", Name = "🚗 Автомобили" }
         };
+    }
+    public async Task<int> GetUserCreatedEventsCountAsync(string userId)
+    {
+        try
+        {
+            var events = await GetEventsAsync();
+            // ПРОШЕДШИЕ созданные события
+            return events.Count(e =>
+                e.CreatorId == userId &&
+                e.IsActive &&
+                e.EventDate < DateTime.Now // ТОЛЬКО ПРОШЕДШИЕ
+            );
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка получения количества созданных событий: {ex.Message}");
+            return 0;
+        }
+    }
+
+    public async Task<int> GetUserParticipatedEventsCountAsync(string userId)
+    {
+        try
+        {
+            var events = await GetEventsAsync();
+            // ПРОШЕДШИЕ события участия
+            return events.Count(e =>
+                e.ParticipantIds != null &&
+                e.ParticipantIds.Contains(userId) &&
+                e.CreatorId != userId && // исключаем события, где пользователь создатель
+                e.IsActive &&
+                e.EventDate < DateTime.Now // ТОЛЬКО ПРОШЕДШИЕ
+            );
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка получения количества участий: {ex.Message}");
+            return 0;
+        }
+    }
+
+    public async Task<int> GetUserUpcomingEventsCountAsync(string userId)
+    {
+        try
+        {
+            var events = await GetEventsAsync();
+            // БУДУЩИЕ события (созданные + участия)
+            return events.Count(e =>
+                e.IsActive &&
+                e.EventDate > DateTime.Now && // ТОЛЬКО БУДУЩИЕ
+                (e.CreatorId == userId ||
+                 (e.ParticipantIds != null && e.ParticipantIds.Contains(userId)))
+            );
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка получения количества предстоящих событий: {ex.Message}");
+            return 0;
+        }
     }
 }

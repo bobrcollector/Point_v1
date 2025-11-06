@@ -155,50 +155,70 @@
 
                     <!-- Статистика -->
                     <Frame Padding="20" 
-                           CornerRadius="15" 
-                           HasShadow="True"
-                           BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
+       CornerRadius="15" 
+       HasShadow="True"
+       BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
                         <VerticalStackLayout Spacing="10">
                             <Label Text="Статистика" 
-                                   FontSize="16"
-                                   FontAttributes="Bold"/>
+               FontSize="16"
+               FontAttributes="Bold"/>
 
-                            <Grid ColumnDefinitions="*,*" 
-                                  RowDefinitions="Auto,Auto"
-                                  RowSpacing="10"
-                                  ColumnSpacing="10">
+                            <Grid ColumnDefinitions="*,*,*" 
+              RowDefinitions="Auto"
+              RowSpacing="10"
+              ColumnSpacing="10">
 
-                                <Frame Grid.Row="0" Grid.Column="0"
-                                       BackgroundColor="#E8F5E8"
-                                       Padding="15"
-                                       CornerRadius="10">
+                                <!-- Создано событий -->
+                                <Frame Grid.Column="0"
+                   BackgroundColor="#E8F5E8"
+                   Padding="15"
+                   CornerRadius="10">
                                     <VerticalStackLayout Spacing="5">
-                                        <Label Text="5" 
-                                               FontSize="20"
-                                               FontAttributes="Bold"
-                                               TextColor="#2E7D32"
-                                               HorizontalOptions="Center"/>
+                                        <Label Text="{Binding CreatedEventsCount}" 
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#2E7D32"
+                           HorizontalOptions="Center"/>
                                         <Label Text="Создано событий" 
-                                               FontSize="12"
-                                               TextColor="#2E7D32"
-                                               HorizontalOptions="Center"/>
+                           FontSize="12"
+                           TextColor="#2E7D32"
+                           HorizontalOptions="Center"/>
                                     </VerticalStackLayout>
                                 </Frame>
 
-                                <Frame Grid.Row="0" Grid.Column="1"
-                                       BackgroundColor="#E3F2FD"
-                                       Padding="15"
-                                       CornerRadius="10">
+                                <!-- Участвовал -->
+                                <Frame Grid.Column="1"
+                   BackgroundColor="#E3F2FD"
+                   Padding="15"
+                   CornerRadius="10">
                                     <VerticalStackLayout Spacing="5">
-                                        <Label Text="12" 
-                                               FontSize="20"
-                                               FontAttributes="Bold"
-                                               TextColor="#1976D2"
-                                               HorizontalOptions="Center"/>
+                                        <Label Text="{Binding ParticipatedEventsCount}" 
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#1976D2"
+                           HorizontalOptions="Center"/>
                                         <Label Text="Участвовал" 
-                                               FontSize="12"
-                                               TextColor="#1976D2"
-                                               HorizontalOptions="Center"/>
+                           FontSize="12"
+                           TextColor="#1976D2"
+                           HorizontalOptions="Center"/>
+                                    </VerticalStackLayout>
+                                </Frame>
+
+                                <!-- Предстоящие -->
+                                <Frame Grid.Column="2"
+                   BackgroundColor="#FFF3E0"
+                   Padding="15"
+                   CornerRadius="10">
+                                    <VerticalStackLayout Spacing="5">
+                                        <Label Text="{Binding UpcomingEventsCount}" 
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#F57C00"
+                           HorizontalOptions="Center"/>
+                                        <Label Text="Предстоящие" 
+                           FontSize="12"
+                           TextColor="#F57C00"
+                           HorizontalOptions="Center"/>
                                     </VerticalStackLayout>
                                 </Frame>
                             </Grid>

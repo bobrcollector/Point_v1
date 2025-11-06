@@ -37,6 +37,28 @@ public class ProfileViewModel : BaseViewModel
         LoadAvatar();
     }
 
+
+    private int _createdEventsCount;
+    public int CreatedEventsCount
+    {
+        get => _createdEventsCount;
+        set => SetProperty(ref _createdEventsCount, value);
+    }
+
+    private int _participatedEventsCount;
+    public int ParticipatedEventsCount
+    {
+        get => _participatedEventsCount;
+        set => SetProperty(ref _participatedEventsCount, value);
+    }
+
+    private int _upcomingEventsCount;
+    public int UpcomingEventsCount
+    {
+        get => _upcomingEventsCount;
+        set => SetProperty(ref _upcomingEventsCount, value);
+    }
+
     // Свойства для временных данных
     private List<Interest> _tempSelectedInterests = new();
     public List<Interest> TempSelectedInterests
@@ -165,6 +187,11 @@ public class ProfileViewModel : BaseViewModel
             City = "";
             About = "";
             SelectedInterests = new List<Interest>();
+
+            // Сбрасываем статистику
+            CreatedEventsCount = 0;
+            ParticipatedEventsCount = 0;
+            UpcomingEventsCount = 0;
         }
     }
 
@@ -191,7 +218,9 @@ public class ProfileViewModel : BaseViewModel
                 // Загружаем интересы пользователя
                 SelectedInterests = await GetUserInterests(user.InterestIds);
                 System.Diagnostics.Debug.WriteLine($"👤 Загружено интересов пользователя: {SelectedInterests.Count}");
-                System.Diagnostics.Debug.WriteLine($"👤 Данные профиля: {user.DisplayName}, {user.Email}, {user.City}");
+
+                // ЗАГРУЖАЕМ СТАТИСТИКУ
+                await LoadUserStatistics(userId);
             }
             else
             {
@@ -199,6 +228,12 @@ public class ProfileViewModel : BaseViewModel
                 UserName = "Пользователь";
                 UserEmail = userId;
                 SelectedInterests = new List<Interest>();
+
+                // Сбрасываем статистику
+                CreatedEventsCount = 0;
+                ParticipatedEventsCount = 0;
+                UpcomingEventsCount = 0;
+
                 System.Diagnostics.Debug.WriteLine($"❌ Профиль не найден для пользователя: {userId}");
             }
         }
@@ -207,8 +242,52 @@ public class ProfileViewModel : BaseViewModel
             IsAuthenticated = false;
             IsGuestMode = true;
             SelectedInterests = new List<Interest>();
+
+            // Сбрасываем статистику
+            CreatedEventsCount = 0;
+            ParticipatedEventsCount = 0;
+            UpcomingEventsCount = 0;
+
             System.Diagnostics.Debug.WriteLine("🔐 Пользователь не авторизован");
         }
+    }
+
+
+    public async Task LoadUserStatistics(string userId)
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine($"📊 Загрузка статистики для пользователя: {userId}");
+
+            // Загружаем статистику параллельно для скорости
+            var createdTask = _dataService.GetUserCreatedEventsCountAsync(userId);
+            var participatedTask = _dataService.GetUserParticipatedEventsCountAsync(userId);
+            var upcomingTask = _dataService.GetUserUpcomingEventsCountAsync(userId);
+
+            // Ждем завершения всех задач
+            await Task.WhenAll(createdTask, participatedTask, upcomingTask);
+
+            CreatedEventsCount = createdTask.Result;
+            ParticipatedEventsCount = participatedTask.Result;
+            UpcomingEventsCount = upcomingTask.Result;
+
+            System.Diagnostics.Debug.WriteLine($"📊 Статистика загружена: " +
+                $"Создано: {CreatedEventsCount}, " +
+                $"Участвовал: {ParticipatedEventsCount}, " +
+                $"Предстоящие: {UpcomingEventsCount}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки статистики: {ex.Message}");
+            CreatedEventsCount = 0;
+            ParticipatedEventsCount = 0;
+            UpcomingEventsCount = 0;
+        }
+    }
+
+    public string GetCurrentUserId()
+    {
+        return _authStateService.CurrentUserId;
     }
 
     private async Task<List<Interest>> GetUserInterests(List<string> interestIds)
@@ -281,6 +360,7 @@ public class ProfileViewModel : BaseViewModel
         System.Diagnostics.Debug.WriteLine("❌ Отмена выбора интересов - изменения не сохранены");
         await _navigationService.GoToAsync($"../{nameof(EditProfilePage)}");
     }
+
 
     private async Task SelectInterests()
     {
