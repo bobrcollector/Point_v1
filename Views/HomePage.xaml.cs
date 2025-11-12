@@ -21,6 +21,7 @@ public partial class HomePage : ContentPage
         MapWebView.Navigated += OnMapNavigated;
     }
 
+
     private void OnViewModelPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         System.Diagnostics.Debug.WriteLine($"🎯 PropertyChanged: {e.PropertyName}");

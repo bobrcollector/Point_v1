@@ -8,18 +8,27 @@ public class EventDetailsViewModel : BaseViewModel
 {
     private readonly IDataService _dataService;
     private readonly IAuthStateService _authStateService;
+    private readonly IReportService _reportService;
     private string _eventId;
+    private readonly NavigationStateService _navigationService;
 
-    public EventDetailsViewModel(IDataService dataService, IAuthStateService authStateService)
+
+    public EventDetailsViewModel(IDataService dataService, IAuthStateService authStateService, IReportService reportService)
     {
         _dataService = dataService;
         _authStateService = authStateService;
+        _reportService = reportService;
 
-        // Проверяем инициализацию сервисов
+        ReportEventCommand = new Command(async () => await ReportEvent());
+
+        // ПРОВЕРКИ, НО БЕЗ ЗАГРУЗКИ СОБЫТИЯ
         System.Diagnostics.Debug.WriteLine($"✅ EventDetailsViewModel создан");
         System.Diagnostics.Debug.WriteLine($"✅ DataService: {_dataService != null}");
         System.Diagnostics.Debug.WriteLine($"✅ AuthStateService: {_authStateService != null}");
-        System.Diagnostics.Debug.WriteLine($"✅ IsAuthenticated: {IsAuthenticated}");
+        System.Diagnostics.Debug.WriteLine($"✅ ReportService: {_reportService != null}");
+        System.Diagnostics.Debug.WriteLine($"✅ EventId при создании: {_eventId}");
+
+        // НЕ ВЫЗЫВАЙТЕ LoadEventDetails() ЗДЕСЬ!
 
         ToggleParticipationCommand = new Command(async () => await ToggleParticipation());
         GoBackCommand = new Command(async () => await GoToHome());
@@ -41,25 +50,146 @@ public class EventDetailsViewModel : BaseViewModel
         }
     }
 
+
+    public string EventId
+    {
+        get => _eventId;
+        set
+        {
+            if (SetProperty(ref _eventId, value))
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 EventId установлен в ViewModel: {value}");
+
+                // Загружаем данные когда устанавливается EventId
+                if (!string.IsNullOrEmpty(value))
+                {
+                    _ = LoadEventDetails();
+                }
+            }
+        }
+    }
+    public ICommand ReportEventCommand { get; }
+
+
+    private bool _cameFromReports;
+    public bool CameFromReports
+    {
+        get => _cameFromReports;
+        set => SetProperty(ref _cameFromReports, value);
+    }
+    private async Task ReportEvent()
+    {
+        if (!_authStateService.IsAuthenticated)
+        {
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Войдите, чтобы отправить жалобу", "OK");
+            return;
+        }
+
+        try
+        {
+            // ИСПОЛЬЗУЕМ _eventId ИЗ ViewModel, А НЕ ПАРАМЕТР
+            if (string.IsNullOrEmpty(_eventId))
+            {
+                System.Diagnostics.Debug.WriteLine("❌ EventId не установлен в ViewModel!");
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось определить событие", "OK");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"🎯 Начало создания жалобы на событие: {_eventId}");
+
+            // ПОЛУЧАЕМ ДАННЫЕ СОБЫТИЯ ПЕРЕД СОЗДАНИЕМ ЖАЛОБЫ
+            var eventItem = await _dataService.GetEventAsync(_eventId);
+            if (eventItem == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Событие {_eventId} не найдено!");
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "Событие не найдено", "OK");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"✅ Событие найдено: {eventItem.Title} (ID: {eventItem.Id})");
+
+            var reason = await Application.Current.MainPage.DisplayActionSheet(
+                $"Жалоба на событие: {eventItem.Title}",
+                "Отмена",
+                null,
+                "📧 Спам",
+                "🚫 Неуместный контент",
+                "💸 Мошенничество",
+                "⚖️ Нелегальное",
+                "❓ Другое"
+            );
+
+            if (reason != "Отмена")
+            {
+                var reportType = reason switch
+                {
+                    "📧 Спам" => ReportType.Spam,
+                    "🚫 Неуместный контент" => ReportType.Inappropriate,
+                    "💸 Мошенничество" => ReportType.Scam,
+                    "⚖️ Нелегальное" => ReportType.Illegal,
+                    "❓ Другое" => ReportType.Other,
+                    _ => ReportType.Other
+                };
+
+                var customReason = reason;
+                if (reason == "❓ Другое")
+                {
+                    customReason = await Application.Current.MainPage.DisplayPromptAsync(
+                        "Уточните причину",
+                        "Опишите проблему:",
+                        "Отправить",
+                        "Отмена",
+                        maxLength: 500
+                    );
+
+                    if (string.IsNullOrEmpty(customReason))
+                        return;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"📤 Отправка жалобы: EventId={_eventId}, Type={reportType}, Reason={customReason}");
+
+                var success = await _reportService.CreateReportAsync(
+                    _eventId, // ИСПОЛЬЗУЕМ _eventId ИЗ ViewModel
+                    _authStateService.CurrentUserId,
+                    reportType,
+                    customReason
+                );
+
+                if (success)
+                {
+                    System.Diagnostics.Debug.WriteLine("✅ Жалоба успешно создана");
+                    await Application.Current.MainPage.DisplayAlert(
+                        "Спасибо!",
+                        $"Жалоба на событие \"{eventItem.Title}\" отправлена модераторам",
+                        "OK"
+                    );
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ Не удалось создать жалобу");
+                    await Application.Current.MainPage.DisplayAlert(
+                        "Ошибка",
+                        "Не удалось отправить жалобу",
+                        "OK"
+                    );
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка отправки жалобы: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось отправить жалобу", "OK");
+        }
+    }
+
     private bool _isEditing = false;
     public bool IsEditing
     {
         get => _isEditing;
         set => SetProperty(ref _isEditing, value);
     }
-    public string EventId
-    {
-        get => _eventId;
-        set
-        {
-            if (SetProperty(ref _eventId, value) && !string.IsNullOrEmpty(value))
-            {
-                System.Diagnostics.Debug.WriteLine($"🎯 EventId установлен: {value}");
-                // ДОБАВИМ ПРОВЕРКУ DataService
-                _ = CheckDataServiceAndLoadEvent(value);
-            }
-        }
-    }
+
+
 
     private Event _event;
     public Event Event
@@ -150,6 +280,7 @@ public class EventDetailsViewModel : BaseViewModel
     public ICommand DeleteEventCommand { get; }
 
 
+
     private bool _isCreator;
     public bool IsCreator
     {
@@ -158,6 +289,47 @@ public class EventDetailsViewModel : BaseViewModel
         {
             SetProperty(ref _isCreator, value);
             OnPropertyChanged(nameof(CanParticipate));
+        }
+    }
+
+
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine($"🎯 Query параметры: {string.Join(", ", query.Keys)}");
+
+            if (query.ContainsKey("eventId"))
+            {
+                var eventId = query["eventId"] as string;
+                if (!string.IsNullOrEmpty(eventId))
+                {
+                    System.Diagnostics.Debug.WriteLine($"🎯 Получен eventId из query: {eventId}");
+                    EventId = eventId;
+                }
+            }
+
+            // ОПРЕДЕЛЯЕМ, ОТКУДА ПРИШЛИ
+            CameFromReports = query.ContainsKey("fromReports") && query["fromReports"]?.ToString() == "true";
+
+            if (CameFromReports)
+            {
+                System.Diagnostics.Debug.WriteLine("📍 Пришли со страницы жалоб");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("📍 Пришли из обычной навигации");
+            }
+
+            // ЗАГРУЖАЕМ СОБЫТИЕ ПОСЛЕ УСТАНОВКИ PARAMETERS
+            if (!string.IsNullOrEmpty(EventId))
+            {
+                _ = LoadEventDetails();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка в ApplyQueryAttributes: {ex.Message}");
         }
     }
     public bool CanParticipate
@@ -181,17 +353,58 @@ public class EventDetailsViewModel : BaseViewModel
 
     private async Task GoToHome()
     {
-        System.Diagnostics.Debug.WriteLine("🔙 Выполняется команда Назад (на главную)");
+        System.Diagnostics.Debug.WriteLine("🔙 Выполняется команда Назад");
 
         try
         {
-            await Shell.Current.GoToAsync("//HomePage");
-            System.Diagnostics.Debug.WriteLine("✅ Успешный переход на главную страницу");
+            if (CameFromReports)
+            {
+                // Возвращаемся к жалобам
+                System.Diagnostics.Debug.WriteLine("🔙 Возврат к жалобам");
+                await Shell.Current.GoToAsync("///ReportsManagementPage");
+            }
+            else
+            {
+                // Пробуем разные варианты возврата
+                bool success = false;
+
+                // Вариант 1: Назад по стеку
+                try
+                {
+                    await Shell.Current.GoToAsync("..");
+                    System.Diagnostics.Debug.WriteLine("✅ Успешный возврат назад по стеку");
+                    success = true;
+                }
+                catch (Exception ex1)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Возврат по стеку не сработал: {ex1.Message}");
+                }
+
+                // Вариант 2: На главную
+                if (!success)
+                {
+                    try
+                    {
+                        await Shell.Current.GoToAsync("///HomePage");
+                        System.Diagnostics.Debug.WriteLine("✅ Успешный переход на главную");
+                        success = true;
+                    }
+                    catch (Exception ex2)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"❌ Переход на главную не сработал: {ex2.Message}");
+                    }
+                }
+
+                if (!success)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось вернуться", "OK");
+                }
+            }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ Ошибка перехода на главную: {ex.Message}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось вернуться на главную", "OK");
+            System.Diagnostics.Debug.WriteLine($"❌ Общая ошибка возврата: {ex.Message}");
+            await Shell.Current.GoToAsync("///HomePage");
         }
     }
 
@@ -312,7 +525,13 @@ public class EventDetailsViewModel : BaseViewModel
     }
     public async Task LoadEventDetails()
     {
-        if (string.IsNullOrEmpty(_eventId) || IsLoading) return;
+        if (string.IsNullOrEmpty(_eventId))
+        {
+            System.Diagnostics.Debug.WriteLine("❌ EventId пустой - не могу загрузить событие");
+            return;
+        }
+
+        if (IsLoading) return;
 
         try
         {
@@ -324,30 +543,24 @@ public class EventDetailsViewModel : BaseViewModel
             if (eventItem == null)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ Событие {_eventId} не найдено в DataService");
-                await Application.Current.MainPage.DisplayAlert("Ошибка", "Событие не найдено", "OK");
-                await GoToHome(); // Возвращаем на главную если событие не найдено
+                // Не показываем alert здесь - может быть нормальной ситуацией
                 return;
             }
 
-            // ОТЛАДОЧНАЯ ИНФОРМАЦИЯ
             System.Diagnostics.Debug.WriteLine($"✅ Событие загружено: {eventItem.Title}");
-            System.Diagnostics.Debug.WriteLine($"👤 CreatorId: {eventItem.CreatorId}");
-            System.Diagnostics.Debug.WriteLine($"👤 CreatorName: {eventItem.CreatorName}");
-            System.Diagnostics.Debug.WriteLine($"📅 EventDate: {eventItem.EventDate}");
-            System.Diagnostics.Debug.WriteLine($"📍 Address: {eventItem.Address ?? "NULL"}");
-            System.Diagnostics.Debug.WriteLine($"📝 Description: {eventItem.Description ?? "NULL"}");
-            System.Diagnostics.Debug.WriteLine($"👥 Participants: {eventItem.ParticipantIds?.Count ?? 0}");
 
             Event = eventItem;
             UpdateParticipationState();
+
+            // ОБНОВЛЯЕМ ВСЕ ПРИВЯЗКИ
+            OnPropertyChanged(nameof(Event));
+            OnPropertyChanged(nameof(CanParticipate));
+            OnPropertyChanged(nameof(ShowOrganizerButtons));
 
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки события: {ex.Message}");
-            System.Diagnostics.Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось загрузить событие", "OK");
-            await GoToHome();
         }
         finally
         {
@@ -384,6 +597,8 @@ public class EventDetailsViewModel : BaseViewModel
             IsCreator = false;
         }
     }
+
+
 
     private void UpdateParticipationButton()
     {
@@ -498,6 +713,7 @@ public class EventDetailsViewModel : BaseViewModel
             await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось загрузить событие", "OK");
         }
     }
+
 
 
 }

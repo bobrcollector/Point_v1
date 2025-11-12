@@ -1,3 +1,4 @@
+// Converters/NegativeBooleanConverter.cs
 using System.Globalization;
 
 namespace Point_v1.Converters;
@@ -6,11 +7,19 @@ public class NegativeBooleanConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is bool boolValue ? !boolValue : value;
+        if (value is bool boolValue)
+        {
+            return !boolValue;
+        }
+        return true;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is bool boolValue ? !boolValue : value;
+        if (value is bool boolValue)
+        {
+            return !boolValue;
+        }
+        return false;
     }
 }

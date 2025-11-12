@@ -1,5 +1,6 @@
 ﻿using Point_v1.Models;
 using Point_v1.Services;
+using Point_v1.Views;
 using System.Windows.Input;
 
 namespace Point_v1.ViewModels;
@@ -433,20 +434,23 @@ public class HomeViewModel : BaseViewModel
     {
         try
         {
-            System.Diagnostics.Debug.WriteLine($"🔄 Переход к событию: {eventId}");
+            System.Diagnostics.Debug.WriteLine($"🎯 Переход к событию из Home: {eventId}");
 
-            if (string.IsNullOrEmpty(eventId))
+            // Проверяем существование события
+            var eventItem = await _dataService.GetEventAsync(eventId);
+            if (eventItem == null)
             {
-                System.Diagnostics.Debug.WriteLine("❌ eventId пустой!");
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "Событие не найдено", "OK");
                 return;
             }
 
-            GlobalEventId.EventId = eventId;
-            await Shell.Current.GoToAsync("//EventDetailsPage");
+            // ИСПОЛЬЗУЕМ ПРОСТО СТРОКУ ВМЕСТО nameof()
+            await Shell.Current.GoToAsync($"{nameof(EventDetailsPage)}?eventId={eventId}");
+            System.Diagnostics.Debug.WriteLine($"✅ Успешный переход к событию из Home");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ Ошибка навигации: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка перехода к событию: {ex.Message}");
             await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось открыть событие", "OK");
         }
     }

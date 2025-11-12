@@ -19,11 +19,36 @@ public class FirestoreDataService : IDataService
     {
         return await _firebaseRest.GetEventsAsync();
     }
-
     public async Task<Event> GetEventAsync(string eventId)
     {
-        var events = await GetEventsAsync();
-        return events.FirstOrDefault(e => e.Id == eventId);
+        try
+        {
+            System.Diagnostics.Debug.WriteLine($"🔄 Поиск события по ID: {eventId}");
+
+            var events = await GetEventsAsync();
+            var eventItem = events.FirstOrDefault(e => e.Id == eventId);
+
+            if (eventItem == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Событие с ID {eventId} не найдено");
+                System.Diagnostics.Debug.WriteLine($"📋 Доступные события: {events.Count} шт.");
+                foreach (var ev in events.Take(5)) 
+                {
+                    System.Diagnostics.Debug.WriteLine($"   - {ev.Id}: {ev.Title}");
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"✅ Событие найдено: {eventItem.Title}");
+            }
+
+            return eventItem;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка поиска события: {ex.Message}");
+            return null;
+        }
     }
 
     public async Task<bool> AddEventAsync(Event eventItem)

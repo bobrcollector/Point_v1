@@ -1,17 +1,18 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Hosting;
 using Point_v1.Converters;
 using Point_v1.Services;
 using Point_v1.ViewModels;
 using Point_v1.Views;
 
 namespace Point_v1;
+
 public static class MauiProgram
 {
-public static MauiApp CreateMauiApp()
+    public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
+
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
@@ -25,49 +26,54 @@ public static MauiApp CreateMauiApp()
         builder.Logging.AddDebug();
 #endif
 
-        // Регистрируем сервисы
-        //builder.Services.AddSingleton<IAuthService, AuthService>();
-        builder.Services.AddSingleton<IAuthStateService, AuthStateService>();
-        //builder.Services.AddSingleton<IDataService, DataService>();
-        builder.Services.AddSingleton<ISearchService, SearchService>();
-        builder.Services.AddSingleton<INavigationService, NavigationService>();
-        builder.Services.AddSingleton<ISearchService, SearchService>();
-        builder.Services.AddSingleton<IMessagingService, MessagingService>();
+        RegisterServices(builder);
+        RegisterViewModels(builder);
+        RegisterPages(builder);
+        RegisterConverters(builder);
+        RegisterRoutes();
 
+        return builder.Build();
+    }
+
+    private static void RegisterServices(MauiAppBuilder builder)
+    {
+        // Основные сервисы
         builder.Services.AddSingleton<IAuthService, FirebaseAuthService>();
         builder.Services.AddSingleton<IDataService, FirestoreDataService>();
-        builder.Services.AddSingleton<IAuthService, FirebaseAuthService>();
         builder.Services.AddSingleton<IAuthStateService, AuthStateService>();
-        builder.Services.AddSingleton<IDataService, FirestoreDataService>();
         builder.Services.AddSingleton<ISearchService, SearchService>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();
         builder.Services.AddSingleton<IMessagingService, MessagingService>();
         builder.Services.AddSingleton<IMapService, MapService>();
         builder.Services.AddSingleton<MapHtmlService>();
+        builder.Services.AddSingleton<IAuthorizationService, AuthorizationService>();
+        builder.Services.AddSingleton<IReportService, ReportService>();
+        builder.Services.AddSingleton<NavigationStateService>();
+        // Вспомогательные сервисы
+        builder.Services.AddSingleton<FilterStateService>();
+    }
 
-
-
-
-        // Регистрируем ViewModels
+    private static void RegisterViewModels(MauiAppBuilder builder)
+    {
+        // Основные ViewModels
         builder.Services.AddTransient<AuthViewModel>();
         builder.Services.AddTransient<HomeViewModel>();
         builder.Services.AddTransient<CreateEventViewModel>();
         builder.Services.AddTransient<FilterViewModel>();
         builder.Services.AddTransient<EventDetailsViewModel>();
-
         builder.Services.AddTransient<SearchViewModel>();
-        // ДОБАВЬ В CreateMauiApp():
-        builder.Services.AddSingleton<FilterStateService>();
-        builder.Services.AddTransient<EditProfilePage>();
-        // Регистрируем конвертеры (добавь эти строки)
-        builder.Services.AddSingleton<InterestSelectionToColorConverter>();
-        builder.Services.AddSingleton<InterestSelectionToTextColorConverter>();
-        builder.Services.AddSingleton<BoolToBorderColorConverter>();
-        // Добавь маршрут
+        builder.Services.AddTransient<MyEventsViewModel>();
+        builder.Services.AddTransient<ModeratorDashboardViewModel>();
+        builder.Services.AddTransient<ReportsManagementViewModel>();
+        builder.Services.AddTransient<SelectInterestsViewModel>();
+        builder.Services.AddTransient<ProfileViewModel>();
+        builder.Services.AddTransient<ModeratorDashboardViewModel>();
+        builder.Services.AddTransient<ReportsManagementViewModel>();
+    }
 
-
-
-        // Регистрируем Pages
+    private static void RegisterPages(MauiAppBuilder builder)
+    {
+        // Основные страницы
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<HomePage>();
         builder.Services.AddTransient<CreateEventPage>();
@@ -77,71 +83,52 @@ public static MauiApp CreateMauiApp()
         builder.Services.AddTransient<RegisterPage>();
         builder.Services.AddTransient<EventDetailsPage>();
         builder.Services.AddTransient<SearchPage>();
-        builder.Services.AddTransient<MyEventsViewModel>();
-        builder.Services.AddTransient<MyEventsPage>();
-        // Добавьте эти строки в метод ConfigureServices:
+        builder.Services.AddTransient<ModeratorDashboardPage>();
+        builder.Services.AddTransient<ReportsManagementPage>();
+        builder.Services.AddTransient<EditProfilePage>();
+        builder.Services.AddTransient<SelectInterestsPage>();
+        builder.Services.AddTransient<TestInterestsPage>();
+        builder.Services.AddTransient<ModeratorDashboardPage>();
+        builder.Services.AddTransient<ReportsManagementPage>();
 
-        builder.Services.AddTransient<HomeViewModel>();
-        builder.Services.AddTransient<FilterViewModel>();
+        // AppShell
+        builder.Services.AddSingleton<AppShell>();
+    }
 
+    private static void RegisterConverters(MauiAppBuilder builder)
+    {
+        // Конвертеры для интересов
+        builder.Services.AddSingleton<InterestSelectionToColorConverter>();
+        builder.Services.AddSingleton<InterestSelectionToTextColorConverter>();
 
-        // Регистрируем конвертеры
-        builder.Services.AddSingleton<Converters.InverseBoolConverter>();
-        builder.Services.AddSingleton<Converters.StringNotEmptyConverter>();
-        builder.Services.AddSingleton<Converters.IsNotNullOrEmptyConverter>();
-        builder.Services.AddSingleton<Converters.InverseBoolConverter>();
+        // Базовые конвертеры
+        builder.Services.AddSingleton<BoolToBorderColorConverter>();
         builder.Services.AddSingleton<BoolToColorConverter>();
         builder.Services.AddSingleton<BoolToTextColorConverter>();
+        builder.Services.AddSingleton<BoolToSymbolConverter>();
 
-
-
-
-        Routing.RegisterRoute(nameof(EventDetailsPage), typeof(EventDetailsPage));
-        Routing.RegisterRoute(nameof(EditProfilePage), typeof(EditProfilePage));
-
-        builder.Services.AddSingleton<AppShell>();
-        builder.Services.AddTransient<SelectInterestsPage>();
-
-        // Регистрируем маршрут
-        Routing.RegisterRoute(nameof(SelectInterestsPage), typeof(SelectInterestsPage));
-
-        // Регистрируем конвертеры
-        builder.Services.AddSingleton<InterestSelectionToColorConverter>();
-        builder.Services.AddSingleton<InterestSelectionToTextColorConverter>();
-
-        builder.Services.AddTransient<SelectInterestsPage>();
-
-        // Регистрируем маршрут
-        Routing.RegisterRoute(nameof(SelectInterestsPage), typeof(SelectInterestsPage));
-
-        // Регистрируем конвертеры
-        builder.Services.AddSingleton<InterestSelectionToColorConverter>();
-        builder.Services.AddSingleton<InterestSelectionToTextColorConverter>();
-        builder.Services.AddSingleton<BoolToSymbolConverter>();// Регистрируем ViewModel
-        builder.Services.AddTransient<SelectInterestsViewModel>();
-
-        // Должно быть так:
-        builder.Services.AddTransient<SelectInterestsPage>();
-        builder.Services.AddSingleton<ProfileViewModel>();
-
-        // И маршрут:
-        Routing.RegisterRoute(nameof(SelectInterestsPage), typeof(SelectInterestsPage));
-
-        // Регистрируем страницу
-        builder.Services.AddTransient<SelectInterestsPage>();
-        // Добавь регистрацию
-        builder.Services.AddTransient<TestInterestsPage>();
-        Routing.RegisterRoute(nameof(TestInterestsPage), typeof(TestInterestsPage));
-        builder.Services.AddSingleton<InterestSelectionToColorConverter>();
-        builder.Services.AddSingleton<InterestSelectionToTextColorConverter>();
-        builder.Services.AddSingleton<BoolToBorderColorConverter>();
+        // Конвертеры для логики
+        builder.Services.AddSingleton<InverseBoolConverter>();
+        builder.Services.AddSingleton<StringNotEmptyConverter>();
+        builder.Services.AddSingleton<IsNotNullOrEmptyConverter>();
         builder.Services.AddSingleton<IsNotStringConverter>();
         builder.Services.AddSingleton<IsNotNullConverter>();
-        builder.Services.AddTransient<MyEventsViewModel>();
-        builder.Services.AddTransient<MyEventsPage>();
 
-        return builder.Build();
+        // Конвертеры для отчетов
+        builder.Services.AddSingleton<ShowReportActionsConverter>();
+        builder.Services.AddSingleton<ShowResolutionInfoConverter>();
+        builder.Services.AddSingleton<TabColorConverter>();
+        builder.Services.AddSingleton<TabTextColorConverter>();
 
+        builder.Services.AddSingleton<ShowReportActionsConverter>();
+        builder.Services.AddSingleton<ShowResolutionInfoConverter>();
+    }
 
+    private static void RegisterRoutes()
+    {
+        Routing.RegisterRoute(nameof(EventDetailsPage), typeof(EventDetailsPage));
+        Routing.RegisterRoute(nameof(EditProfilePage), typeof(EditProfilePage));
+        Routing.RegisterRoute(nameof(SelectInterestsPage), typeof(SelectInterestsPage));
+        Routing.RegisterRoute(nameof(TestInterestsPage), typeof(TestInterestsPage));
     }
 }

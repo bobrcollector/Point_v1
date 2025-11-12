@@ -8,10 +8,10 @@
 
     <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- Шапка -->
+        <!-- КОМПАКТНАЯ ШАПКА КАК В ModeratorDashboardPage -->
         <Frame Grid.Row="0"
                BackgroundColor="#512BD4"
-               Padding="15,50,15,20"
+               Padding="20"
                CornerRadius="0"
                HasShadow="True">
 
@@ -34,7 +34,7 @@
                        VerticalOptions="Center"/>
             </Grid>
         </Frame>
-      
+
         <!-- Контент -->
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Spacing="0">
@@ -105,20 +105,20 @@
                                        Text="👥" 
                                        FontSize="16"
                                        VerticalOptions="Center"/>
-                                     <Label Grid.Column="1" 
+                                    <Label Grid.Column="1" 
                                        Text="{Binding Event.ParticipantsDisplay}" 
                                        FontSize="16"
                                        TextColor="{AppThemeBinding Light=Black, Dark=White}"
                                        Margin="10,0,0,0"/>
 
-                                                               
-                                     <Label Grid.Column="2" 
+
+                                    <Label Grid.Column="2" 
                                        Text="Вы участвуете"
                                        FontSize="14"
                                        TextColor="#512BD4"
                                        FontAttributes="Bold"
                                        IsVisible="{Binding IsParticipating}"/>
-                                 </Grid>
+                                </Grid>
                             </VerticalStackLayout>
 
 
@@ -146,13 +146,13 @@
                                        FontSize="14"
                                        FontAttributes="Bold"
                                        HorizontalOptions="Center"/>
-                                
+
                             </Frame>
 
                         </VerticalStackLayout>
                     </VerticalStackLayout>
                 </Frame>
-                
+
 
                 <!-- Описание -->
                 <Frame Margin="20,15,20,0"
@@ -354,8 +354,35 @@
                     CornerRadius="10"/>
                 </Grid>
 
-                <!-- Сообщение для организатора (только просмотр) -->
-               
+                <!-- ИСПРАВЛЕННАЯ СЕТКА ДЛЯ КНОПОК УЧАСТИЯ И ЖАЛОБЫ -->
+                <Grid ColumnDefinitions="*,Auto" 
+              ColumnSpacing="10"
+              IsVisible="{Binding CanParticipate}">
+
+                    <!-- Основная кнопка участия -->
+                    <Button Grid.Column="0"
+                    Text="{Binding ParticipationButtonText}"
+                    Command="{Binding ToggleParticipationCommand}"
+                    BackgroundColor="{Binding ParticipationButtonColor}"
+                    TextColor="White"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    HeightRequest="50"
+                    CornerRadius="10"/>
+
+                    <!-- Кнопка жалобы -->
+                    <Button Grid.Column="1"
+                    Text="🚨"
+                    Command="{Binding ReportEventCommand}"
+                    BackgroundColor="Transparent"
+                    TextColor="Red"
+                    FontSize="16"
+                    WidthRequest="50"
+                    HeightRequest="50"
+                    CornerRadius="10"
+                    BorderColor="Red"
+                    BorderWidth="1"/>
+                </Grid>
             </Grid>
         </Frame>
         <!-- Загрузка -->

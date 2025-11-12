@@ -17,6 +17,9 @@ public class Event
     public List<string> ParticipantIds { get; set; } = new List<string>();
     public bool IsActive { get; set; } = true;
 
+    // ДОБАВЬТЕ ЭТУ СТРОКУ ДЛЯ СИСТЕМЫ ЖАЛОБ
+    public string ModerationNotes { get; set; }
+
     // Вычисляемые свойства
     public int ParticipantsCount => ParticipantIds?.Count ?? 0;
     public bool HasFreeSpots => ParticipantsCount < MaxParticipants;
@@ -50,5 +53,4 @@ public class Event
     public bool IsCreatedByUser(string userId) => CreatorId == userId;
     public bool ShowMyEventBadge { get; set; }
     public string EventTypeText { get; set; } = string.Empty;
-
 }

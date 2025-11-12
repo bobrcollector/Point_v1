@@ -55,6 +55,7 @@ public class FirebaseRestService
         }
     }
 
+
     public async Task<FirebaseAuthResponse> CreateUserWithEmailAndPassword(string email, string password, string displayName)
     {
         try
@@ -268,6 +269,76 @@ public class FirebaseRestService
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка сохранения пользователя: {ex.Message}");
+            return false;
+        }
+    }
+    public async Task<List<Report>> GetReportsAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"{FirebaseUrl}/reports.json");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var reportsDict = JsonConvert.DeserializeObject<Dictionary<string, Report>>(json);
+                return reportsDict?.Select(kvp =>
+                {
+                    kvp.Value.Id = kvp.Key;
+                    return kvp.Value;
+                }).ToList() ?? new List<Report>();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки жалоб: {ex.Message}");
+        }
+        return new List<Report>();
+    }
+
+    public async Task<bool> AddReportAsync(Report report)
+    {
+        try
+        {
+            var json = JsonConvert.SerializeObject(report);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{FirebaseUrl}/reports.json", content);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка добавления жалобы: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateReportAsync(Report report)
+    {
+        try
+        {
+            var json = JsonConvert.SerializeObject(report);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync($"{FirebaseUrl}/reports/{report.Id}.json", content);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка обновления жалобы: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> AddAuditLogAsync(AuditLog auditLog)
+    {
+        try
+        {
+            var json = JsonConvert.SerializeObject(auditLog);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{FirebaseUrl}/audit_logs.json", content);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка добавления лога: {ex.Message}");
             return false;
         }
     }

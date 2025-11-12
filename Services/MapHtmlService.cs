@@ -15,7 +15,6 @@ public class MapHtmlService
 <head>
     <meta charset='utf-8'>
     <title>Карта событий</title>
-    <!-- ЗАМЕНИ API КЛЮЧ НА ТВОЙ НОВЫЙ -->
     <script src='https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=1a0b162d-9aa4-4d51-8441-151469a3c82a' type='text/javascript'></script>
     <style>
         body, html, #map {{

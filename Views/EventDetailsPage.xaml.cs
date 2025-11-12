@@ -3,6 +3,7 @@ using Point_v1.Services;
 
 namespace Point_v1.Views;
 
+[QueryProperty(nameof(EventId), "eventId")]
 public partial class EventDetailsPage : ContentPage
 {
     public EventDetailsPage(EventDetailsViewModel viewModel)
@@ -11,18 +12,51 @@ public partial class EventDetailsPage : ContentPage
         BindingContext = viewModel;
     }
 
-    protected override void OnAppearing()
+    public string EventId
+    {
+        set
+        {
+            if (BindingContext is EventDetailsViewModel viewModel)
+            {
+                System.Diagnostics.Debug.WriteLine($"🎯 Query Property получен: {value}");
+                viewModel.EventId = value;
+
+                // Загружаем данные события
+                _ = viewModel.LoadEventDetails();
+            }
+        }
+    }
+
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
 
         if (BindingContext is EventDetailsViewModel viewModel)
         {
-            if (string.IsNullOrEmpty(viewModel.EventId) &&
-                !string.IsNullOrEmpty(GlobalEventId.EventId))
+            // Если EventId еще не установлен, ждем применения query parameters
+            if (string.IsNullOrEmpty(viewModel.EventId))
             {
-                viewModel.EventId = GlobalEventId.EventId;
-                GlobalEventId.EventId = null;
+                await Task.Delay(100);
+
+                if (string.IsNullOrEmpty(viewModel.EventId))
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ EventId не установлен после OnAppearing");
+                    await DisplayAlert("Ошибка", "Событие не найдено", "OK");
+                    await GoBack();
+                }
             }
+        }
+    }
+
+    private async Task GoBack()
+    {
+        try
+        {
+            await Shell.Current.GoToAsync("..");
+        }
+        catch
+        {
+            await Shell.Current.GoToAsync("///HomePage");
         }
     }
 }

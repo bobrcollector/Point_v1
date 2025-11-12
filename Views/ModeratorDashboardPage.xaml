@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Point_v1.Views.ModeratorDashboardPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:Point_v1.Models"
+             xmlns:converters="clr-namespace:Point_v1.Converters"
+             Title="Панель модератора">
+
+    <ContentPage.Resources>
+        <converters:ReportTypeConverter x:Key="ReportTypeConverter" />
+        <converters:ReportStatusConverter x:Key="ReportStatusConverter" />
+        <converters:ReportColorConverter x:Key="ReportColorConverter" />
+        <converters:NegativeBooleanConverter x:Key="NegativeBooleanConverter" />
+        <converters:PendingReportsColorConverter x:Key="PendingReportsColorConverter" />
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Заголовок -->
+        <Frame Grid.Row="0"
+               BackgroundColor="#512BD4"
+               Padding="20"
+               CornerRadius="0"
+               HasShadow="True">
+            <Label Text="🛡️ Панель модератора" 
+                   TextColor="White"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+        </Frame>
+
+        <!-- Контент -->
+        <RefreshView Grid.Row="1" 
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsLoading}">
+
+            <ScrollView>
+                <VerticalStackLayout Spacing="20" Padding="20">
+
+                    <!-- Сообщение о недостатке прав -->
+                    <VerticalStackLayout Spacing="15" 
+                                       HorizontalOptions="Center" 
+                                       VerticalOptions="Center"
+                                       IsVisible="{Binding IsModerator, Converter={x:StaticResource NegativeBooleanConverter}}">
+
+                        <Label Text="🛡️" 
+                               FontSize="40" 
+                               HorizontalOptions="Center"/>
+
+                        <Label Text="Доступ запрещен" 
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"/>
+
+                        <Label Text="У вас недостаточно прав для доступа к панели модератора" 
+                               FontSize="14"
+                               TextColor="Gray"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+
+                    <!-- Дашборд модератора -->
+                    <VerticalStackLayout Spacing="20"
+                                       IsVisible="{Binding IsModerator}">
+
+                        <!-- Статистика -->
+                        <Frame Padding="20" 
+                               CornerRadius="15" 
+                               HasShadow="True"
+                               BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
+                            <VerticalStackLayout Spacing="15">
+                                <Label Text="📊 Статистика" 
+                                       FontSize="18"
+                                       FontAttributes="Bold"/>
+
+                                <Grid ColumnDefinitions="*,*" 
+                                      RowDefinitions="Auto"
+                                      RowSpacing="10"
+                                      ColumnSpacing="10">
+
+                                    <!-- Ожидающие жалобы -->
+                                    <Frame Grid.Row="0" Grid.Column="0"
+                                           BackgroundColor="{Binding PendingReportsCount, Converter={x:StaticResource PendingReportsColorConverter}}"
+                                           Padding="20"
+                                           CornerRadius="12">
+                                        <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                                            <Label Text="{Binding PendingReportsCount}" 
+                                                   FontSize="28"
+                                                   FontAttributes="Bold"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center"/>
+                                            <Label Text="Ожидает жалоб" 
+                                                   FontSize="13"
+                                                   TextColor="White"
+                                                   HorizontalOptions="Center"/>
+                                        </VerticalStackLayout>
+                                    </Frame>
+
+                                    <!-- Решенные жалобы -->
+                                    <Frame Grid.Row="0" Grid.Column="1"
+                                           BackgroundColor="#E8F5E8"
+                                           Padding="20"
+                                           CornerRadius="12">
+                                        <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                                            <Label Text="{Binding ResolvedReportsCount}" 
+                                                   FontSize="28"
+                                                   FontAttributes="Bold"
+                                                   TextColor="#2E7D32"
+                                                   HorizontalOptions="Center"/>
+                                            <Label Text="Решено жалоб" 
+                                                   FontSize="13"
+                                                   TextColor="#2E7D32"
+                                                   HorizontalOptions="Center"/>
+                                        </VerticalStackLayout>
+                                    </Frame>
+                                </Grid>
+
+                                <!-- Единая кнопка управления жалобами -->
+                                <Button Text="📋 Управление всеми жалобами" 
+                                        Command="{Binding ViewAllReportsCommand}"
+                                        BackgroundColor="#512BD4"
+                                        TextColor="White"
+                                        HeightRequest="45"
+                                        CornerRadius="10"
+                                        FontSize="14"
+                                        FontAttributes="Bold"
+                                        Margin="0,10,0,0"/>
+                            </VerticalStackLayout>
+                        </Frame>
+
+                        <!-- Недавние жалобы -->
+                        <Frame Padding="20" 
+                               CornerRadius="15" 
+                               HasShadow="True"
+                               BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
+                            <VerticalStackLayout Spacing="15">
+                                <!-- УБРАЛИ Grid - теперь заголовок без наложения -->
+                                <Label Text="⏰ Недавние жалобы" 
+                                       FontSize="16"
+                                       FontAttributes="Bold"/>
+
+                                <CollectionView ItemsSource="{Binding RecentReports}"
+                                                SelectionMode="None"
+                                                HeightRequest="250">
+
+                                    <CollectionView.EmptyView>
+                                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10" HeightRequest="200">
+                                            <Label Text="✅" FontSize="40" HorizontalOptions="Center"/>
+                                            <Label Text="Нет новых жалоб" 
+                                                   FontSize="14"
+                                                   TextColor="Gray"
+                                                   HorizontalOptions="Center"/>
+                                        </VerticalStackLayout>
+                                    </CollectionView.EmptyView>
+
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="models:Report">
+                                            <Grid Padding="10,5">
+                                                <Frame BackgroundColor="{Binding Status, Converter={x:StaticResource ReportColorConverter}}"
+                                                       Padding="15"
+                                                       CornerRadius="10"
+                                                       HasShadow="True">
+
+                                                    <Grid ColumnDefinitions="*,Auto" 
+                                                          RowDefinitions="Auto,Auto,Auto"
+                                                          RowSpacing="6">
+
+                                                        <!-- Тип жалобы -->
+                                                        <Label Grid.Row="0" Grid.Column="0"
+                                                               Text="{Binding Type, Converter={x:StaticResource ReportTypeConverter}}"
+                                                               FontSize="14"
+                                                               FontAttributes="Bold"
+                                                               LineBreakMode="TailTruncation"/>
+
+                                                        <!-- Дата -->
+                                                        <Label Grid.Row="0" Grid.Column="1"
+                                                               Text="{Binding CreatedAt, StringFormat='{0:dd.MM HH:mm}'}"
+                                                               FontSize="11"
+                                                               TextColor="Gray"
+                                                               HorizontalOptions="End"/>
+
+                                                        <!-- ID события -->
+                                                        <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                                               Text="{Binding TargetEventId, StringFormat='Событие: {0}'}"
+                                                               FontSize="12"
+                                                               TextColor="Gray"
+                                                               LineBreakMode="TailTruncation"/>
+
+                                                        <!-- Действия -->
+                                                        <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                                                Text="🔍 Рассмотреть"
+                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ResolveReportCommand}"
+                                                                CommandParameter="{Binding .}"
+                                                                BackgroundColor="#512BD4"
+                                                                TextColor="White"
+                                                                HeightRequest="32"
+                                                                CornerRadius="8"
+                                                                FontSize="12"
+                                                                Margin="0,5,0,0"/>
+                                                    </Grid>
+                                                </Frame>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </VerticalStackLayout>
+                        </Frame>
+
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+        <!-- Индикатор загрузки -->
+        <ActivityIndicator Grid.Row="0" Grid.RowSpan="2"
+                           IsRunning="{Binding IsLoading}"
+                           IsVisible="{Binding IsLoading}"
+                           Color="#512BD4"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+
+    </Grid>
+</ContentPage>

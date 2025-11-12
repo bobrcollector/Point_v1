@@ -115,7 +115,7 @@
                         CornerRadius="10"
                         Margin="0,10,0,0"/>
 
-                <!-- Разделитель -->
+                <!-- Разделитель 
                 <Grid VerticalOptions="Center" Margin="0,20">
                     <BoxView HeightRequest="1" 
                              BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#444}"/>
@@ -127,7 +127,7 @@
                            HorizontalOptions="Center"/>
                 </Grid>
 
-                <!-- Социальные сети (заглушки) -->
+                 Социальные сети (заглушки) 
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="15">
                     <Button Text="Google" 
                             Clicked="OnGoogleLoginClicked"
@@ -144,7 +144,7 @@
                             TextColor="White"
                             HeightRequest="50"
                             CornerRadius="10"/>
-                </Grid>
+                </Grid>-->
 
                 <!-- Переход к регистрации -->
                 <Button Text="Зарегистрироваться" 

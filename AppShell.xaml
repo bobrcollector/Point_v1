@@ -19,7 +19,19 @@
         <Tab Title="Профиль" Icon="tab_profile.png">
             <ShellContent Route="ProfilePage" ContentTemplate="{DataTemplate views:ProfilePage}" />
         </Tab>
+
+        <!-- Админ-вкладка внутри TabBar -->
+        <Tab x:Name="AdminTab" 
+             Title="🛡️ Админ" 
+             Icon="tab_admin.png"
+             IsVisible="False">
+            <ShellContent Route="ModeratorDashboard" ContentTemplate="{DataTemplate views:ModeratorDashboardPage}" />
+        </Tab>
     </TabBar>
+    <!-- ЗДЕСЬ ТОЛЬКО ОДИН ЗАКРЫВАЮЩИЙ ТЕГ -->
+
+    <!-- Регистрация маршрутов для админ-панели -->
+    <ShellContent Route="ReportsManagementPage" ContentTemplate="{DataTemplate views:ReportsManagementPage}" />
 
     <!-- Маршруты для навигации -->
     <ShellContent Route="LoginPage" ContentTemplate="{DataTemplate views:LoginPage}" />
@@ -28,6 +40,7 @@
     <ShellContent Route="RegisterPage" ContentTemplate="{DataTemplate views:RegisterPage}" />
     <ShellContent Route="EventDetailsPage" ContentTemplate="{DataTemplate views:EventDetailsPage}" />
     <ShellContent Route="SearchPage" ContentTemplate="{DataTemplate views:SearchPage}" />
-    <!-- Добавь эту строку вместе с другими маршрутами -->
     <ShellContent Route="EditProfilePage" ContentTemplate="{DataTemplate views:EditProfilePage}" />
+    <ShellContent Route="ModeratorDashboardPage" ContentTemplate="{DataTemplate views:ModeratorDashboardPage}" />
+    <!-- ReportsManagementPage уже зарегистрирован выше -->
 </Shell>
