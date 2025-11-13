@@ -1,11 +1,60 @@
-п»їnamespace Point_v1.Services;
+namespace Point_v1.Services;
 
 public class FilterStateService
 {
-    public string SearchText { get; set; } = "";
-    public string SelectedCategory { get; set; } = "";
-    public DateTime? SelectedDate { get; set; }
-    public List<string> SelectedInterests { get; set; } = new List<string>();
+    private string _searchText = "";
+    private string _selectedCategory = "";
+    private DateTime? _selectedDate;
+    private List<string> _selectedInterests = new List<string>();
+    private List<string> _cachedFilterLabels = new List<string>();
+
+    // Событие для уведомления об изменении фильтров
+    public event EventHandler FiltersChanged;
+
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (_searchText != value)
+            {
+                _searchText = value;
+                OnFiltersChanged();
+            }
+        }
+    }
+
+    public string SelectedCategory
+    {
+        get => _selectedCategory;
+        set
+        {
+            if (_selectedCategory != value)
+            {
+                _selectedCategory = value;
+                OnFiltersChanged();
+            }
+        }
+    }
+
+    public DateTime? SelectedDate
+    {
+        get => _selectedDate;
+        set
+        {
+            if (_selectedDate != value)
+            {
+                _selectedDate = value;
+                OnFiltersChanged();
+            }
+        }
+    }
+
+    public List<string> SelectedInterests
+    {
+        get => _selectedInterests;
+        set => _selectedInterests = value;
+    }
 
     public bool HasActiveFilters =>
         !string.IsNullOrEmpty(SearchText) ||
@@ -13,7 +62,7 @@ public class FilterStateService
         SelectedDate.HasValue ||
         SelectedInterests.Any();
 
-    // РќРћР’РћР• РЎР’РћР™РЎРўР’Рћ: РЎРїРёСЃРѕРє Р°РєС‚РёРІРЅС‹С… С„РёР»СЊС‚СЂРѕРІ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+    // Список активных фильтров для отображения с кешированием
     public List<string> ActiveFilterLabels
     {
         get
@@ -21,23 +70,36 @@ public class FilterStateService
             var labels = new List<string>();
 
             if (!string.IsNullOrEmpty(SearchText))
-                labels.Add($"рџ”Ќ \"{SearchText}\"");
+                labels.Add($"?? \"{SearchText}\"");
 
             if (!string.IsNullOrEmpty(SelectedCategory))
-                labels.Add($"рџЏ·пёЏ {SelectedCategory}");
+                labels.Add($"??? {SelectedCategory}");
 
             if (SelectedDate.HasValue)
-                labels.Add($"рџ“… {SelectedDate.Value:dd.MM.yyyy}");
+                labels.Add($"?? {SelectedDate.Value:dd.MM.yyyy}");
 
+            // Кешируем значение для отслеживания изменений
+            _cachedFilterLabels = labels;
+            System.Diagnostics.Debug.WriteLine($"?? ActiveFilterLabels обновлены: {string.Join(", ", labels)}");
+            
             return labels;
         }
     }
 
     public void ClearFilters()
     {
-        SearchText = "";
-        SelectedCategory = "";
-        SelectedDate = null;
-        SelectedInterests.Clear();
+        _searchText = "";
+        _selectedCategory = "";
+        _selectedDate = null;
+        _selectedInterests.Clear();
+        _cachedFilterLabels.Clear();
+        OnFiltersChanged();
+    }
+
+    // Метод для уведомления об изменении фильтров
+    private void OnFiltersChanged()
+    {
+        System.Diagnostics.Debug.WriteLine($"?? FiltersChanged вызвано: SearchText='{_searchText}', Category='{_selectedCategory}', Date={_selectedDate}, HasActiveFilters={HasActiveFilters}");
+        FiltersChanged?.Invoke(this, EventArgs.Empty);
     }
 }

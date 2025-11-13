@@ -51,6 +51,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<NavigationStateService>();
         // Вспомогательные сервисы
         builder.Services.AddSingleton<FilterStateService>();
+        builder.Services.AddSingleton<MapViewStateService>();
     }
 
     private static void RegisterViewModels(MauiAppBuilder builder)

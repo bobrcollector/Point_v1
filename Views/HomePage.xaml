@@ -118,7 +118,8 @@
 
                 <!-- Активные фильтры -->
                 <VerticalStackLayout Spacing="8" 
-                                   IsVisible="{Binding HasActiveFilters}">
+                                   IsVisible="{Binding HasActiveFilters}"
+                                   x:Name="ActiveFiltersPanel">
 
                     <Grid ColumnDefinitions="*,Auto">
                         <Label Grid.Column="0"

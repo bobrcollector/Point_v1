@@ -5,10 +5,13 @@ namespace Point_v1.Views;
 
 public partial class HomePage : ContentPage
 {
+    private HomeViewModel _viewModel;
+
     public HomePage(HomeViewModel viewModel)
     {
         InitializeComponent();
-        BindingContext = viewModel;
+        _viewModel = viewModel;
+        BindingContext = _viewModel;
 
         // Подписываемся на изменение HTML контента
         if (viewModel != null)
@@ -40,7 +43,7 @@ public partial class HomePage : ContentPage
         }
         else if (e.PropertyName == nameof(HomeViewModel.IsMapView))
         {
-            System.Diagnostics.Debug.WriteLine($"🎯 Режим изменен: {(e.PropertyName == nameof(HomeViewModel.IsMapView) ? "Карта" : "Список")}");
+            System.Diagnostics.Debug.WriteLine($"🎯 IsMapView изменен: {(BindingContext as HomeViewModel)?.IsMapView}");
 
             if (BindingContext is HomeViewModel viewModel)
             {
@@ -49,6 +52,20 @@ public partial class HomePage : ContentPage
                     // Если переключились на карту, но контент пустой - загружаем
                     _ = viewModel.LoadMapEvents();
                 }
+            }
+        }
+        else if (e.PropertyName == nameof(HomeViewModel.HasActiveFilters) || 
+                 e.PropertyName == nameof(HomeViewModel.ActiveFilterLabels))
+        {
+            // НОВОЕ: Обновляем UI при изменении фильтров
+            System.Diagnostics.Debug.WriteLine($"🎯 Обновление фильтров: {e.PropertyName}");
+            if (BindingContext is HomeViewModel viewModel)
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    // Принудительно обновляем видимость и содержимое панели фильтров
+                    System.Diagnostics.Debug.WriteLine($"🎯 Панель фильтров обновлена: HasActiveFilters = {viewModel.HasActiveFilters}");
+                });
             }
         }
     }
@@ -133,9 +150,18 @@ public partial class HomePage : ContentPage
     {
         base.OnAppearing();
 
-        if (BindingContext is HomeViewModel viewModel)
+        try
         {
-            _ = viewModel.LoadEvents();
+            if (BindingContext is HomeViewModel viewModel)
+            {
+                // ИСПРАВЛЕНИЕ: Всегда вызываем LoadEvents которая обновит UI
+                System.Diagnostics.Debug.WriteLine("🗺️ OnAppearing: загружаем события");
+                _ = viewModel.LoadEvents();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка в OnAppearing: {ex.Message}");
         }
     }
 
@@ -173,6 +199,60 @@ public partial class HomePage : ContentPage
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка проверки события: {ex.Message}");
+        }
+    }
+
+    // НОВЫЙ МЕТОД: Центрирование карты на событие из ViewModel
+    public async Task CenterMapOnEventAsync(string eventId)
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine($"🗺️ CenterMapOnEventAsync вызван для события: {eventId}");
+
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                try
+                {
+                    // Вызываем JavaScript функцию для центрирования карты
+                    await MapWebView.EvaluateJavaScriptAsync($"window.centerMapOnEvent('{eventId}')");
+                    System.Diagnostics.Debug.WriteLine($"✅ Карта центрирована на событие: {eventId}");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Ошибка при выполнении JavaScript: {ex.Message}");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка центрирования карты: {ex.Message}");
+        }
+    }
+
+    // НОВЫЙ МЕТОД: Центрирование карты на местоположение пользователя
+    public async Task CenterMapOnUserLocationAsync()
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("🗺️ CenterMapOnUserLocationAsync вызван");
+
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                try
+                {
+                    // Вызываем JavaScript функцию для центрирования карты на пользователя
+                    await MapWebView.EvaluateJavaScriptAsync("window.centerOnUserLocation()");
+                    System.Diagnostics.Debug.WriteLine("✅ Карта центрирована на местоположение пользователя");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Ошибка при выполнении JavaScript для centerOnUserLocation: {ex.Message}");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка центрирования карты на пользователя: {ex.Message}");
         }
     }
 }

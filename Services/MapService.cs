@@ -33,20 +33,48 @@ public class MapService : IMapService
 
     public async Task<Location> GetCurrentLocationAsync()
     {
-        // Этот метод НЕ требует WaitForRateLimit, так как использует локальные сервисы
         try
         {
-            var request = new GeolocationRequest(GeolocationAccuracy.Medium);
+            // Проверяем разрешения
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            
+            if (status != PermissionStatus.Granted)
+            {
+                status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+                if (status != PermissionStatus.Granted)
+                {
+                    System.Diagnostics.Debug.WriteLine("📍 Разрешение на геолокацию отклонено");
+                    return new Location(55.7558, 37.6173); // Default Moscow location
+                }
+            }
+
+            var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
             var location = await Geolocation.Default.GetLocationAsync(request);
 
             if (location != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"📍 Получена локация: {location.Latitude}, {location.Longitude}");
                 return location;
+            }
+        }
+        catch (FeatureNotSupportedException ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Геолокация не поддерживается на устройстве: {ex.Message}");
+        }
+        catch (FeatureNotEnabledException ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Геолокация отключена на устройстве: {ex.Message}");
+        }
+        catch (PermissionException ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Недостаточно разрешений для геолокации: {ex.Message}");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка получения локации: {ex.Message}");
         }
 
+        // Default Moscow location fallback
         return new Location(55.7558, 37.6173);
     }
 

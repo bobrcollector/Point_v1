@@ -53,4 +53,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Point_v1.Tests\" />
+	  <Folder Include="Tests\" />
+	</ItemGroup>
 </Project>

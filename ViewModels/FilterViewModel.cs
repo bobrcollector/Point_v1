@@ -8,11 +8,13 @@ public class FilterViewModel : BaseViewModel
 {
     private readonly FilterStateService _filterStateService;
     private readonly ISearchService _searchService;
+    private readonly MapViewStateService _mapViewStateService;
 
-    public FilterViewModel(FilterStateService filterStateService, ISearchService searchService)
+    public FilterViewModel(FilterStateService filterStateService, ISearchService searchService, MapViewStateService mapViewStateService)
     {
         _filterStateService = filterStateService;
         _searchService = searchService;
+        _mapViewStateService = mapViewStateService;
 
         ApplyFiltersCommand = new Command(async () => await ApplyFilters());
         ResetFiltersCommand = new Command(async () => await ResetFilters());
@@ -51,6 +53,14 @@ public class FilterViewModel : BaseViewModel
         set => SetProperty(ref _availableCategories, value);
     }
 
+    // НОВОЕ: Сохраняем информацию о том, была ли открыта карта
+    private bool _wasMapViewActive = false;
+    public bool WasMapViewActive
+    {
+        get => _wasMapViewActive;
+        set => SetProperty(ref _wasMapViewActive, value);
+    }
+
     public ICommand ApplyFiltersCommand { get; }
     public ICommand ResetFiltersCommand { get; }
     public ICommand CloseCommand { get; }
@@ -81,36 +91,57 @@ public class FilterViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine($"🎯 Применяем фильтры: '{SearchText}', '{SelectedCategory}', {SelectedDate}");
 
-            // Сохраняем фильтры в сервис
+            // Сохраняем фильтры в сервис - это автоматически вызовет FiltersChanged событие
             _filterStateService.SearchText = SearchText;
             _filterStateService.SelectedCategory = SelectedCategory;
             _filterStateService.SelectedDate = SelectedDate;
 
-            await Application.Current.MainPage.DisplayAlert("Фильтры", "Фильтры применены", "OK");
+            System.Diagnostics.Debug.WriteLine($"✅ Фильтры сохранены, IsMapViewActive = {_mapViewStateService.IsMapViewActive}");
+            
+            // Немедленно возвращаемся на HomePage - LoadEvents уже применит фильтры
             await Shell.Current.GoToAsync("//HomePage");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка применения фильтров: {ex.Message}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось применить фильтры", "OK");
+            try
+            {
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось применить фильтры", "OK");
+            }
+            catch { /* Игнорируем ошибки при отображении диалога */ }
         }
     }
 
     private async Task ResetFilters()
     {
-        SearchText = "";
-        SelectedCategory = "";
-        SelectedDate = null;
+        try
+        {
+            SearchText = "";
+            SelectedCategory = "";
+            SelectedDate = null;
 
-        // Очищаем фильтры в сервисе
-        _filterStateService.ClearFilters();
+            // Очищаем фильтры в сервисе - это автоматически вызовет FiltersChanged событие
+            _filterStateService.ClearFilters();
 
-        await Application.Current.MainPage.DisplayAlert("Фильтры", "Фильтры сброшены", "OK");
-        await Shell.Current.GoToAsync("//HomePage");
+            System.Diagnostics.Debug.WriteLine($"✅ Фильтры очищены, IsMapViewActive = {_mapViewStateService.IsMapViewActive}");
+            
+            // Немедленно возвращаемся на HomePage - LoadEvents уже применит изменения
+            await Shell.Current.GoToAsync("//HomePage");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка сброса фильтров: {ex.Message}");
+            try
+            {
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось сбросить фильтры", "OK");
+            }
+            catch { /* Игнорируем ошибки при отображении диалога */ }
+        }
     }
 
     private async Task Close()
     {
+        System.Diagnostics.Debug.WriteLine($"🔚 Закрытие страницы фильтров без применения, IsMapViewActive = {_mapViewStateService.IsMapViewActive}");
         await Shell.Current.GoToAsync("//HomePage");
     }
 }

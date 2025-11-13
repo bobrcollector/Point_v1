@@ -17,7 +17,8 @@ public class SearchService : ISearchService
 
         if (allEvents == null) return new List<Event>();
 
-        var filteredEvents = allEvents.Where(e => e.IsActive);
+        // ИСПРАВЛЕНИЕ: Исключаем только завершенные события
+        var filteredEvents = allEvents.Where(e => e.IsActive && e.EventDate > DateTime.Now);
 
         if (!string.IsNullOrEmpty(query))
         {
@@ -43,10 +44,12 @@ public class SearchService : ISearchService
     public async Task<List<string>> GetAvailableCategoriesAsync()
     {
         var events = await _dataService.GetEventsAsync();
+        // ИСПРАВЛЕНИЕ: Получаем все категории из будущих активных событий
         return events?
-            .Where(e => !string.IsNullOrEmpty(e.CategoryId))
+            .Where(e => !string.IsNullOrEmpty(e.CategoryId) && e.IsActive && e.EventDate > DateTime.Now)
             .Select(e => e.CategoryId)
             .Distinct()
+            .OrderBy(c => c)  // Сортируем для удобства
             .ToList() ?? new List<string>();
     }
 
