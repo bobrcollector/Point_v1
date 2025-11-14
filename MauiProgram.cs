@@ -43,7 +43,6 @@ public static class MauiProgram
         builder.Services.AddSingleton<IAuthStateService, AuthStateService>();
         builder.Services.AddSingleton<ISearchService, SearchService>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();
-        builder.Services.AddSingleton<IMessagingService, MessagingService>();
         builder.Services.AddSingleton<IMapService, MapService>();
         builder.Services.AddSingleton<MapHtmlService>();
         builder.Services.AddSingleton<IAuthorizationService, AuthorizationService>();
@@ -89,10 +88,8 @@ public static class MauiProgram
         builder.Services.AddTransient<EditProfilePage>();
         builder.Services.AddTransient<SelectInterestsPage>();
         builder.Services.AddTransient<TestInterestsPage>();
-        builder.Services.AddTransient<ModeratorDashboardPage>();
-        builder.Services.AddTransient<ReportsManagementPage>();
 
-        // AppShell
+        // AppShell с зависимостями для проверки прав модератора
         builder.Services.AddSingleton<AppShell>();
     }
 

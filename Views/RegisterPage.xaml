@@ -13,39 +13,27 @@
     </ContentPage.Resources>
 
     <ScrollView>
-        <Grid RowDefinitions="Auto,*,Auto" 
-              VerticalOptions="Start"
-              Padding="30">
+        <VerticalStackLayout Spacing="0" VerticalOptions="Start" Padding="30">
 
-            <!-- Верхний баннер (без изменений) -->
-            <Frame Grid.Row="0"
-                   BackgroundColor="#512BD4"
-                   Padding="40,60"
-                   CornerRadius="20"
-                   HasShadow="True"
-                   HorizontalOptions="Fill"
-                   Margin="0,0,0,30">
+            <!-- Упрощенный заголовок -->
+            <VerticalStackLayout Spacing="15" Margin="0,40,0,40" HorizontalOptions="Center">
+                <Label Text="🚀" 
+                       FontSize="48"
+                       HorizontalOptions="Center"/>
 
-                <VerticalStackLayout Spacing="15" HorizontalOptions="Center">
-                    <Label Text="🚀" 
-                           FontSize="40"
-                           HorizontalOptions="Center"/>
+                <Label Text="Присоединяйтесь!" 
+                       Style="{StaticResource Heading1}"
+                       HorizontalOptions="Center"
+                       Margin="0"/>
 
-                    <Label Text="Присоединяйтесь!" 
-                           FontSize="28" 
-                           TextColor="White"
-                           FontAttributes="Bold"
-                           HorizontalOptions="Center"/>
-
-                    <Label Text="Создайте новый аккаунт" 
-                           FontSize="16" 
-                           TextColor="#DFD8F7"
-                           HorizontalOptions="Center"/>
-                </VerticalStackLayout>
-            </Frame>
+                <Label Text="Создайте новый аккаунт" 
+                       FontSize="16" 
+                       TextColor="{AppThemeBinding Light=Gray, Dark=#A0A0A0}"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
 
             <!-- Форма регистрации -->
-            <VerticalStackLayout Grid.Row="1" Spacing="20">
+            <VerticalStackLayout Spacing="16">
 
                 <!-- Сообщения -->
                 <Label Text="{Binding SuccessMessage}" 
@@ -64,110 +52,86 @@
                        Padding="15,10"
                        HorizontalTextAlignment="Center"/>
 
-                <!-- Поля формы -->
-                <VerticalStackLayout Spacing="15">
-                    <!-- Имя пользователя -->
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="Имя пользователя" 
-                               FontSize="14" 
-                               FontAttributes="Bold"
-                               TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
-                        <Entry Placeholder="Придумайте имя" 
-                               Text="{Binding DisplayName}"
-                               BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
-                               TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                               HeightRequest="50"/>
-                    </VerticalStackLayout>
+                <!-- Имя пользователя -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Имя пользователя" 
+                           Style="{StaticResource FormLabel}"/>
+                    <Entry Placeholder="Придумайте имя" 
+                           Text="{Binding DisplayName}"/>
+                </VerticalStackLayout>
 
-                    <!-- Email -->
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="Email" 
-                               FontSize="14" 
-                               FontAttributes="Bold"
-                               TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
-                        <Entry Placeholder="your@email.com" 
-                               Text="{Binding Email}"
-                               Keyboard="Email"
-                               BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
-                               TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                               HeightRequest="50"/>
-                    </VerticalStackLayout>
+                <!-- Email -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Email" 
+                           Style="{StaticResource FormLabel}"/>
+                    <Entry Placeholder="your@email.com" 
+                           Text="{Binding Email}"
+                           Keyboard="Email"/>
+                </VerticalStackLayout>
 
-                    <!-- Пароль -->
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="Пароль" 
-                               FontSize="14" 
-                               FontAttributes="Bold"
-                               TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
-                        <Entry Placeholder="Минимум 6 символов" 
-                               Text="{Binding Password}"
-                               IsPassword="True"
-                               BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
-                               TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                               HeightRequest="50"/>
+                <!-- Пароль -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Пароль" 
+                           Style="{StaticResource FormLabel}"/>
+                    <Entry Placeholder="Минимум 6 символов" 
+                           Text="{Binding Password}"
+                           IsPassword="True"/>
 
-                        <!-- Валидация пароля -->
-                        <Label Text="{Binding PasswordValidationMessage}" 
-                               FontSize="12" 
-                               TextColor="{Binding Password.Length, Converter={StaticResource PasswordLengthToColorConverter}}"
-                               IsVisible="{Binding Password, Converter={converters:IsNotNullOrEmptyConverter}}"
-                               Margin="0,5,0,0"/>
-                    </VerticalStackLayout>
+                    <!-- Валидация пароля -->
+                    <Label Text="{Binding PasswordValidationMessage}" 
+                           FontSize="12" 
+                           TextColor="{Binding PasswordValidationColor}"
+                           IsVisible="{Binding Password, Converter={converters:IsNotNullOrEmptyConverter}}"/>
+                </VerticalStackLayout>
 
-                    <!-- Подтверждение пароля -->
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="Подтвердите пароль" 
-                               FontSize="14" 
-                               FontAttributes="Bold"
-                               TextColor="{AppThemeBinding Light=#333, Dark=White}"/>
-                        <Entry Placeholder="Повторите пароль" 
-                               Text="{Binding ConfirmPassword}"
-                               IsPassword="True"
-                               BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
-                               TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                               HeightRequest="50"/>
+                <!-- Подтверждение пароля -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Подтвердите пароль" 
+                           Style="{StaticResource FormLabel}"/>
+                    <Entry Placeholder="Повторите пароль" 
+                           Text="{Binding ConfirmPassword}"
+                           IsPassword="True"/>
 
-                        <!-- Валидация подтверждения пароля -->
-                        <Label Text="{Binding ConfirmPasswordValidationMessage}" 
-                               FontSize="12" 
-                               TextColor="{Binding PasswordsMatch, Converter={x:Static converters:BoolToColorConverter}}"
-                               IsVisible="{Binding ConfirmPassword, Converter={converters:IsNotNullOrEmptyConverter}}"
-                               Margin="0,5,0,0"/>
-                    </VerticalStackLayout>
+                    <!-- Валидация подтверждения пароля -->
+                    <Label Text="{Binding ConfirmPasswordValidationMessage}" 
+                           FontSize="12" 
+                           TextColor="{Binding PasswordsMatch, Converter={StaticResource BoolToColorConverter}}"
+                           IsVisible="{Binding ConfirmPassword, Converter={converters:IsNotNullOrEmptyConverter}}"/>
                 </VerticalStackLayout>
 
                 <!-- Кнопка регистрации -->
                 <Button Text="Создать аккаунт" 
                         Command="{Binding RegisterCommand}"
-                        BackgroundColor="#512BD4"
-                        TextColor="White"
-                        FontSize="16"
-                        FontAttributes="Bold"
-                        HeightRequest="50"
-                        CornerRadius="10"
-                        Margin="0,10,0,0"/>
+                        Margin="0,12,0,0"/>
+
+                <!-- Разделитель -->
+                <Grid VerticalOptions="Center" Margin="0,16">
+                    <BoxView HeightRequest="1" 
+                             BackgroundColor="{AppThemeBinding Light=#E0E0E0, Dark=#444}"/>
+                    <Label Text="или" 
+                           BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+                           Padding="10,0"
+                           FontSize="14"
+                           TextColor="Gray"
+                           HorizontalOptions="Center"/>
+                </Grid>
 
                 <!-- Переход ко входу -->
                 <Button Text="Войти в аккаунт" 
                         Command="{Binding GoToLoginPageCommand}"
-                        BackgroundColor="Transparent"
-                        TextColor="#512BD4"
-                        BorderColor="#512BD4"
-                        BorderWidth="1"
-                        HeightRequest="45"
-                        Margin="0,20,0,0"/>
+                        Style="{StaticResource SecondaryButton}"/>
 
             </VerticalStackLayout>
 
             <!-- Индикатор загрузки -->
-            <ActivityIndicator Grid.Row="2"
-                             IsVisible="{Binding IsBusy}" 
+            <ActivityIndicator IsVisible="{Binding IsBusy}" 
                              IsRunning="{Binding IsBusy}"
                              Color="#512BD4"
                              HorizontalOptions="Center"
                              VerticalOptions="End"
-                             HeightRequest="50"/>
+                             HeightRequest="50"
+                             Margin="0,30,0,0"/>
 
-        </Grid>
+        </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

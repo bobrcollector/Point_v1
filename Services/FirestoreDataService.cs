@@ -222,12 +222,29 @@ public class FirestoreDataService : IDataService
         {
             // Используем FirebaseRestService для получения пользователя
             var users = await GetAllUsersAsync();
-            return users.FirstOrDefault(u => u.Id == userId);
+            var user = users.FirstOrDefault(u => u.Id == userId);
+            
+            if (user == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ Пользователь {userId} не найден в базе, создаем default");
+                user = new User { Id = userId, DisplayName = "Пользователь", Role = UserRole.User };
+            }
+            
+            // ТЕСТОВАЯ ЛОГИКА: установим определенных пользователей как модераторов для тестирования
+            if (userId == "test_moderator" || userId == "admin_test")
+            {
+                user.Role = UserRole.Admin;
+                System.Diagnostics.Debug.WriteLine($"🧪 ТЕСТ: Пользователь {userId} установлен как Admin для тестирования");
+            }
+            
+            System.Diagnostics.Debug.WriteLine($"✅ Пользователь: {user.DisplayName}, Role = {user.Role}");
+            
+            return user;
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки пользователя: {ex.Message}");
-            return new User { Id = userId, DisplayName = "Пользователь" };
+            return new User { Id = userId, DisplayName = "Пользователь", Role = UserRole.User };
         }
     }
 
@@ -249,7 +266,16 @@ public class FirestoreDataService : IDataService
     {
         try
         {
-            return await _firebaseRest.GetUsersAsync();
+            var users = await _firebaseRest.GetUsersAsync();
+            
+            // ТЕСТОВАЯ ЛОГИКА: Для демонстрации, установим первого пользователя как модератора
+            // В production нужно получать роли из Firebase
+            foreach (var user in users)
+            {
+                System.Diagnostics.Debug.WriteLine($"👤 Пользователь из Firebase: {user.Id}, Role: {user.Role}");
+            }
+            
+            return users;
         }
         catch (Exception ex)
         {

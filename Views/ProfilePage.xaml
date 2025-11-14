@@ -4,84 +4,69 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:Point_v1.Models"
              xmlns:converters="clr-namespace:Point_v1.Converters"
-             Title="Профиль">
+             Title="Профиль"
+             BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#1C1C1E}">
 
     <ContentPage.Resources>
         <converters:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*,Auto">
-
-        <!-- Заголовок -->
-        <Frame Grid.Row="0"
-               BackgroundColor="#512BD4"
-               Padding="20"
-               CornerRadius="0"
-               HasShadow="True">
-            <Label Text="Профиль" 
-                   TextColor="White"
-                   FontSize="20"
-                   FontAttributes="Bold"
-                   HorizontalOptions="Center"/>
-        </Frame>
+    <Grid RowDefinitions="*">
 
         <!-- Контент -->
-        <ScrollView Grid.Row="1">
-            <VerticalStackLayout Spacing="20" Padding="20">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Spacing="12" Padding="15">
 
                 <!-- Гостевой режим -->
                 <VerticalStackLayout Spacing="15" 
                                    HorizontalOptions="Center" 
                                    VerticalOptions="Center"
-                                   IsVisible="{Binding IsGuestMode}">
+                                   IsVisible="{Binding IsGuestMode}"
+                                   Margin="0,60,0,0">
 
                     <Label Text="👤" 
-                           FontSize="40" 
+                           FontSize="48" 
                            HorizontalOptions="Center"/>
 
                     <Label Text="Вы не авторизованы" 
-                           FontSize="18"
+                           FontSize="20"
                            FontAttributes="Bold"
-                           HorizontalOptions="Center"/>
+                           HorizontalOptions="Center"
+                           TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
 
                     <Label Text="Войдите, чтобы увидеть свой профиль и создавать события" 
                            FontSize="14"
                            TextColor="Gray"
                            HorizontalOptions="Center"
-                           HorizontalTextAlignment="Center"/>
+                           HorizontalTextAlignment="Center"
+                           Margin="0,10,0,0"/>
 
                     <Button Text="Войти / Зарегистрироваться" 
                             Command="{Binding GoToLoginCommand}"
-                            BackgroundColor="#512BD4"
-                            HorizontalOptions="Fill"
-                            HeightRequest="50"
+                            HeightRequest="48"
                             Margin="0,20,0,0"/>
                 </VerticalStackLayout>
 
                 <!-- Авторизованный пользователь -->
-                <VerticalStackLayout Spacing="20"
+                <VerticalStackLayout Spacing="12"
                                    IsVisible="{Binding IsAuthenticated}">
 
                     <!-- Аватар и информация -->
-                    <!-- Аватар и информация -->
-                    <Frame Padding="20" 
-       CornerRadius="15" 
-       HasShadow="True"
-       BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
+                    <Frame Style="{StaticResource SectionHeaderFrame}">
                         <VerticalStackLayout Spacing="15">
                             <Grid ColumnDefinitions="Auto,*">
                                 <!-- Аватар -->
                                 <Frame Grid.Column="0"
-                   BackgroundColor="#512BD4"
-                   Padding="0"
-                   CornerRadius="50"
-                   HeightRequest="80"
-                   WidthRequest="80"
-                   HorizontalOptions="Start">
+                                       BackgroundColor="#512BD4"
+                                       Padding="0"
+                                       CornerRadius="40"
+                                       HeightRequest="80"
+                                       WidthRequest="80"
+                                       HorizontalOptions="Start">
                                     <Image Source="{Binding AvatarImage}"
-                       Aspect="AspectFill"
-                       HeightRequest="80"
-                       WidthRequest="80">
+                                           Aspect="AspectFill"
+                                           HeightRequest="80"
+                                           WidthRequest="80">
                                         <Image.Clip>
                                             <RoundRectangleGeometry Rect="0,0,80,80" CornerRadius="40"/>
                                         </Image.Clip>
@@ -89,63 +74,57 @@
                                 </Frame>
 
                                 <VerticalStackLayout Grid.Column="1" 
-                               Spacing="8"
-                               VerticalOptions="Center"
-                               Margin="15,0,0,0">
+                                                   Spacing="8"
+                                                   VerticalOptions="Center"
+                                                   Margin="15,0,0,0">
                                     <Label Text="{Binding UserName}" 
-                       FontSize="20"
-                       FontAttributes="Bold"/>
+                                           FontSize="20"
+                                           FontAttributes="Bold"
+                                           TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
 
-                                    <!-- ГОРОД - ТОЛЬКО ОДИН LABEL -->
                                     <Label Text="{Binding City, StringFormat='📍 {0}'}" 
-                       FontSize="14"
-                       TextColor="Gray"
-                       IsVisible="{Binding City, Converter={x:StaticResource IsNotNullOrEmptyConverter}}"/>
+                                           FontSize="14"
+                                           TextColor="Gray"
+                                           IsVisible="{Binding City, Converter={x:StaticResource IsNotNullOrEmptyConverter}}"/>
 
                                 </VerticalStackLayout>
                             </Grid>
 
                             <!-- О себе -->
                             <Label Text="{Binding About}" 
-               FontSize="14"
-               TextColor="Gray"
-               LineBreakMode="WordWrap"
-               IsVisible="{Binding About, Converter={x:StaticResource IsNotNullOrEmptyConverter}}"/>
+                                   FontSize="14"
+                                   TextColor="Gray"
+                                   LineBreakMode="WordWrap"
+                                   IsVisible="{Binding About, Converter={x:StaticResource IsNotNullOrEmptyConverter}}"/>
                         </VerticalStackLayout>
                     </Frame>
 
                     <!-- Интересы пользователя -->
-                    <!-- Интересы пользователя -->
-                    <Frame Padding="20" 
-       CornerRadius="15" 
-       HasShadow="True"
-       BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}"
-       IsVisible="{Binding SelectedInterests.Count, Converter={x:StaticResource IsNotNullOrEmptyConverter}}">
+                    <Frame Style="{StaticResource SectionHeaderFrame}"
+                           IsVisible="{Binding SelectedInterests.Count, Converter={x:StaticResource IsNotNullOrEmptyConverter}}">
                         <VerticalStackLayout Spacing="10">
                             <Label Text="Мои интересы" 
-               FontSize="16"
-               FontAttributes="Bold"/>
+                                   Style="{StaticResource Heading3}"/>
 
                             <FlexLayout BindableLayout.ItemsSource="{Binding SelectedInterests}"
-                    Direction="Row"
-                    Wrap="Wrap"
-                    JustifyContent="Start"
-                    AlignItems="Start">
+                                        Direction="Row"
+                                        Wrap="Wrap"
+                                        JustifyContent="Start"
+                                        AlignItems="Start">
 
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
-                                        <!-- ДОБАВИМ ОТЛАДОЧНЫЙ ТЕКСТ -->
                                         <Frame BackgroundColor="#DFD8F7"
-                           Padding="12,6"
-                           CornerRadius="12"
-                           Margin="4,2"
-                           HasShadow="False">
+                                               Padding="12,6"
+                                               CornerRadius="12"
+                                               Margin="4,2"
+                                               HasShadow="False">
                                             <Label Text="{Binding Name}"
-                               TextColor="#512BD4"
-                               FontSize="12"
-                               FontAttributes="Bold"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center"/>
+                                                   TextColor="#512BD4"
+                                                   FontSize="12"
+                                                   FontAttributes="Bold"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center"/>
                                         </Frame>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
@@ -154,71 +133,67 @@
                     </Frame>
 
                     <!-- Статистика -->
-                    <Frame Padding="20" 
-       CornerRadius="15" 
-       HasShadow="True"
-       BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
+                    <Frame Style="{StaticResource SectionHeaderFrame}">
                         <VerticalStackLayout Spacing="10">
                             <Label Text="Статистика" 
-               FontSize="16"
-               FontAttributes="Bold"/>
+                                   Style="{StaticResource Heading3}"/>
 
                             <Grid ColumnDefinitions="*,*,*" 
-              RowDefinitions="Auto"
-              RowSpacing="10"
-              ColumnSpacing="10">
+                                  RowDefinitions="Auto"
+                                  RowSpacing="10"
+                                  ColumnSpacing="10">
 
                                 <!-- Создано событий -->
                                 <Frame Grid.Column="0"
-                   BackgroundColor="#E8F5E8"
-                   Padding="15"
-                   CornerRadius="10">
+                                       BackgroundColor="#E8F5E8"
+                                       Padding="15"
+                                       CornerRadius="12">
                                     <VerticalStackLayout Spacing="5">
                                         <Label Text="{Binding CreatedEventsCount}" 
-                           FontSize="20"
-                           FontAttributes="Bold"
-                           TextColor="#2E7D32"
-                           HorizontalOptions="Center"/>
-                                        <Label Text="Создано событий" 
-                           FontSize="12"
-                           TextColor="#2E7D32"
-                           HorizontalOptions="Center"/>
+                                               FontSize="20"
+                                               FontAttributes="Bold"
+                                               TextColor="#2E7D32"
+                                               HorizontalOptions="Center"/>
+                                        <Label Text="Создано" 
+                                               FontSize="12"
+                                               TextColor="#2E7D32"
+                                               HorizontalOptions="Center"/>
                                     </VerticalStackLayout>
                                 </Frame>
 
                                 <!-- Участвовал -->
                                 <Frame Grid.Column="1"
-                   BackgroundColor="#E3F2FD"
-                   Padding="15"
-                   CornerRadius="10">
+                                       BackgroundColor="#E3F2FD"
+                                       Padding="15"
+                                       CornerRadius="12">
                                     <VerticalStackLayout Spacing="5">
                                         <Label Text="{Binding ParticipatedEventsCount}" 
-                           FontSize="20"
-                           FontAttributes="Bold"
-                           TextColor="#1976D2"
-                           HorizontalOptions="Center"/>
+                                               FontSize="20"
+                                               FontAttributes="Bold"
+                                               TextColor="#1976D2"
+                                               HorizontalOptions="Center"/>
                                         <Label Text="Участвовал" 
-                           FontSize="12"
-                           TextColor="#1976D2"
-                           HorizontalOptions="Center"/>
+                                               FontSize="12"
+                                               TextColor="#1976D2"
+                                               HorizontalOptions="Center"/>
                                     </VerticalStackLayout>
                                 </Frame>
 
                                 <!-- Предстоящие -->
                                 <Frame Grid.Column="2"
-                   BackgroundColor="#FFF3E0"
-                   Padding="15"
-                   CornerRadius="10">
+                                       BackgroundColor="#FFF3E0"
+                                       Padding="15"
+                                       CornerRadius="12">
                                     <VerticalStackLayout Spacing="5">
                                         <Label Text="{Binding UpcomingEventsCount}" 
-                           FontSize="20"
-                           FontAttributes="Bold"
-                           TextColor="#F57C00"
-                           HorizontalOptions="Center"/>
+                                               FontSize="20"
+                                               FontAttributes="Bold"
+                                               TextColor="#F57C00"
+                                               HorizontalOptions="Center"/>
                                         <Label Text="Предстоящие" 
-                           FontSize="12"
-                           TextColor="#F57C00"
-                           HorizontalOptions="Center"/>
+                                               FontSize="12"
+                                               TextColor="#F57C00"
+                                               HorizontalOptions="Center"/>
                                     </VerticalStackLayout>
                                 </Frame>
                             </Grid>
@@ -226,40 +201,23 @@
                     </Frame>
 
                     <!-- Действия -->
-                    <Frame Padding="20" 
-                           CornerRadius="15" 
-                           HasShadow="True"
-                           BackgroundColor="{AppThemeBinding Light=White, Dark=#2C2C2E}">
-                        <VerticalStackLayout Spacing="15">
+                    <Frame Style="{StaticResource SectionHeaderFrame}">
+                        <VerticalStackLayout Spacing="10">
                             <Label Text="Действия" 
-                                   FontSize="16"
-                                   FontAttributes="Bold"/>
+                                   Style="{StaticResource Heading3}"/>
 
                             <Button Text="✏️ Редактировать профиль" 
                                     Command="{Binding EditProfileCommand}"
-                                    BackgroundColor="Transparent"
-                                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                                    HorizontalOptions="Fill"
-                                    BorderColor="#E0E0E0"
-                                    BorderWidth="1"
-                                    HeightRequest="45"/>
+                                    Style="{StaticResource OutlineButton}"/>
 
                             <Button Text="⚙️ Настройки" 
                                     Clicked="OnSettingsClicked"
-                                    BackgroundColor="Transparent"
-                                    TextColor="{AppThemeBinding Light=Black, Dark=White}"
-                                    HorizontalOptions="Fill"
-                                    BorderColor="#E0E0E0"
-                                    BorderWidth="1"
-                                    HeightRequest="45"/>
+                                    Style="{StaticResource OutlineButton}"/>
 
                             <Button Text="🚪 Выйти" 
                                     Command="{Binding SignOutCommand}"
-                                    BackgroundColor="#FFE0E0"
-                                    TextColor="#D32F2F"
-                                    HorizontalOptions="Fill"
-                                    HeightRequest="45"
-                                    Margin="0,10,0,0"/>
+                                    Style="{StaticResource DangerButton}"
+                                    Margin="0,5,0,0"/>
                         </VerticalStackLayout>
                     </Frame>
 

@@ -123,6 +123,13 @@ public class AuthViewModel : BaseViewModel
         set => SetProperty(ref _passwordsMatch, value);
     }
 
+    private Color _passwordValidationColor = Colors.Gray;
+    public Color PasswordValidationColor
+    {
+        get => _passwordValidationColor;
+        set => SetProperty(ref _passwordValidationColor, value);
+    }
+
     // Команды
     public Command LoginCommand { get; }
     public Command RegisterCommand { get; }
@@ -356,16 +363,19 @@ public class AuthViewModel : BaseViewModel
         if (string.IsNullOrEmpty(Password))
         {
             PasswordValidationMessage = "";
+            PasswordValidationColor = Colors.Gray;
             return;
         }
 
         if (Password.Length < 6)
         {
             PasswordValidationMessage = "Слишком короткий пароль";
+            PasswordValidationColor = Color.FromArgb("#D32F2F");
         }
         else
         {
-            PasswordValidationMessage = "Пароль надежный";
+            PasswordValidationMessage = "Пароль подходит";
+            PasswordValidationColor = Color.FromArgb("#4CAF50");
         }
     }
 

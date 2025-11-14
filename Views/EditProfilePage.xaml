@@ -5,13 +5,13 @@
              Title="Редактирование профиля">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="20" Padding="20">
+        <VerticalStackLayout Spacing="16" Padding="20">
 
             <!-- Заголовок -->
             <Label Text="Редактирование профиля" 
-                   FontSize="20" 
-                   FontAttributes="Bold"
-                   HorizontalOptions="Center"/>
+                   Style="{StaticResource Heading2}"
+                   HorizontalOptions="Center"
+                   Margin="0"/>
 
             <!-- Аватар -->
             <Frame HorizontalOptions="Center" 
@@ -32,66 +32,54 @@
                        BackgroundColor="#512BD4"
                        HeightRequest="150"
                        WidthRequest="150">
-                    <Image.Clip>
-                        <RoundRectangleGeometry Rect="0,0,150,150" CornerRadius="75"/>
-                    </Image.Clip>
                 </Image>
             </Frame>
 
             <Button Text="Изменить аватар" 
                     Command="{Binding ChangeAvatarCommand}"
-                    BackgroundColor="Transparent"
-                    TextColor="#512BD4"
-                    HorizontalOptions="Center"/>
+                    Style="{StaticResource OutlineButton}"/>
 
-            <!-- Остальной код без изменений -->
-            <VerticalStackLayout Spacing="15">
+            <!-- Основная информация -->
+            <VerticalStackLayout Spacing="12">
                 <Label Text="Основная информация" 
-                       FontSize="16" 
-                       FontAttributes="Bold"/>
+                       Style="{StaticResource Heading3}"/>
 
                 <!-- Имя -->
-                <VerticalStackLayout Spacing="5">
+                <VerticalStackLayout Spacing="8">
                     <Label Text="Имя пользователя" 
-                           FontSize="14"/>
+                           Style="{StaticResource FormLabel}"/>
                     <Entry Text="{Binding DisplayName}"
-                           Placeholder="Введите ваше имя"
-                           BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
-                           HeightRequest="50"/>
+                           Placeholder="Введите ваше имя"/>
                 </VerticalStackLayout>
 
                 <!-- Город -->
-                <VerticalStackLayout Spacing="5">
+                <VerticalStackLayout Spacing="8">
                     <Label Text="Город" 
-                           FontSize="14"/>
+                           Style="{StaticResource FormLabel}"/>
                     <Entry Text="{Binding City}"
-                           Placeholder="Введите ваш город"
-                           BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
-                           HeightRequest="50"/>
+                           Placeholder="Введите ваш город"/>
                 </VerticalStackLayout>
 
                 <!-- О себе -->
-                <VerticalStackLayout Spacing="5">
+                <VerticalStackLayout Spacing="8">
                     <Label Text="О себе" 
-                           FontSize="14"/>
+                           Style="{StaticResource FormLabel}"/>
                     <Editor Text="{Binding About}"
                             Placeholder="Расскажите о себе..."
-                            BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2C2C2E}"
                             HeightRequest="100"/>
                 </VerticalStackLayout>
             </VerticalStackLayout>
 
             <!-- Интересы -->
-            <VerticalStackLayout Spacing="15">
+            <VerticalStackLayout Spacing="12">
                 <Label Text="Мои интересы" 
-                       FontSize="16" 
-                       FontAttributes="Bold"/>
+                       Style="{StaticResource Heading3}"/>
 
                 <Button Text="Выбрать интересы ➕"
                         Command="{Binding SelectInterestsCommand}"
-                        BackgroundColor="#E8E8E8"
-                        TextColor="Black"
-                        HeightRequest="45"/>
+                        Style="{StaticResource SmallButton}"
+                        BackgroundColor="#DFD8F7"
+                        TextColor="#512BD4"/>
 
                 <!-- Список выбранных интересов -->
                 <CollectionView ItemsSource="{Binding SelectedInterests}"
@@ -104,11 +92,13 @@
                         <DataTemplate>
                             <Frame BackgroundColor="#DFD8F7"
                                    Padding="10,5"
-                                   CornerRadius="15"
-                                   Margin="2">
+                                   CornerRadius="12"
+                                   Margin="2"
+                                   HasShadow="False">
                                 <Label Text="{Binding Name}"
                                        TextColor="#512BD4"
-                                       FontSize="12"/>
+                                       FontSize="12"
+                                       FontAttributes="Bold"/>
                             </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
@@ -116,19 +106,13 @@
             </VerticalStackLayout>
 
             <!-- Кнопки действий -->
-            <VerticalStackLayout Spacing="10" Margin="0,20,0,0">
+            <VerticalStackLayout Spacing="10" Margin="0,12,0,0">
                 <Button Text="Сохранить изменения" 
-                        Command="{Binding SaveProfileCommand}"
-                        BackgroundColor="#512BD4"
-                        TextColor="White"
-                        HeightRequest="50"
-                        FontAttributes="Bold"/>
+                        Command="{Binding SaveProfileCommand}"/>
 
                 <Button Text="Отмена" 
                         Command="{Binding CancelCommand}"
-                        BackgroundColor="Transparent"
-                        TextColor="#512BD4"
-                        HeightRequest="45"/>
+                        Style="{StaticResource OutlineButton}"/>
             </VerticalStackLayout>
 
         </VerticalStackLayout>
