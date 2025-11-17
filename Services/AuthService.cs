@@ -1,4 +1,4 @@
-using System.Text.Json;
+п»їusing System.Text.Json;
 
 namespace Point_v1.Services;
 
@@ -15,7 +15,7 @@ public class AuthService : IAuthService
 
     public AuthService()
     {
-        // Пробуем восстановить состояние при запуске
+        // РџСЂРѕР±СѓРµРј РІРѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ РїСЂРё Р·Р°РїСѓСЃРєРµ
         LoadAuthState();
     }
 
@@ -23,27 +23,27 @@ public class AuthService : IAuthService
     {
         try
         {
-            await Task.Delay(1500); // Имитация регистрации
+            await Task.Delay(1500); // РРјРёС‚Р°С†РёСЏ СЂРµРіРёСЃС‚СЂР°С†РёРё
 
-            // Валидация
+            // Р’Р°Р»РёРґР°С†РёСЏ
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
                 return false;
 
-            // Создаем "нового пользователя"
+            // РЎРѕР·РґР°РµРј "РЅРѕРІРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ"
             _isAuthenticated = true;
             _currentUserId = Guid.NewGuid().ToString();
 
-            // Сохраняем состояние
+            // РЎРѕС…СЂР°РЅСЏРµРј СЃРѕСЃС‚РѕСЏРЅРёРµ
             SaveAuthState();
 
-            // Уведомляем об изменении
+            // РЈРІРµРґРѕРјР»СЏРµРј РѕР± РёР·РјРµРЅРµРЅРёРё
             AuthStateChanged?.Invoke(this, EventArgs.Empty);
 
             return true;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Ошибка регистрации: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"РћС€РёР±РєР° СЂРµРіРёСЃС‚СЂР°С†РёРё: {ex.Message}");
             return false;
         }
     }
@@ -52,20 +52,20 @@ public class AuthService : IAuthService
     {
         try
         {
-            await Task.Delay(1000); // Имитация входа
+            await Task.Delay(1000); // РРјРёС‚Р°С†РёСЏ РІС…РѕРґР°
 
-            // Валидация
+            // Р’Р°Р»РёРґР°С†РёСЏ
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
                 return false;
 
-            // Простая проверка - любой email и пароль "123456"
+            // РџСЂРѕСЃС‚Р°СЏ РїСЂРѕРІРµСЂРєР° - Р»СЋР±РѕР№ email Рё РїР°СЂРѕР»СЊ "123456"
             if (password != "123456")
                 return false;
 
             _isAuthenticated = true;
             _currentUserId = "user_" + email.GetHashCode();
 
-            // Сохраняем состояние
+            // РЎРѕС…СЂР°РЅСЏРµРј СЃРѕСЃС‚РѕСЏРЅРёРµ
             SaveAuthState();
 
             AuthStateChanged?.Invoke(this, EventArgs.Empty);
@@ -74,7 +74,7 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Ошибка входа: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"РћС€РёР±РєР° РІС…РѕРґР°: {ex.Message}");
             return false;
         }
     }
@@ -84,7 +84,7 @@ public class AuthService : IAuthService
         _isAuthenticated = false;
         _currentUserId = string.Empty;
 
-        // Очищаем сохраненное состояние
+        // РћС‡РёС‰Р°РµРј СЃРѕС…СЂР°РЅРµРЅРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
         ClearAuthState();
 
         AuthStateChanged?.Invoke(this, EventArgs.Empty);
@@ -100,7 +100,7 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Ошибка сохранения состояния: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ СЃРѕСЃС‚РѕСЏРЅРёСЏ: {ex.Message}");
         }
     }
 
@@ -121,10 +121,37 @@ public class AuthService : IAuthService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Ошибка загрузки состояния: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё СЃРѕСЃС‚РѕСЏРЅРёСЏ: {ex.Message}");
         }
     }
+    public async Task<bool> DeleteAccountAsync()
+    {
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("рџ—‘пёЏ РќР°С‡Р°Р»Рѕ СѓРґР°Р»РµРЅРёСЏ Р°РєРєР°СѓРЅС‚Р° (С‚РµСЃС‚РѕРІС‹Р№ СЂРµР¶РёРј)");
 
+            // РРјРёС‚Р°С†РёСЏ СѓРґР°Р»РµРЅРёСЏ Р°РєРєР°СѓРЅС‚Р°
+            await Task.Delay(1000);
+
+            // РћС‡РёС‰Р°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё
+            _isAuthenticated = false;
+            _currentUserId = string.Empty;
+
+            // РћС‡РёС‰Р°РµРј СЃРѕС…СЂР°РЅРµРЅРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
+            ClearAuthState();
+
+            // РЈРІРµРґРѕРјР»СЏРµРј РѕР± РёР·РјРµРЅРµРЅРёРё СЃРѕСЃС‚РѕСЏРЅРёСЏ
+            AuthStateChanged?.Invoke(this, EventArgs.Empty);
+
+            System.Diagnostics.Debug.WriteLine("вњ… РђРєРєР°СѓРЅС‚ СѓРґР°Р»РµРЅ (С‚РµСЃС‚РѕРІС‹Р№ СЂРµР¶РёРј)");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ Р°РєРєР°СѓРЅС‚Р°: {ex.Message}");
+            return false;
+        }
+    }
     private void ClearAuthState()
     {
         Preferences.Remove(AuthKey);

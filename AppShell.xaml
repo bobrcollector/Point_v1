@@ -42,5 +42,7 @@
     <ShellContent Route="SearchPage" ContentTemplate="{DataTemplate views:SearchPage}" />
     <ShellContent Route="EditProfilePage" ContentTemplate="{DataTemplate views:EditProfilePage}" />
     <ShellContent Route="ModeratorDashboardPage" ContentTemplate="{DataTemplate views:ModeratorDashboardPage}" />
+    <ShellContent Route="SettingsPage" ContentTemplate="{DataTemplate views:SettingsPage}" />
+    
     <!-- ReportsManagementPage уже зарегистрирован выше -->
 </Shell>

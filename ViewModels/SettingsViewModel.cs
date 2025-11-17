@@ -1,4 +1,4 @@
-using Point_v1.Services;
+п»їusing Point_v1.Services;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -8,13 +8,15 @@ public class SettingsViewModel : BaseViewModel
 {
     private readonly IAuthStateService _authStateService;
     private readonly IDataService _dataService;
+    private readonly IAuthService _authService; 
 
-    public SettingsViewModel(IAuthStateService authStateService, IDataService dataService)
+    public SettingsViewModel(IAuthStateService authStateService, IDataService dataService, IAuthService authService)
     {
         _authStateService = authStateService;
         _dataService = dataService;
+        _authService = authService;
 
-        // Инициализация команд
+        // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєРѕРјР°РЅРґ
         ChangePasswordCommand = new Command(async () => await ChangePassword());
         ClearCacheCommand = new Command(async () => await ClearCache());
         OpenTermsCommand = new Command(async () => await OpenTerms());
@@ -24,14 +26,14 @@ public class SettingsViewModel : BaseViewModel
         DownloadDataCommand = new Command(async () => await DownloadData());
         DeleteAccountCommand = new Command(async () => await DeleteAccount());
 
-        // Инициализация языков
+        // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЏР·С‹РєРѕРІ
         InitializeLanguages();
 
-        // Загружаем сохраненные настройки
-        LoadSettings();
+        // Settings will be loaded when page appears (OnAppearing)
+        // to avoid issues with Application.Current during app startup
     }
 
-    #region Properties - Язык и локализация
+    #region Properties - РЇР·С‹Рє Рё СЂРµРіРёРѕРЅ
 
     private ObservableCollection<string> _availableLanguages;
     public ObservableCollection<string> AvailableLanguages
@@ -40,7 +42,7 @@ public class SettingsViewModel : BaseViewModel
         set => SetProperty(ref _availableLanguages, value);
     }
 
-    private string _selectedLanguage = "Русский";
+    private string _selectedLanguage = "Р СѓСЃСЃРєРёР№";
     public string SelectedLanguage
     {
         get => _selectedLanguage;
@@ -53,9 +55,22 @@ public class SettingsViewModel : BaseViewModel
         }
     }
 
+    private bool _isDarkThemeEnabled;
+    public bool IsDarkThemeEnabled
+    {
+        get => _isDarkThemeEnabled;
+        set
+        {
+            if (SetProperty(ref _isDarkThemeEnabled, value))
+            {
+                OnThemeChanged(value);
+            }
+        }
+    }
+
     #endregion
 
-    #region Properties - Безопасность
+    #region Properties - Р‘РµР·РѕРїР°СЃРЅРѕСЃС‚СЊ
 
     private string _currentPassword;
     public string CurrentPassword
@@ -93,7 +108,7 @@ public class SettingsViewModel : BaseViewModel
 
     #endregion
 
-    #region Properties - Приватность
+    #region Properties - РџСЂРёРІР°С‚РЅРѕСЃС‚СЊ
 
     private bool _isProfileVisible = true;
     public bool IsProfileVisible
@@ -118,7 +133,7 @@ public class SettingsViewModel : BaseViewModel
 
     #endregion
 
-    #region Properties - Уведомления
+    #region Properties - РЈРІРµРґРѕРјР»РµРЅРёСЏ
 
     private bool _isEventNotificationsEnabled = true;
     public bool IsEventNotificationsEnabled
@@ -143,7 +158,7 @@ public class SettingsViewModel : BaseViewModel
 
     #endregion
 
-    #region Properties - Информация о приложении
+    #region Properties - РџСЂРёР»РѕР¶РµРЅРёРµ Рё РґР°РЅРЅС‹Рµ
 
     private string _appVersion;
     public string AppVersion
@@ -181,57 +196,62 @@ public class SettingsViewModel : BaseViewModel
 
     #endregion
 
-    #region Methods - Инициализация
+    #region Methods - РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ
 
     private void InitializeLanguages()
     {
         AvailableLanguages = new ObservableCollection<string>
         {
-            "Русский",
+            "Р СѓСЃСЃРєРёР№",
             "English",
-            "Espa?ol",
-            "Fran?ais",
+            "EspaГ±ol",
+            "FranГ§ais",
             "Deutsch"
         };
 
-        // Загружаем сохраненный язык
-        var savedLanguage = Preferences.Get("AppLanguage", "Русский");
+        // Р—Р°РіСЂСѓР¶Р°РµРј СЃРѕС…СЂР°РЅРµРЅРЅС‹Р№ СЏР·С‹Рє
+        var savedLanguage = Preferences.Get("AppLanguage", "Р СѓСЃСЃРєРёР№");
         SelectedLanguage = savedLanguage;
     }
 
     #endregion
 
-    #region Methods - Загрузка и сохранение
+    #region Methods - Р—Р°РіСЂСѓР·РєР° Рё СЃРѕС…СЂР°РЅРµРЅРёРµ
 
     public void LoadSettings()
     {
         try
         {
-            // Загружаем язык
-            SelectedLanguage = Preferences.Get("AppLanguage", "Русский");
+            // Р—Р°РіСЂСѓР¶Р°РµРј СЏР·С‹Рє
+            SelectedLanguage = Preferences.Get("AppLanguage", "Р СѓСЃСЃРєРёР№");
 
-            // Загружаем настройки безопасности
+            // Р—Р°РіСЂСѓР¶Р°РµРј РЅР°СЃС‚СЂРѕР№РєРё Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё
             IsTwoFactorEnabled = Preferences.Get("TwoFactorEnabled", false);
 
-            // Загружаем настройки приватности
+            // Р—Р°РіСЂСѓР¶Р°РµРј РЅР°СЃС‚СЂРѕР№РєРё РїСЂРёРІР°С‚РЅРѕСЃС‚Рё
             IsProfileVisible = Preferences.Get("ProfileVisible", true);
             IsEventHistoryVisible = Preferences.Get("EventHistoryVisible", true);
             IsPersonalizedRecommendations = Preferences.Get("PersonalizedRecommendations", true);
 
-            // Загружаем настройки уведомлений
+            // Р—Р°РіСЂСѓР¶Р°РµРј РЅР°СЃС‚СЂРѕР№РєРё СѓРІРµРґРѕРјР»РµРЅРёР№
             IsEventNotificationsEnabled = Preferences.Get("EventNotificationsEnabled", true);
             IsMessageNotificationsEnabled = Preferences.Get("MessageNotificationsEnabled", true);
             IsMarketingNotificationsEnabled = Preferences.Get("MarketingNotificationsEnabled", false);
 
-            // Загружаем информацию о приложении
+            // Р—Р°РіСЂСѓР·РєР° С‚РµРјС‹ (С‚РѕР»СЊРєРѕ Р·Р°РіСЂСѓР¶Р°РµРј Р·РЅР°С‡РµРЅРёРµ, РЅРµ РїСЂРёРјРµРЅСЏРµРј)
+            // РўРµРјР° Р±СѓРґРµС‚ РїСЂРёРјРµРЅРµРЅР° РїСЂРё РёР·РјРµРЅРµРЅРёРё РїРµСЂРµРєР»СЋС‡Р°С‚РµР»СЏ РёР»Рё РїСЂРё СЃР»РµРґСѓСЋС‰РµРј Р·Р°РїСѓСЃРєРµ РїСЂРёР»РѕР¶РµРЅРёСЏ
+            var savedTheme = Preferences.Get("AppTheme", "System");
+            IsDarkThemeEnabled = savedTheme == "Dark";
+
+            // Р—Р°РіСЂСѓР¶Р°РµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РїСЂРёР»РѕР¶РµРЅРёРё
             AppVersion = AppInfo.Current.VersionString;
             CalculateCacheSize();
 
-            System.Diagnostics.Debug.WriteLine("? Настройки загружены");
+            System.Diagnostics.Debug.WriteLine("вњ… РќР°СЃС‚СЂРѕР№РєРё Р·Р°РіСЂСѓР¶РµРЅС‹");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"? Ошибка загрузки настроек: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РЅР°СЃС‚СЂРѕРµРє: {ex.Message}");
         }
     }
 
@@ -248,64 +268,68 @@ public class SettingsViewModel : BaseViewModel
             Preferences.Set("MessageNotificationsEnabled", IsMessageNotificationsEnabled);
             Preferences.Set("MarketingNotificationsEnabled", IsMarketingNotificationsEnabled);
 
-            System.Diagnostics.Debug.WriteLine("? Настройки сохранены");
+            // РЎРѕС…СЂР°РЅРµРЅРёРµ С‚РµРјС‹
+            var theme = IsDarkThemeEnabled ? "Dark" : "Light";
+            Preferences.Set("AppTheme", theme);
+
+            System.Diagnostics.Debug.WriteLine("вњ… РќР°СЃС‚СЂРѕР№РєРё СЃРѕС…СЂР°РЅРµРЅС‹");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"? Ошибка сохранения настроек: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє: {ex.Message}");
         }
     }
 
     #endregion
 
-    #region Methods - Безопасность
+    #region Methods - Р‘РµР·РѕРїР°СЃРЅРѕСЃС‚СЊ
 
     private async Task ChangePassword()
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(CurrentPassword) || 
-                string.IsNullOrWhiteSpace(NewPassword) || 
+            if (string.IsNullOrWhiteSpace(CurrentPassword) ||
+                string.IsNullOrWhiteSpace(NewPassword) ||
                 string.IsNullOrWhiteSpace(ConfirmPassword))
             {
-                await Application.Current.MainPage.DisplayAlert("Ошибка", 
-                    "Все поля должны быть заполнены", "OK");
+                await Application.Current.MainPage.DisplayAlert("РћС€РёР±РєР°",
+                    "Р’СЃРµ РїРѕР»СЏ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ Р·Р°РїРѕР»РЅРµРЅС‹", "OK");
                 return;
             }
 
             if (NewPassword != ConfirmPassword)
             {
-                await Application.Current.MainPage.DisplayAlert("Ошибка", 
-                    "Новые пароли не совпадают", "OK");
+                await Application.Current.MainPage.DisplayAlert("РћС€РёР±РєР°",
+                    "РџР°СЂРѕР»Рё РЅРµ СЃРѕРІРїР°РґР°СЋС‚", "OK");
                 return;
             }
 
             if (NewPassword.Length < 6)
             {
-                await Application.Current.MainPage.DisplayAlert("Ошибка", 
-                    "Пароль должен содержать минимум 6 символов", "OK");
+                await Application.Current.MainPage.DisplayAlert("РћС€РёР±РєР°",
+                    "РќРѕРІС‹Р№ РїР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РјРёРЅРёРјСѓРј 6 СЃРёРјРІРѕР»РѕРІ", "OK");
                 return;
             }
 
-            // TODO: Реализовать смену пароля через Firebase
+            // TODO: Р РµР°Р»РёР·РѕРІР°С‚СЊ СЃРјРµРЅСѓ РїР°СЂРѕР»СЏ РІ Firebase
             // var authService = Application.Current.Handler.MauiContext.Services.GetService<IAuthService>();
             // var success = await authService.ChangePassword(CurrentPassword, NewPassword);
 
-            await Application.Current.MainPage.DisplayAlert("Успех", 
-                "Пароль успешно изменен", "OK");
+            await Application.Current.MainPage.DisplayAlert("РЈСЃРїРµС…",
+                "РџР°СЂРѕР»СЊ СѓСЃРїРµС€РЅРѕ РёР·РјРµРЅРµРЅ", "OK");
 
-            // Очищаем поля
+            // РћС‡РёС‰Р°РµРј РїРѕР»СЏ
             CurrentPassword = string.Empty;
             NewPassword = string.Empty;
             ConfirmPassword = string.Empty;
 
-            System.Diagnostics.Debug.WriteLine("? Пароль изменен");
+            System.Diagnostics.Debug.WriteLine("вњ… РџР°СЂРѕР»СЊ РёР·РјРµРЅРµРЅ");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"? Ошибка смены пароля: {ex.Message}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", 
-                "Не удалось изменить пароль", "OK");
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° СЃРјРµРЅС‹ РїР°СЂРѕР»СЏ: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("РћС€РёР±РєР°",
+                "РќРµ СѓРґР°Р»РѕСЃСЊ РёР·РјРµРЅРёС‚СЊ РїР°СЂРѕР»СЊ", "OK");
         }
     }
 
@@ -313,29 +337,69 @@ public class SettingsViewModel : BaseViewModel
     {
         if (isEnabled)
         {
-            System.Diagnostics.Debug.WriteLine("?? Двухфакторная аутентификация включена");
-            // TODO: Отправить код подтверждения
+            System.Diagnostics.Debug.WriteLine("рџ”ђ Р”РІСѓС…С„Р°РєС‚РѕСЂРЅР°СЏ Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёСЏ РІРєР»СЋС‡РµРЅР°");
+            // TODO: РќР°СЃС‚СЂРѕРёС‚СЊ РґРІСѓС…С„Р°РєС‚РѕСЂРЅСѓСЋ Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёСЋ
         }
         else
         {
-            System.Diagnostics.Debug.WriteLine("?? Двухфакторная аутентификация отключена");
+            System.Diagnostics.Debug.WriteLine("рџ”“ Р”РІСѓС…С„Р°РєС‚РѕСЂРЅР°СЏ Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёСЏ РІС‹РєР»СЋС‡РµРЅР°");
         }
     }
 
     #endregion
 
-    #region Methods - Язык
+    #region Methods - РЇР·С‹Рє
 
     private void OnLanguageChanged(string language)
     {
-        System.Diagnostics.Debug.WriteLine($"?? Язык изменен на: {language}");
-        // TODO: Реализовать смену языка в приложении
+        System.Diagnostics.Debug.WriteLine($"рџЊђ РЇР·С‹Рє РёР·РјРµРЅРµРЅ РЅР°: {language}");
+        // TODO: Р РµР°Р»РёР·РѕРІР°С‚СЊ СЃРјРµРЅСѓ СЏР·С‹РєР° РІ РїСЂРёР»РѕР¶РµРЅРёРё
         SaveSettings();
+    }
+
+    private void OnThemeChanged(bool isDark)
+    {
+        try
+        {
+            var theme = isDark ? "Dark" : "Light";
+            ApplyTheme(theme);
+            Preferences.Set("AppTheme", theme);
+            SaveSettings();
+            System.Diagnostics.Debug.WriteLine($"рџЊ™ РўРµРјР° РёР·РјРµРЅРµРЅР° РЅР°: {theme}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° РёР·РјРµРЅРµРЅРёСЏ С‚РµРјС‹: {ex.Message}");
+        }
+    }
+
+    private void ApplyTheme(string theme)
+    {
+        try
+        {
+            // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ Application СѓР¶Рµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ
+            if (Application.Current == null)
+            {
+                System.Diagnostics.Debug.WriteLine("вљ пёЏ Application.Current is null, С‚РµРјР° Р±СѓРґРµС‚ РїСЂРёРјРµРЅРµРЅР° РїРѕР·Р¶Рµ");
+                return;
+            }
+
+            Application.Current.UserAppTheme = theme switch
+            {
+                "Dark" => AppTheme.Dark,
+                "Light" => AppTheme.Light,
+                _ => AppTheme.Unspecified // System default
+            };
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° РїСЂРёРјРµРЅРµРЅРёСЏ С‚РµРјС‹: {ex.Message}");
+        }
     }
 
     #endregion
 
-    #region Methods - Информация о приложении
+    #region Methods - РџСЂРёР»РѕР¶РµРЅРёРµ Рё РґР°РЅРЅС‹Рµ
 
     private void CalculateCacheSize()
     {
@@ -344,16 +408,16 @@ public class SettingsViewModel : BaseViewModel
             var cacheDir = FileSystem.CacheDirectory;
             var dirInfo = new DirectoryInfo(cacheDir);
             var files = dirInfo.GetFiles("*", SearchOption.AllDirectories);
-            
+
             long totalSize = files.Sum(f => f.Length);
             CacheSize = FormatBytes(totalSize);
 
-            System.Diagnostics.Debug.WriteLine($"?? Размер кеша: {CacheSize}");
+            System.Diagnostics.Debug.WriteLine($"рџ“Љ Р Р°Р·РјРµСЂ РєСЌС€Р°: {CacheSize}");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"? Ошибка расчета размера кеша: {ex.Message}");
-            CacheSize = "Не удалось определить";
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° СЂР°СЃС‡РµС‚Р° СЂР°Р·РјРµСЂР° РєСЌС€Р°: {ex.Message}");
+            CacheSize = "РќРµ СѓРґР°Р»РѕСЃСЊ СЂР°СЃСЃС‡РёС‚Р°С‚СЊ";
         }
     }
 
@@ -376,31 +440,31 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            var confirm = await Application.Current.MainPage.DisplayAlert("Подтверждение", 
-                "Вы уверены? Это удалит все кэшированные данные.", "Да", "Нет");
+            var confirm = await Application.Current.MainPage.DisplayAlert("РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ",
+                "Р’С‹ СѓРІРµСЂРµРЅС‹? Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РЅРµР»СЊР·СЏ РѕС‚РјРµРЅРёС‚СЊ.", "Р”Р°", "РќРµС‚");
 
             if (confirm)
             {
                 var cacheDir = FileSystem.CacheDirectory;
                 var dirInfo = new DirectoryInfo(cacheDir);
-                
+
                 foreach (var file in dirInfo.GetFiles("*", SearchOption.AllDirectories))
                 {
                     file.Delete();
                 }
 
                 CalculateCacheSize();
-                await Application.Current.MainPage.DisplayAlert("Успех", 
-                    "Кэш успешно очищен", "OK");
+                await Application.Current.MainPage.DisplayAlert("РЈСЃРїРµС…",
+                    "РљСЌС€ СѓСЃРїРµС€РЅРѕ РѕС‡РёС‰РµРЅ", "OK");
 
-                System.Diagnostics.Debug.WriteLine("? Кэш очищен");
+                System.Diagnostics.Debug.WriteLine("вњ… РљСЌС€ РѕС‡РёС‰РµРЅ");
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"? Ошибка очистки кэша: {ex.Message}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", 
-                "Не удалось очистить кэш", "OK");
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° РѕС‡РёСЃС‚РєРё РєСЌС€Р°: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("РћС€РёР±РєР°",
+                "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‡РёСЃС‚РёС‚СЊ РєСЌС€", "OK");
         }
     }
 
@@ -408,15 +472,15 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            // TODO: Открыть условия использования (например, в браузере или на отдельной странице)
-            await Application.Current.MainPage.DisplayAlert("Условия использования", 
-                "Здесь будут отображены условия использования приложения", "OK");
+            // TODO: РћС‚РєСЂС‹С‚СЊ СѓСЃР»РѕРІРёСЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ (РЅР°РїСЂРёРјРµСЂ, РІ РІРµР±-Р±СЂР°СѓР·РµСЂРµ РёР»Рё РІСЃС‚СЂРѕРµРЅРЅРѕРј РїСЂРѕСЃРјРѕС‚СЂС‰РёРєРµ)
+            await Application.Current.MainPage.DisplayAlert("РЈСЃР»РѕРІРёСЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ",
+                "Р—РґРµСЃСЊ Р±СѓРґСѓС‚ РѕС‚РѕР±СЂР°Р¶РµРЅС‹ СѓСЃР»РѕРІРёСЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РїСЂРёР»РѕР¶РµРЅРёСЏ", "OK");
 
-            System.Diagnostics.Debug.WriteLine("?? Открыты условия использования");
+            System.Diagnostics.Debug.WriteLine("рџ“„ РћС‚РєСЂС‹С‚С‹ СѓСЃР»РѕРІРёСЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"? Ошибка открытия условий: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ СѓСЃР»РѕРІРёР№: {ex.Message}");
         }
     }
 
@@ -424,15 +488,15 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            // TODO: Открыть политику конфиденциальности
-            await Application.Current.MainPage.DisplayAlert("Политика конфиденциальности", 
-                "Здесь будет отображена политика конфиденциальности приложения", "OK");
+            // TODO: РћС‚РєСЂС‹С‚СЊ РїРѕР»РёС‚РёРєСѓ РєРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚Рё
+            await Application.Current.MainPage.DisplayAlert("РџРѕР»РёС‚РёРєР° РєРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚Рё",
+                "Р—РґРµСЃСЊ Р±СѓРґСѓС‚ РѕС‚РѕР±СЂР°Р¶РµРЅС‹ РїРѕР»РёС‚РёРєР° РєРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚Рё РїСЂРёР»РѕР¶РµРЅРёСЏ", "OK");
 
-            System.Diagnostics.Debug.WriteLine("?? Открыта политика конфиденциальности");
+            System.Diagnostics.Debug.WriteLine("рџ”’ РћС‚РєСЂС‹С‚Р° РїРѕР»РёС‚РёРєР° РєРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚Рё");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"? Ошибка открытия политики: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ РїРѕР»РёС‚РёРєРё: {ex.Message}");
         }
     }
 
@@ -440,35 +504,35 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            // TODO: Открыть справку
-            await Application.Current.MainPage.DisplayAlert("Справка", 
-                "Здесь будет отображена справка по использованию приложения", "OK");
+            // TODO: РћС‚РєСЂС‹С‚СЊ СЃРїСЂР°РІРєСѓ
+            await Application.Current.MainPage.DisplayAlert("РЎРїСЂР°РІРєР°",
+                "Р—РґРµСЃСЊ Р±СѓРґРµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅР° СЃРїСЂР°РІРєР° РїРѕ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЋ РїСЂРёР»РѕР¶РµРЅРёСЏ", "OK");
 
-            System.Diagnostics.Debug.WriteLine("? Открыта справка");
+            System.Diagnostics.Debug.WriteLine("вќ“ РћС‚РєСЂС‹С‚Р° СЃРїСЂР°РІРєР°");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"? Ошибка открытия справки: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ СЃРїСЂР°РІРєРё: {ex.Message}");
         }
     }
 
     #endregion
 
-    #region Methods - Управление аккаунтом
+    #region Methods - РђРєС‚РёРІРЅС‹Рµ СЃРµСЃСЃРёРё
 
     private async Task ViewSessions()
     {
         try
         {
-            // TODO: Реализовать просмотр активных сеансов
-            await Application.Current.MainPage.DisplayAlert("Активные сеансы", 
-                "Здесь будут отображены ваши активные сеансы на разных устройствах", "OK");
+            // TODO: Р РµР°Р»РёР·РѕРІР°С‚СЊ РїСЂРѕСЃРјРѕС‚СЂ Р°РєС‚РёРІРЅС‹С… СЃРµСЃСЃРёР№
+            await Application.Current.MainPage.DisplayAlert("РђРєС‚РёРІРЅС‹Рµ СЃРµСЃСЃРёРё",
+                "Р—РґРµСЃСЊ Р±СѓРґСѓС‚ РѕС‚РѕР±СЂР°Р¶РµРЅС‹ РІСЃРµ Р°РєС‚РёРІРЅС‹Рµ СЃРµСЃСЃРёРё РЅР° СЂР°Р·РЅС‹С… СѓСЃС‚СЂРѕР№СЃС‚РІР°С…", "OK");
 
-            System.Diagnostics.Debug.WriteLine("??? Просмотр сеансов");
+            System.Diagnostics.Debug.WriteLine("рџ“± РџСЂРѕСЃРјРѕС‚СЂ СЃРµСЃСЃРёР№");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"? Ошибка просмотра сеансов: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° РїСЂРѕСЃРјРѕС‚СЂР° СЃРµСЃСЃРёР№: {ex.Message}");
         }
     }
 
@@ -476,59 +540,68 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            var confirm = await Application.Current.MainPage.DisplayAlert("Загрузка данных", 
-                "Подготовка данных может занять некоторое время. Продолжить?", "Да", "Нет");
+            var confirm = await Application.Current.MainPage.DisplayAlert("РЎРєР°С‡РёРІР°РЅРёРµ РґР°РЅРЅС‹С…",
+                "РЎРєР°С‡РёРІР°РЅРёРµ РґР°РЅРЅС‹С… РјРѕР¶РµС‚ Р·Р°РЅСЏС‚СЊ РЅРµРєРѕС‚РѕСЂРѕРµ РІСЂРµРјСЏ. РџСЂРѕРґРѕР»Р¶РёС‚СЊ?", "Р”Р°", "РќРµС‚");
 
             if (confirm)
             {
-                // TODO: Реализовать загрузку данных пользователя
-                await Application.Current.MainPage.DisplayAlert("Успех", 
-                    "Ваши данные готовы к загрузке. Файл будет отправлен на ваш email.", "OK");
+                // TODO: Р РµР°Р»РёР·РѕРІР°С‚СЊ РІС‹РіСЂСѓР·РєСѓ РґР°РЅРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+                await Application.Current.MainPage.DisplayAlert("РЈСЃРїРµС…",
+                    "Р’Р°С€Рё РґР°РЅРЅС‹Рµ РіРѕС‚РѕРІС‹ Рє СЃРєР°С‡РёРІР°РЅРёСЋ. РЎСЃС‹Р»РєР° Р±СѓРґРµС‚ РѕС‚РїСЂР°РІР»РµРЅР° РЅР° РІР°С€ email.", "OK");
 
-                System.Diagnostics.Debug.WriteLine("?? Загрузка данных инициирована");
+                System.Diagnostics.Debug.WriteLine("рџ“Ґ РЎРєР°С‡РёРІР°РЅРёРµ РґР°РЅРЅС‹С… РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ");
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"? Ошибка загрузки данных: {ex.Message}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", 
-                "Не удалось загрузить данные", "OK");
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° СЃРєР°С‡РёРІР°РЅРёСЏ РґР°РЅРЅС‹С…: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("РћС€РёР±РєР°",
+                "РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєР°С‡Р°С‚СЊ РґР°РЅРЅС‹Рµ", "OK");
         }
     }
+
+    #endregion
+
+    #region Methods - РЈРїСЂР°РІР»РµРЅРёРµ Р°РєРєР°СѓРЅС‚РѕРј
 
     private async Task DeleteAccount()
     {
         try
         {
-            var confirm = await Application.Current.MainPage.DisplayAlert("?? ВНИМАНИЕ", 
-                "Это действие необратимо! Все ваши данные будут удалены. Вы уверены?", "Да, удалить", "Отмена");
+            var confirm = await Application.Current.MainPage.DisplayAlert("вљ пёЏ РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ",
+                "Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РЅРµРѕР±СЂР°С‚РёРјРѕ! Р’СЃРµ РІР°С€Рё РґР°РЅРЅС‹Рµ Р±СѓРґСѓС‚ СѓРґР°Р»РµРЅС‹. Р’С‹ СѓРІРµСЂРµРЅС‹?", "Р”Р°, СѓРґР°Р»РёС‚СЊ", "РћС‚РјРµРЅР°");
 
-            if (confirm)
+            if (!confirm) return;
+
+            var secondConfirm = await Application.Current.MainPage.DisplayAlert("РџРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ СѓРґР°Р»РµРЅРёСЏ",
+                "Р­С‚Рѕ РѕРєРѕРЅС‡Р°С‚РµР»СЊРЅРѕРµ СѓРґР°Р»РµРЅРёРµ Р°РєРєР°СѓРЅС‚Р°. Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РЅРµР»СЊР·СЏ РѕС‚РјРµРЅРёС‚СЊ!", "Р”Р°, СѓРґР°Р»РёС‚СЊ Р°РєРєР°СѓРЅС‚", "РћС‚РјРµРЅР°");
+
+            if (!secondConfirm) return;
+
+            // РСЃРїРѕР»СЊР·СѓРµРј СЃРµСЂРІРёСЃ, РїРµСЂРµРґР°РЅРЅС‹Р№ С‡РµСЂРµР· РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
+            var success = await _authService.DeleteAccountAsync();
+
+            if (success)
             {
-                var secondConfirm = await Application.Current.MainPage.DisplayAlert("Подтверждение удаления", 
-                    "Повторно подтвердите удаление аккаунта. Это последнее предупреждение!", "Да, удалить окончательно", "Отмена");
+                await Application.Current.MainPage.DisplayAlert("РЈСЃРїРµС…!",
+                    "Р’Р°С€ Р°РєРєР°СѓРЅС‚ Р±С‹Р» СѓРґР°Р»РµРЅ. Р”Рѕ РІСЃС‚СЂРµС‡Рё!", "OK");
 
-                if (secondConfirm)
-                {
-                    // TODO: Реализовать удаление аккаунта
-                    // var authService = Application.Current.Handler.MauiContext.Services.GetService<IAuthService>();
-                    // await authService.DeleteAccount();
+                System.Diagnostics.Debug.WriteLine("вњ… РђРєРєР°СѓРЅС‚ СѓРґР°Р»РµРЅ СѓСЃРїРµС€РЅРѕ");
 
-                    await Application.Current.MainPage.DisplayAlert("Успех", 
-                        "Ваш аккаунт был удален. Приложение будет закрыто.", "OK");
-
-                    System.Diagnostics.Debug.WriteLine("??? Аккаунт удален");
-
-                    // Выход из приложения
-                    // await _navigationService.GoToLoginAsync();
-                }
+                // РџРµСЂРµС…РѕРґРёРј РЅР° СЃС‚СЂР°РЅРёС†Сѓ РІС…РѕРґР°
+                await Shell.Current.GoToAsync("//LoginPage");
+            }
+            else
+            {
+                await Application.Current.MainPage.DisplayAlert("РћС€РёР±РєР°",
+                    "РќРµ СѓРґР°Р»РѕСЃСЊ СѓРґР°Р»РёС‚СЊ Р°РєРєР°СѓРЅС‚. РџРѕРїСЂРѕР±СѓР№С‚Рµ РїРѕР·Р¶Рµ.", "OK");
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"? Ошибка удаления аккаунта: {ex.Message}");
-            await Application.Current.MainPage.DisplayAlert("Ошибка", 
-                "Не удалось удалить аккаунт", "OK");
+            System.Diagnostics.Debug.WriteLine($"вќЊ РћС€РёР±РєР° СѓРґР°Р»РµРЅРёСЏ Р°РєРєР°СѓРЅС‚Р°: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("РћС€РёР±РєР°",
+                "РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё СѓРґР°Р»РµРЅРёРё Р°РєРєР°СѓРЅС‚Р°", "OK");
         }
     }
 

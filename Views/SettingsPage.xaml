@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Point_v1.Views.SettingsPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Настройки"
+             BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#1C1C1E}">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0" Padding="15">
+
+            <!-- ЯЗЫК И ТЕМА -->
+            <Frame Style="{StaticResource SectionHeaderFrame}">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Внешний вид" 
+                           Style="{StaticResource Heading3}"/>
+
+                    <!-- Язык -->
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Язык" 
+                               Style="{StaticResource Body}"/>
+                        <Picker Grid.Column="1"
+                                Title="Русский"
+                                ItemsSource="{Binding AvailableLanguages}"
+                                SelectedItem="{Binding SelectedLanguage}"
+                                WidthRequest="140"
+                                HorizontalOptions="End">
+                        </Picker>
+                    </Grid>
+
+                    <!-- Тема -->
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Тёмная тема" 
+                               Style="{StaticResource Body}"/>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding IsDarkThemeEnabled}"
+                                HorizontalOptions="End"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- УВЕДОМЛЕНИЯ -->
+            <Frame Style="{StaticResource SectionHeaderFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Уведомления" 
+                           Style="{StaticResource Heading3}"/>
+
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Уведомления о событиях"
+                               Style="{StaticResource Body}"/>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding IsEventNotificationsEnabled}"
+                                HorizontalOptions="End"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Сообщения"
+                               Style="{StaticResource Body}"/>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding IsMessageNotificationsEnabled}"
+                                HorizontalOptions="End"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Рекламные рассылки"
+                               Style="{StaticResource Body}"/>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding IsMarketingNotificationsEnabled}"
+                                HorizontalOptions="End"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- ПРИВАТНОСТЬ -->
+            <Frame Style="{StaticResource SectionHeaderFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Приватность" 
+                           Style="{StaticResource Heading3}"/>
+
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Публичный профиль"
+                               Style="{StaticResource Body}"/>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding IsProfileVisible}"
+                                HorizontalOptions="End"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="История событий"
+                               Style="{StaticResource Body}"/>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding IsEventHistoryVisible}"
+                                HorizontalOptions="End"/>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Персональные рекомендации"
+                               Style="{StaticResource Body}"/>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding IsPersonalizedRecommendations}"
+                                HorizontalOptions="End"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- БЕЗОПАСНОСТЬ -->
+            <Frame Style="{StaticResource SectionHeaderFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Безопасность" 
+                           Style="{StaticResource Heading3}"/>
+
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Двухфакторная аутентификация"
+                               Style="{StaticResource Body}"/>
+                        <Switch Grid.Column="1"
+                                IsToggled="{Binding IsTwoFactorEnabled}"
+                                HorizontalOptions="End"/>
+                    </Grid>
+
+                    <Button Text="Сменить пароль" 
+                            Command="{Binding ChangePasswordCommand}"
+                            Style="{StaticResource OutlineButton}"
+                            Margin="0,5,0,0"/>
+
+                    <Button Text="Активные сеансы" 
+                            Command="{Binding ViewSessionsCommand}"
+                            Style="{StaticResource OutlineButton}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- ДАННЫЕ И ПАМЯТЬ -->
+            <Frame Style="{StaticResource SectionHeaderFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Данные и память" 
+                           Style="{StaticResource Heading3}"/>
+
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Размер кеша"
+                               Style="{StaticResource Body}"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding CacheSize}"
+                               Style="{StaticResource Body}"
+                               HorizontalOptions="End"/>
+                    </Grid>
+
+                    <Button Text="Очистить кеш" 
+                            Command="{Binding ClearCacheCommand}"
+                            Style="{StaticResource OutlineButton}"/>
+
+                    <Button Text="Скачать мои данные" 
+                            Command="{Binding DownloadDataCommand}"
+                            Style="{StaticResource OutlineButton}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- О ПРИЛОЖЕНИИ -->
+            <Frame Style="{StaticResource SectionHeaderFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="О приложении" 
+                           Style="{StaticResource Heading3}"/>
+
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Text="Версия приложения"
+                               Style="{StaticResource Body}"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding AppVersion}"
+                               Style="{StaticResource Caption}"
+                               HorizontalOptions="End"/>
+                    </Grid>
+
+                    <Button Text="Справка и поддержка" 
+                            Command="{Binding OpenHelpCommand}"
+                            Style="{StaticResource OutlineButton}"/>
+
+                    <Button Text="Условия использования" 
+                            Command="{Binding OpenTermsCommand}"
+                            Style="{StaticResource OutlineButton}"/>
+
+                    <Button Text="Политика конфиденциальности" 
+                            Command="{Binding OpenPrivacyCommand}"
+                            Style="{StaticResource OutlineButton}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- ОПАСНЫЕ ДЕЙСТВИЯ -->
+            <Frame Style="{StaticResource SectionHeaderFrame}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Опасные действия" 
+                           Style="{StaticResource Heading3}"
+                           TextColor="#D32F2F"/>
+
+                    <Button Text="Удалить аккаунт" 
+                            Command="{Binding DeleteAccountCommand}"
+                            Style="{StaticResource DangerButton}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -83,6 +83,9 @@ public partial class App : Application
             }
 
             System.Diagnostics.Debug.WriteLine("✅ MainPage установлена успешно");
+            
+            // Применяем сохраненную тему при запуске приложения
+            ApplySavedTheme();
         }
         catch (Exception ex)
         {
@@ -99,6 +102,25 @@ public partial class App : Application
             {
                 System.Diagnostics.Debug.WriteLine($"❌ КРИТИЧЕСКАЯ ОШИБКА - даже резервный вариант не сработал: {fallbackEx.Message}");
             }
+        }
+    }
+
+    private void ApplySavedTheme()
+    {
+        try
+        {
+            var savedTheme = Preferences.Get("AppTheme", "System");
+            Application.Current.UserAppTheme = savedTheme switch
+            {
+                "Dark" => AppTheme.Dark,
+                "Light" => AppTheme.Light,
+                _ => AppTheme.Unspecified // System default
+            };
+            System.Diagnostics.Debug.WriteLine($"🌙 Тема применена при запуске: {savedTheme}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка применения темы при запуске: {ex.Message}");
         }
     }
 }

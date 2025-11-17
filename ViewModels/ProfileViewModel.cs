@@ -31,6 +31,7 @@ public class ProfileViewModel : BaseViewModel
         SaveInterestsCommand = new Command(async () => await SaveInterests());
         GoToLoginCommand = new Command(async () => await GoToLogin());
         ChangeAvatarCommand = new Command(async () => await ChangeAvatar());
+        GoToSettingsCommand = new Command(async () => await GoToSettings());
 
         // Загружаем данные пользователя
         _ = LoadUserData();
@@ -598,6 +599,16 @@ public class ProfileViewModel : BaseViewModel
         System.Diagnostics.Debug.WriteLine($"🎯 PrepareForInterestSelection - SelectedInterests: {SelectedInterests?.Count ?? 0}, TempAllInterests: {TempAllInterests?.Count ?? 0}");
     }
 
+    public ICommand GoToSettingsCommand { get; }
+
+    // В конструкторе инициализируй:
+
+
+    // Метод навигации:
+    private async Task GoToSettings()
+    {
+        await _navigationService.GoToAsync(nameof(SettingsPage));
+    }
     private async Task ChangeAvatar()
     {
         try

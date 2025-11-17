@@ -211,7 +211,7 @@
                                     Style="{StaticResource OutlineButton}"/>
 
                             <Button Text="⚙️ Настройки" 
-                                    Clicked="OnSettingsClicked"
+                                    Command="{Binding GoToSettingsCommand}"
                                     Style="{StaticResource OutlineButton}"/>
 
                             <Button Text="🚪 Выйти" 

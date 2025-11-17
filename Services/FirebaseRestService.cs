@@ -96,6 +96,41 @@ public class FirebaseRestService
         }
     }
 
+    public async Task<bool> DeleteAccountAsync(string idToken)
+    {
+        try
+        {
+            var deleteRequest = new
+            {
+                idToken = idToken
+            };
+
+            var json = JsonConvert.SerializeObject(deleteRequest);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(
+                $"https://identitytoolkit.googleapis.com/v1/accounts:delete?key={ApiKey}",
+                content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                System.Diagnostics.Debug.WriteLine($"✅ Аккаунт успешно удален");
+                return true;
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка удаления аккаунта: {errorContent}");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка удаления аккаунта: {ex.Message}");
+            return false;
+        }
+    }
+
     // Работа с событиями
     public async Task<List<Event>> GetEventsAsync()
     {

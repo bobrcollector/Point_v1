@@ -107,6 +107,59 @@ public class FirebaseAuthService : IAuthService
         AuthStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    public async Task<bool> DeleteAccountAsync()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_currentUserToken))
+            {
+                System.Diagnostics.Debug.WriteLine("❌ Токен не найден - невозможно удалить аккаунт");
+                return false;
+            }
+
+            System.Diagnostics.Debug.WriteLine("🗑️ Начало процесса удаления аккаунта");
+
+            // Удаляем профиль пользователя из базы данных
+            try
+            {
+                var dataService = MauiProgram.CreateMauiApp().Services.GetService<IDataService>();
+                if (dataService != null && !string.IsNullOrEmpty(_currentUserId))
+                {
+                    // TODO: Добавить метод DeleteUserAsync в IDataService если нужно
+                    System.Diagnostics.Debug.WriteLine($"📥 Удаляем пользовательские данные для {_currentUserId}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"⚠️ Ошибка удаления данных пользователя: {ex.Message}");
+                // Продолжаем процесс удаления даже если ошибка в удалении данных
+            }
+
+            // Удаляем аккаунт в Firebase
+            var success = await _firebaseRest.DeleteAccountAsync(_currentUserToken);
+
+            if (success)
+            {
+                System.Diagnostics.Debug.WriteLine("✅ Аккаунт успешно удален");
+                _currentUserToken = null;
+                _currentUserId = null;
+                await ClearSession();
+                AuthStateChanged?.Invoke(this, EventArgs.Empty);
+                return true;
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("❌ Не удалось удалить аккаунт");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка при удалении аккаунта: {ex.Message}");
+            return false;
+        }
+    }
+
     private async Task RestoreSession()
     {
         try

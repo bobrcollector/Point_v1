@@ -67,8 +67,10 @@ public static class MauiProgram
         builder.Services.AddTransient<ReportsManagementViewModel>();
         builder.Services.AddTransient<SelectInterestsViewModel>();
         builder.Services.AddTransient<ProfileViewModel>();
+        builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddTransient<ModeratorDashboardViewModel>();
         builder.Services.AddTransient<ReportsManagementViewModel>();
+        builder.Services.AddTransient<SettingsViewModel>();
     }
 
     private static void RegisterPages(MauiAppBuilder builder)
@@ -87,6 +89,7 @@ public static class MauiProgram
         builder.Services.AddTransient<ReportsManagementPage>();
         builder.Services.AddTransient<EditProfilePage>();
         builder.Services.AddTransient<SelectInterestsPage>();
+        builder.Services.AddTransient<SettingsPage>();
         builder.Services.AddTransient<TestInterestsPage>();
 
         // AppShell с зависимостями для проверки прав модератора
@@ -127,6 +130,7 @@ public static class MauiProgram
         Routing.RegisterRoute(nameof(EventDetailsPage), typeof(EventDetailsPage));
         Routing.RegisterRoute(nameof(EditProfilePage), typeof(EditProfilePage));
         Routing.RegisterRoute(nameof(SelectInterestsPage), typeof(SelectInterestsPage));
+        Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
         Routing.RegisterRoute(nameof(TestInterestsPage), typeof(TestInterestsPage));
     }
 }
