@@ -89,8 +89,8 @@ public class MapService : IMapService
 
             foreach (var eventItem in events)
             {
-                // ФИЛЬТРАЦИЯ: добавляем только будущие события
-                if (eventItem.EventDate <= DateTime.Now)
+                // ФИЛЬТРАЦИЯ: добавляем только будущие, активные и незаблокированные события
+                if (eventItem.EventDate <= DateTime.Now || eventItem.IsBlocked || !eventItem.IsActive)
                     continue;
 
                 if (eventItem.Latitude.HasValue && eventItem.Longitude.HasValue)

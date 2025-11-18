@@ -1,5 +1,6 @@
 ﻿using Point_v1.Models;
 using Point_v1.Services;
+using Point_v1.Views;
 using System.Windows.Input;
 
 namespace Point_v1.ViewModels;
@@ -23,6 +24,8 @@ public class CreateEventViewModel : BaseViewModel
         OpenMapSearchCommand = new Command(async () => await OpenMapSearch());
         SearchAddressCommand = new Command(async () => await SearchAddress());
         SuggestionSelectedCommand = new Command<string>(async (suggestion) => await OnSuggestionSelected(suggestion));
+
+        // Данные будут получены через QueryProperty в CreateEventPage
 
         LoadInterests();
 
@@ -334,6 +337,10 @@ public class CreateEventViewModel : BaseViewModel
 
             if (success)
             {
+                // Очищаем сохраненное состояние формы
+                CreateEventStateService.Clear();
+                LocationSelectionService.Clear();
+                
                 await Application.Current.MainPage.DisplayAlert("Успех!", "Событие создано!", "OK");
 
                 await UpdateUserStatistics();
@@ -472,14 +479,27 @@ public class CreateEventViewModel : BaseViewModel
     {
         try
         {
-            await Application.Current.MainPage.DisplayAlert("Инфо",
-                "Функция выбора на карте будет доступна в следующем обновлении", "OK");
+            // Сохраняем состояние формы перед навигацией
+            CreateEventStateService.SaveState(this);
+            System.Diagnostics.Debug.WriteLine("💾 Состояние формы сохранено перед открытием карты");
+            
+            // Очищаем предыдущие данные выбора
+            LocationSelectionService.Clear();
+            
+            // Открываем страницу выбора местоположения на карте
+            var latParam = Latitude.HasValue ? Latitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
+            var lonParam = Longitude.HasValue ? Longitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
+            
+            // Используем путь с // для добавления в стек навигации (сохраняет состояние текущей страницы)
+            await Shell.Current.GoToAsync($"//MapLocationPickerPage?lat={latParam}&lon={lonParam}");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка открытия карты: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось открыть карту", "OK");
         }
     }
+
     private async Task UpdateUserStatistics()
     {
         try

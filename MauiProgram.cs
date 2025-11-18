@@ -70,7 +70,7 @@ public static class MauiProgram
         builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddTransient<ModeratorDashboardViewModel>();
         builder.Services.AddTransient<ReportsManagementViewModel>();
-        builder.Services.AddTransient<SettingsViewModel>();
+        builder.Services.AddTransient<MapLocationPickerViewModel>();
     }
 
     private static void RegisterPages(MauiAppBuilder builder)
@@ -91,6 +91,7 @@ public static class MauiProgram
         builder.Services.AddTransient<SelectInterestsPage>();
         builder.Services.AddTransient<SettingsPage>();
         builder.Services.AddTransient<TestInterestsPage>();
+        builder.Services.AddTransient<MapLocationPickerPage>();
 
         // AppShell с зависимостями для проверки прав модератора
         builder.Services.AddSingleton<AppShell>();

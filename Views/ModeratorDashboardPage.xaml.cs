@@ -23,7 +23,7 @@ public partial class ModeratorDashboardPage : ContentPage
         try
         {
             System.Diagnostics.Debug.WriteLine("🔄 Переход к управлению жалобами...");
-            await Shell.Current.GoToAsync("///ReportsManagementPage");
+            await Shell.Current.GoToAsync("//ReportsManagementPage");
             System.Diagnostics.Debug.WriteLine("✅ Успешный переход к ReportsManagementPage");
         }
         catch (Exception ex)

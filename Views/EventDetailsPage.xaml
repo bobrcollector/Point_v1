@@ -8,33 +8,6 @@
 
     <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- КОМПАКТНАЯ ШАПКА КАК В ModeratorDashboardPage -->
-        <Frame Grid.Row="0"
-               BackgroundColor="#512BD4"
-               Padding="15"
-               CornerRadius="0"
-               HasShadow="True">
-
-            <Grid ColumnDefinitions="Auto,*,Auto">
-                <Button Grid.Column="0"
-                        Text="←"
-                        Command="{Binding GoBackCommand}"
-                        Style="{StaticResource IconButton}"
-                        BackgroundColor="Transparent"
-                        TextColor="White"
-                        FontSize="18"
-                        WidthRequest="44"
-                        HeightRequest="44"/>
-
-                <Label Grid.Column="1"
-                       Text="Детали события"
-                       TextColor="White"
-                       FontSize="18"
-                       FontAttributes="Bold"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"/>
-            </Grid>
-        </Frame>
 
         <!-- Контент -->
         <ScrollView Grid.Row="1">
@@ -71,6 +44,26 @@
                                            FontSize="12"
                                            FontAttributes="Bold"
                                            TextColor="#512BD4"/>
+                                </Frame>
+
+                                <!-- Пометка о блокировке -->
+                                <Frame IsVisible="{Binding Event.IsBlocked}"
+                                       BackgroundColor="#FFEBEE"
+                                       Padding="12"
+                                       CornerRadius="12"
+                                       HasShadow="False">
+                                    <VerticalStackLayout Spacing="4">
+                                        <Label Text="{Binding Event.BlockStatusText}" 
+                                               TextColor="#D32F2F" 
+                                               FontSize="14"
+                                               FontAttributes="Bold"
+                                               HorizontalOptions="Center"/>
+                                        <Label Text="{Binding Event.BlockReason, StringFormat='Причина: {0}'}" 
+                                               TextColor="#D32F2F" 
+                                               FontSize="12"
+                                               HorizontalOptions="Center"
+                                               LineBreakMode="WordWrap"/>
+                                    </VerticalStackLayout>
                                 </Frame>
                             </VerticalStackLayout>
 

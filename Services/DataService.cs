@@ -107,7 +107,8 @@ public class DataService : IDataService
         try
         {
             await Task.Delay(100);
-            var userEvents = _events.Where(e => e.CreatorId == userId && e.IsActive).ToList();
+            // Все созданные события (активные и заблокированные)
+            var userEvents = _events.Where(e => e.CreatorId == userId && (e.IsActive || e.IsBlocked)).ToList();
             System.Diagnostics.Debug.WriteLine($"📥 Загружено созданных событий пользователя: {userEvents.Count}");
             return userEvents;
         }
@@ -238,6 +239,22 @@ public class DataService : IDataService
         {
             _events.Remove(existingEvent);
             _events.Add(eventItem);
+            return true;
+        }
+        return false;
+    }
+
+    public async Task<bool> BlockEventAsync(string eventId, string moderatorId, string reason)
+    {
+        await Task.Delay(100);
+        var eventItem = _events.FirstOrDefault(e => e.Id == eventId);
+        if (eventItem != null)
+        {
+            eventItem.IsBlocked = true;
+            eventItem.BlockedBy = moderatorId;
+            eventItem.BlockedAt = DateTime.Now;
+            eventItem.BlockReason = reason;
+            eventItem.IsActive = false;
             return true;
         }
         return false;

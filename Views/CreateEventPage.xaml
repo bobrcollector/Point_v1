@@ -134,7 +134,7 @@
                             TextColor="#512BD4"/>
 
                     <Button Grid.Column="1"
-                            Text="📌 На карте"
+                            Text="🗺️ На карте"
                             Command="{Binding OpenMapSearchCommand}"
                             Style="{StaticResource SmallButton}"
                             BackgroundColor="#E3F2FD"

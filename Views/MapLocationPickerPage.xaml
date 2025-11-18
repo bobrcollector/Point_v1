@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Point_v1.Views.MapLocationPickerPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Выбор местоположения"
+             BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#1C1C1E}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        
+        <!-- WebView с картой -->
+        <WebView Grid.Row="1"
+                 x:Name="MapWebView"
+                 Navigating="OnWebViewNavigating"/>
+
+        <!-- Кнопки внизу -->
+        <Frame Grid.Row="2"
+               BackgroundColor="{AppThemeBinding Light=White, Dark=#1C1C1E}"
+               Padding="15,12"
+               CornerRadius="0"
+               HasShadow="True">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button Grid.Column="0"
+                        Text="Отмена"
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource OutlineButton}"/>
+
+                <Button Grid.Column="1"
+                        Text="Выбрать"
+                        Command="{Binding ConfirmCommand}"
+                        BackgroundColor="#512BD4"
+                        TextColor="White"
+                        IsEnabled="{Binding HasSelection}"/>
+            </Grid>
+        </Frame>
+
+        <!-- Индикатор загрузки -->
+        <ActivityIndicator Grid.Row="1"
+                           IsVisible="{Binding IsLoading}"
+                           IsRunning="{Binding IsLoading}"
+                           Color="#512BD4"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+
+    </Grid>
+</ContentPage>
+

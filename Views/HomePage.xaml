@@ -44,12 +44,10 @@
         <Grid Grid.Row="1"
       ColumnDefinitions="*,*"
       BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#2C2C2E}"
-      HeightRequest="35"
-      WidthRequest="140"
-      HorizontalOptions="Center"
-      Margin="0,12"
-      ColumnSpacing="4"
-      Padding="2">
+      HeightRequest="44"
+      Margin="16,12"
+      ColumnSpacing="1"
+      Padding="0">
 
             <!-- Кнопка списка -->
             <Button Grid.Column="0"
@@ -58,12 +56,12 @@
             BackgroundColor="{Binding IsListView, Converter={StaticResource BoolToColorConverter}}"
             TextColor="{Binding IsListView, Converter={StaticResource BoolToTextColorConverter}}"
             CornerRadius="8"
-            FontSize="11"
+            FontSize="14"
             FontAttributes="Bold"
             BorderWidth="0"
-            HeightRequest="28"
+            HeightRequest="40"
             Padding="0"
-            Margin="0"/>
+            Margin="0,0,0.5,0"/>
 
             <!-- Кнопка карты -->
             <Button Grid.Column="1"
@@ -72,14 +70,13 @@
             BackgroundColor="{Binding IsMapView, Converter={StaticResource BoolToColorConverter}}"
             TextColor="{Binding IsMapView, Converter={StaticResource BoolToTextColorConverter}}"
             CornerRadius="8"
-            FontSize="11"
+            FontSize="14"
             FontAttributes="Bold"
             BorderWidth="0"
-            HeightRequest="28"
+            HeightRequest="40"
             Padding="0"
-            Margin="0"/>
+            Margin="0.5,0,0,0"/>
         </Grid>
-
         <!-- Поиск и фильтры -->
         <Frame Grid.Row="2"
                Margin="10,5"

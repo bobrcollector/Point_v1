@@ -27,6 +27,7 @@ public class ModeratorDashboardViewModel : BaseViewModel
         RefreshCommand = new Command(async () => await RefreshData());
         ResolveReportCommand = new Command<Report>(async (report) => await ResolveReport(report));
         ViewAllReportsCommand = new Command(async () => await ViewAllReports());
+        ViewEventCommand = new Command<string>(async (eventId) => await ViewEvent(eventId));
 
         _ = LoadDashboardData();
     }
@@ -70,13 +71,14 @@ public class ModeratorDashboardViewModel : BaseViewModel
     public ICommand RefreshCommand { get; }
     public ICommand ResolveReportCommand { get; }
     public ICommand ViewAllReportsCommand { get; }
+    public ICommand ViewEventCommand { get; }
 
     private async Task ViewAllReports()
     {
         try
         {
             System.Diagnostics.Debug.WriteLine("🔄 Команда перехода к жалобам...");
-            await Shell.Current.GoToAsync("///ReportsManagementPage");
+            await Shell.Current.GoToAsync("//ReportsManagementPage");
             System.Diagnostics.Debug.WriteLine("✅ Успешный переход к ReportsManagementPage");
         }
         catch (Exception ex)
@@ -139,6 +141,7 @@ public class ModeratorDashboardViewModel : BaseViewModel
                 null,
                 "✅ Одобрить жалобу",
                 "❌ Отклонить жалобу",
+                "🚫 Заблокировать событие",
                 "📋 Подробности"
             );
 
@@ -149,6 +152,9 @@ public class ModeratorDashboardViewModel : BaseViewModel
                     break;
                 case "❌ Отклонить жалобу":
                     await ResolveReportWithNotes(report, false);
+                    break;
+                case "🚫 Заблокировать событие":
+                    await BlockEvent(report.TargetEventId);
                     break;
                 case "📋 Подробности":
                     await ShowReportDetails(report);
@@ -172,28 +178,73 @@ public class ModeratorDashboardViewModel : BaseViewModel
             maxLength: 500
         );
 
-        if (!string.IsNullOrEmpty(notes))
+        if (string.IsNullOrEmpty(notes))
         {
-            var success = await _reportService.ResolveReportAsync(
-                report.Id,
-                _authStateService.CurrentUserId,
-                approve,
-                notes
-            );
+            return; // Пользователь отменил
+        }
 
-            if (success)
+        // Если одобряем жалобу, спрашиваем, нужно ли заблокировать событие
+        bool shouldBlock = false;
+        if (approve)
+        {
+            shouldBlock = await Application.Current.MainPage.DisplayAlert(
+                "Блокировка события",
+                "Хотите заблокировать это событие?",
+                "Да, заблокировать",
+                "Нет, только одобрить жалобу"
+            );
+        }
+
+        // Сначала решаем жалобу
+        var success = await _reportService.ResolveReportAsync(
+            report.Id,
+            _authStateService.CurrentUserId,
+            approve,
+            notes
+        );
+
+        if (success)
+        {
+            // Если нужно заблокировать событие
+            if (shouldBlock)
+            {
+                var blockSuccess = await _dataService.BlockEventAsync(
+                    report.TargetEventId,
+                    _authStateService.CurrentUserId,
+                    notes // Используем причину одобрения как причину блокировки
+                );
+
+                if (blockSuccess)
+                {
+                    await Application.Current.MainPage.DisplayAlert(
+                        "Успех",
+                        "Жалоба одобрена и событие заблокировано",
+                        "OK"
+                    );
+                }
+                else
+                {
+                    await Application.Current.MainPage.DisplayAlert(
+                        "Частичный успех",
+                        "Жалоба одобрена, но не удалось заблокировать событие",
+                        "OK"
+                    );
+                }
+            }
+            else
             {
                 await Application.Current.MainPage.DisplayAlert(
                     "Успех",
                     approve ? "Жалоба одобрена" : "Жалоба отклонена",
                     "OK"
                 );
-                await RefreshData();
             }
-            else
-            {
-                await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось обработать жалобу", "OK");
-            }
+            
+            await RefreshData();
+        }
+        else
+        {
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось обработать жалобу", "OK");
         }
     }
 
@@ -223,5 +274,105 @@ public class ModeratorDashboardViewModel : BaseViewModel
             ReportType.Other => "Другое",
             _ => "Неизвестно"
         };
+    }
+
+    private async Task ViewEvent(string eventId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(eventId))
+            {
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "ID события не найден", "OK");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"🔄 Переход к событию: {eventId}");
+
+            // Проверяем, существует ли событие
+            var eventItem = await _dataService.GetEventAsync(eventId);
+            if (eventItem == null)
+            {
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "Событие не найдено или было удалено", "OK");
+                return;
+            }
+
+            // ПЕРЕДАЕМ ПАРАМЕТР, ЧТО ПРИШЛИ ИЗ ЖАЛОБ
+            await Shell.Current.GoToAsync($"{nameof(EventDetailsPage)}?eventId={eventId}&fromReports=true");
+            System.Diagnostics.Debug.WriteLine($"✅ Переход к событию выполнен (из жалоб)");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка перехода к событию: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось открыть событие", "OK");
+        }
+    }
+
+    private async Task BlockEvent(string eventId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(eventId))
+            {
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "ID события не найден", "OK");
+                return;
+            }
+
+            // Запрашиваем причину блокировки
+            var reason = await Application.Current.MainPage.DisplayPromptAsync(
+                "Блокировка события",
+                "Укажите причину блокировки события:",
+                "Заблокировать",
+                "Отмена",
+                maxLength: 500,
+                keyboard: Keyboard.Default
+            );
+
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                return; // Пользователь отменил
+            }
+
+            // Подтверждение
+            var confirm = await Application.Current.MainPage.DisplayAlert(
+                "Подтверждение",
+                "Вы уверены, что хотите заблокировать это событие?",
+                "Да, заблокировать",
+                "Отмена"
+            );
+
+            if (!confirm)
+            {
+                return;
+            }
+
+            var success = await _dataService.BlockEventAsync(
+                eventId,
+                _authStateService.CurrentUserId,
+                reason
+            );
+
+            if (success)
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    "Успех",
+                    "Событие успешно заблокировано",
+                    "OK"
+                );
+                await LoadDashboardData(); // Обновляем данные
+            }
+            else
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    "Ошибка",
+                    "Не удалось заблокировать событие",
+                    "OK"
+                );
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка блокировки события: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось заблокировать событие", "OK");
+        }
     }
 }

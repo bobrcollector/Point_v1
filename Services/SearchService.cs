@@ -17,8 +17,8 @@ public class SearchService : ISearchService
 
         if (allEvents == null) return new List<Event>();
 
-        // ИСПРАВЛЕНИЕ: Исключаем только завершенные события
-        var filteredEvents = allEvents.Where(e => e.IsActive && e.EventDate > DateTime.Now);
+        // ИСПРАВЛЕНИЕ: Исключаем завершенные, заблокированные и неактивные события
+        var filteredEvents = allEvents.Where(e => e.IsActive && !e.IsBlocked && e.EventDate > DateTime.Now);
 
         if (!string.IsNullOrEmpty(query))
         {
@@ -44,9 +44,9 @@ public class SearchService : ISearchService
     public async Task<List<string>> GetAvailableCategoriesAsync()
     {
         var events = await _dataService.GetEventsAsync();
-        // ИСПРАВЛЕНИЕ: Получаем все категории из будущих активных событий
+        // ИСПРАВЛЕНИЕ: Получаем все категории из будущих активных и незаблокированных событий
         return events?
-            .Where(e => !string.IsNullOrEmpty(e.CategoryId) && e.IsActive && e.EventDate > DateTime.Now)
+            .Where(e => !string.IsNullOrEmpty(e.CategoryId) && e.IsActive && !e.IsBlocked && e.EventDate > DateTime.Now)
             .Select(e => e.CategoryId)
             .Distinct()
             .OrderBy(c => c)  // Сортируем для удобства
@@ -59,7 +59,7 @@ public class SearchService : ISearchService
 
         if (allEvents == null) return new List<Event>();
 
-        var filteredEvents = allEvents.Where(e => e.IsActive);
+        var filteredEvents = allEvents.Where(e => e.IsActive && !e.IsBlocked);
 
         // Фильтр по категории
         if (!string.IsNullOrEmpty(filters.Category) && filters.Category != "Все категории")

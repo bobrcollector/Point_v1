@@ -28,7 +28,6 @@
             <ShellContent Route="ModeratorDashboard" ContentTemplate="{DataTemplate views:ModeratorDashboardPage}" />
         </Tab>
     </TabBar>
-    <!-- ЗДЕСЬ ТОЛЬКО ОДИН ЗАКРЫВАЮЩИЙ ТЕГ -->
 
     <!-- Регистрация маршрутов для админ-панели -->
     <ShellContent Route="ReportsManagementPage" ContentTemplate="{DataTemplate views:ReportsManagementPage}" />
@@ -43,6 +42,7 @@
     <ShellContent Route="EditProfilePage" ContentTemplate="{DataTemplate views:EditProfilePage}" />
     <ShellContent Route="ModeratorDashboardPage" ContentTemplate="{DataTemplate views:ModeratorDashboardPage}" />
     <ShellContent Route="SettingsPage" ContentTemplate="{DataTemplate views:SettingsPage}" />
+    <ShellContent Route="MapLocationPickerPage" ContentTemplate="{DataTemplate views:MapLocationPickerPage}" />
     
     <!-- ReportsManagementPage уже зарегистрирован выше -->
 </Shell>

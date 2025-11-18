@@ -19,6 +19,12 @@ public class Event
 
     // ДОБАВЬТЕ ЭТУ СТРОКУ ДЛЯ СИСТЕМЫ ЖАЛОБ
     public string ModerationNotes { get; set; }
+    
+    // Поля для блокировки события
+    public bool IsBlocked { get; set; } = false;
+    public string BlockedBy { get; set; } // ID модератора/администратора
+    public DateTime? BlockedAt { get; set; }
+    public string BlockReason { get; set; } // Причина блокировки
 
     // Вычисляемые свойства
     public int ParticipantsCount => ParticipantIds?.Count ?? 0;
@@ -53,4 +59,13 @@ public class Event
     public bool IsCreatedByUser(string userId) => CreatorId == userId;
     public bool ShowMyEventBadge { get; set; }
     public string EventTypeText { get; set; } = string.Empty;
+    
+    // Свойство для проверки завершенности события (включая блокировку)
+    public bool IsCompleted => EventDate < DateTime.Now || IsBlocked;
+    
+    // Свойство для отображения статуса блокировки
+    public string BlockStatusText => IsBlocked ? "🚫 Событие заблокировано модератором" : string.Empty;
+    
+    // Свойство для проверки возможности редактирования (для использования в UI)
+    public bool CanEdit { get; set; }
 }

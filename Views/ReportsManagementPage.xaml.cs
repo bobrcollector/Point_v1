@@ -35,17 +35,5 @@ public partial class ReportsManagementPage : ContentPage
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка в OnAppearing: {ex.Message}");
         }
     }
-    private async void OnBackClicked(object sender, EventArgs e)
-    {
-        try
-        {
-            await Shell.Current.GoToAsync("///ModeratorDashboard");
-            System.Diagnostics.Debug.WriteLine("✅ Возврат в админ-панель");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"❌ Ошибка возврата: {ex.Message}");
-            await Shell.Current.GoToAsync("..");
-        }
-    }
+
 }

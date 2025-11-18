@@ -1,5 +1,6 @@
 ﻿using Point_v1.Models;
 using Point_v1.Services;
+using Point_v1.Views;
 using System.Windows.Input;
 
 namespace Point_v1.ViewModels;
@@ -97,8 +98,10 @@ public class MyEventsViewModel : BaseViewModel
             {
                 case "Participating": // ТЕПЕРЬ ПЕРВАЯ ВКЛАДКА
                     events = await _dataService.GetParticipatingEventsAsync(userId);
+                    // СОРТИРОВКА: сначала новейшие события (по дате события)
+                    events = events.OrderByDescending(e => e.EventDate).ToList();
                     EmptyViewMessage = "Вы еще не участвуете ни в одном событии";
-                    System.Diagnostics.Debug.WriteLine($"📥 Запрошены события участия, получено: {events.Count}");
+                    System.Diagnostics.Debug.WriteLine($"📥 Запрошены события участия, получено: {events.Count}, отсортировано: {events.Count}");
                     break;
 
                 case "Created": // ТЕПЕРЬ ВТОРАЯ ВКЛАДКА
@@ -111,12 +114,20 @@ public class MyEventsViewModel : BaseViewModel
 
                 case "Archived":
                     events = await _dataService.GetArchivedEventsAsync(userId);
+                    // СОРТИРОВКА: сначала новейшие события (по дате события)
+                    events = events.OrderByDescending(e => e.EventDate).ToList();
                     EmptyViewMessage = "У вас нет завершенных событий";
-                    System.Diagnostics.Debug.WriteLine($"📥 Запрошены архивные события, получено: {events.Count}");
+                    System.Diagnostics.Debug.WriteLine($"📥 Запрошены архивные события, получено: {events.Count}, отсортировано: {events.Count}");
 
                     // ВАЖНО: ВЫЗЫВАЕМ ОБНОВЛЕНИЕ СВОЙСТВ ДЛЯ АРХИВНЫХ СОБЫТИЙ
                     UpdateArchiveEventsProperties(events, userId);
                     break;
+            }
+
+            // Устанавливаем CanEdit для каждого события (только для вкладки Created и не завершенных)
+            foreach (var eventItem in events)
+            {
+                eventItem.CanEdit = SelectedTab == "Created" && !eventItem.IsCompleted;
             }
 
             CurrentEvents = events;
@@ -154,8 +165,15 @@ public class MyEventsViewModel : BaseViewModel
     {
         try
         {
-            GlobalEventId.EventId = eventId;
-            await Shell.Current.GoToAsync("//EventDetailsPage");
+            if (string.IsNullOrEmpty(eventId))
+            {
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "ID события не найден", "OK");
+                return;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"🔄 Переход к редактированию события: {eventId}");
+            await Shell.Current.GoToAsync($"{nameof(EventDetailsPage)}?eventId={eventId}");
+            System.Diagnostics.Debug.WriteLine($"✅ Переход к редактированию выполнен");
         }
         catch (Exception ex)
         {

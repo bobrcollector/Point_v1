@@ -71,8 +71,9 @@ public class FirestoreDataService : IDataService
         try
         {
             var events = await GetEventsAsync();
-            // Все активные созданные события (и прошлые и будущие)
-            var userEvents = events.Where(e => e.CreatorId == userId && e.IsActive).ToList();
+            // Все созданные события (активные и заблокированные, и прошлые и будущие)
+            // Заблокированные события тоже показываем, чтобы пользователь видел свои заблокированные события
+            var userEvents = events.Where(e => e.CreatorId == userId && (e.IsActive || e.IsBlocked)).ToList();
             System.Diagnostics.Debug.WriteLine($"📥 Загружено созданных событий пользователя: {userEvents.Count}");
             return userEvents;
         }
@@ -114,8 +115,9 @@ public class FirestoreDataService : IDataService
             // ВКЛЮЧАЕМ В АРХИВ:
             // 1. Созданные пользователем И завершенные события
             // 2. События, в которых пользователь участвовал И которые завершены
+            // 3. Заблокированные события (созданные пользователем или в которых он участвовал)
             var archivedEvents = events.Where(e =>
-                e.EventDate < DateTime.Now && // ТОЛЬКО ЗАВЕРШЕННЫЕ события
+                (e.EventDate < DateTime.Now || e.IsBlocked) && // ЗАВЕРШЕННЫЕ ИЛИ ЗАБЛОКИРОВАННЫЕ события
                 (e.CreatorId == userId ||
                  (e.ParticipantIds != null && e.ParticipantIds.Contains(userId)))
             ).ToList();
@@ -202,6 +204,36 @@ public class FirestoreDataService : IDataService
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка удаления события: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> BlockEventAsync(string eventId, string moderatorId, string reason)
+    {
+        try
+        {
+            var eventItem = await GetEventAsync(eventId);
+            if (eventItem == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"❌ Событие с ID {eventId} не найдено для блокировки");
+                return false;
+            }
+
+            // Устанавливаем поля блокировки
+            eventItem.IsBlocked = true;
+            eventItem.BlockedBy = moderatorId;
+            eventItem.BlockedAt = DateTime.Now;
+            eventItem.BlockReason = reason;
+            // Помечаем как неактивное
+            eventItem.IsActive = false;
+
+            System.Diagnostics.Debug.WriteLine($"🔒 Блокировка события {eventId} модератором {moderatorId}: {reason}");
+
+            return await UpdateEventAsync(eventItem);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка блокировки события: {ex.Message}");
             return false;
         }
     }

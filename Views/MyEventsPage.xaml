@@ -15,6 +15,7 @@
         <converters:ShowLeaveButtonConverter x:Key="ShowLeaveButtonConverter" />
         <converters:NegativeBooleanConverter x:Key="NegativeBooleanConverter" />
         <converters:ShowArchiveInfoConverter x:Key="ShowArchiveInfoConverter" />
+        <converters:IsNotNullOrEmptyConverter x:Key="IsNotNullOrEmptyConverter" />
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*,Auto">
@@ -174,6 +175,29 @@
                                                              Path=BindingContext.SelectedTab,
                                                              Converter={x:StaticResource ShowArchiveInfoConverter}}"/>
 
+                                    <!-- Пометка о блокировке -->
+                                    <Frame IsVisible="{Binding IsBlocked}"
+                                           BackgroundColor="#FFEBEE"
+                                           Padding="12"
+                                           CornerRadius="12"
+                                           HasShadow="False"
+                                           Margin="0,8,0,0">
+                                        <VerticalStackLayout Spacing="4">
+                                            <Label Text="{Binding BlockStatusText}" 
+                                                   TextColor="#D32F2F" 
+                                                   FontSize="13"
+                                                   FontAttributes="Bold"
+                                                   HorizontalOptions="Center"
+                                                   LineBreakMode="WordWrap"/>
+                                            <Label Text="{Binding BlockReason, StringFormat='Причина: {0}'}" 
+                                                   TextColor="#D32F2F" 
+                                                   FontSize="12"
+                                                   HorizontalOptions="Center"
+                                                   LineBreakMode="WordWrap"
+                                                   IsVisible="{Binding BlockReason, Converter={x:StaticResource IsNotNullOrEmptyConverter}}"/>
+                                        </VerticalStackLayout>
+                                    </Frame>
+
                                     <!-- Участники -->
                                     <Label Text="{Binding ParticipantsDisplay}" 
                                            FontSize="12"
@@ -187,7 +211,7 @@
                                                              Path=BindingContext.SelectedTab,
                                                              Converter={x:StaticResource ShowActionsConverter}}">
 
-                                        <!-- Кнопка редактирования (только для созданных) -->
+                                        <!-- Кнопка редактирования (только для созданных и не завершенных) -->
                                         <Button Grid.Column="0"
                                                 Text="✏️ Редактировать"
                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.EditEventCommand}"
@@ -197,7 +221,7 @@
                                                 BorderColor="#512BD4"
                                                 HeightRequest="40"
                                                 FontSize="12"
-                                                IsVisible="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedTab, Converter={x:StaticResource ShowEditButtonConverter}}"/>
+                                                IsVisible="{Binding CanEdit}"/>
 
                                         <!-- Кнопка выхода (только для участия) -->
                                         <Button Grid.Column="1"

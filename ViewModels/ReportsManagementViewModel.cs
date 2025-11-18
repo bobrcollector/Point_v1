@@ -30,6 +30,7 @@ public class ReportsManagementViewModel : BaseViewModel
         SwitchTabCommand = new Command<string>(async (tab) => await SwitchTab(tab));
         ResolveReportCommand = new Command<Report>(async (report) => await ResolveReport(report));
         ViewEventCommand = new Command<string>(async (eventId) => await ViewEvent(eventId));
+        BlockEventCommand = new Command<string>(async (eventId) => await BlockEvent(eventId));
 
         SelectedTab = "Pending";
         _ = LoadReports();
@@ -67,6 +68,7 @@ public class ReportsManagementViewModel : BaseViewModel
     public ICommand SwitchTabCommand { get; }
     public ICommand ResolveReportCommand { get; }
     public ICommand ViewEventCommand { get; }
+    public ICommand BlockEventCommand { get; }
 
     public async Task LoadReports()
     {
@@ -134,6 +136,7 @@ public class ReportsManagementViewModel : BaseViewModel
             null,
             "✅ Одобрить",
             "❌ Отклонить",
+            "🚫 Заблокировать событие",
             "👁️ Просмотр события"
         );
 
@@ -144,6 +147,9 @@ public class ReportsManagementViewModel : BaseViewModel
                 break;
             case "❌ Отклонить":
                 await ResolveWithNotes(report, false);
+                break;
+            case "🚫 Заблокировать событие":
+                await BlockEvent(report.TargetEventId);
                 break;
             case "👁️ Просмотр события":
                 await ViewEvent(report.TargetEventId);
@@ -161,24 +167,69 @@ public class ReportsManagementViewModel : BaseViewModel
             maxLength: 500
         );
 
-        if (!string.IsNullOrEmpty(notes))
+        if (string.IsNullOrEmpty(notes))
         {
-            var success = await _reportService.ResolveReportAsync(
-                report.Id,
-                _authStateService.CurrentUserId,
-                approve,
-                notes
-            );
+            return; // Пользователь отменил
+        }
 
-            if (success)
+        // Если одобряем жалобу, спрашиваем, нужно ли заблокировать событие
+        bool shouldBlock = false;
+        if (approve)
+        {
+            shouldBlock = await Application.Current.MainPage.DisplayAlert(
+                "Блокировка события",
+                "Хотите заблокировать это событие?",
+                "Да, заблокировать",
+                "Нет, только одобрить жалобу"
+            );
+        }
+
+        // Сначала решаем жалобу
+        var success = await _reportService.ResolveReportAsync(
+            report.Id,
+            _authStateService.CurrentUserId,
+            approve,
+            notes
+        );
+
+        if (success)
+        {
+            // Если нужно заблокировать событие
+            if (shouldBlock)
+            {
+                var blockSuccess = await _dataService.BlockEventAsync(
+                    report.TargetEventId,
+                    _authStateService.CurrentUserId,
+                    notes // Используем причину одобрения как причину блокировки
+                );
+
+                if (blockSuccess)
+                {
+                    await Application.Current.MainPage.DisplayAlert(
+                        "Успех",
+                        "Жалоба одобрена и событие заблокировано",
+                        "OK"
+                    );
+                }
+                else
+                {
+                    await Application.Current.MainPage.DisplayAlert(
+                        "Частичный успех",
+                        "Жалоба одобрена, но не удалось заблокировать событие",
+                        "OK"
+                    );
+                }
+            }
+            else
             {
                 await Application.Current.MainPage.DisplayAlert(
                     "Успех",
                     approve ? "Жалоба одобрена" : "Жалоба отклонена",
                     "OK"
                 );
-                await LoadReports();
             }
+            
+            await LoadReports();
         }
     }
     private async Task ViewEvent(string eventId)
@@ -209,6 +260,98 @@ public class ReportsManagementViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка перехода к событию: {ex.Message}");
             await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось открыть событие", "OK");
+        }
+    }
+
+    private async Task BlockEvent(string eventId)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(eventId))
+            {
+                await Application.Current.MainPage.DisplayAlert("Ошибка", "ID события не найден", "OK");
+                return;
+            }
+
+            // Запрашиваем причину блокировки
+            var reason = await Application.Current.MainPage.DisplayPromptAsync(
+                "Блокировка события",
+                "Укажите причину блокировки события:",
+                "Заблокировать",
+                "Отмена",
+                maxLength: 500,
+                keyboard: Keyboard.Default
+            );
+
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                return; // Пользователь отменил
+            }
+
+            // Подтверждение
+            var confirm = await Application.Current.MainPage.DisplayAlert(
+                "Подтверждение",
+                "Вы уверены, что хотите заблокировать это событие?",
+                "Да, заблокировать",
+                "Отмена"
+            );
+
+            if (!confirm)
+            {
+                return;
+            }
+
+            var success = await _dataService.BlockEventAsync(
+                eventId,
+                _authStateService.CurrentUserId,
+                reason
+            );
+
+            if (success)
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    "Успех",
+                    "Событие успешно заблокировано",
+                    "OK"
+                );
+                await LoadReports(); // Обновляем список
+            }
+            else
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    "Ошибка",
+                    "Не удалось заблокировать событие",
+                    "OK"
+                );
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка блокировки события: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось заблокировать событие", "OK");
+        }
+    }
+
+    public async Task GoBack()
+    {
+        try
+        {
+            // Возврат на предыдущую страницу
+            await Shell.Current.GoToAsync("..");
+            System.Diagnostics.Debug.WriteLine("✅ Возврат на предыдущую страницу");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка возврата: {ex.Message}");
+            // Fallback на админ-панель, если возврат назад не удался
+            try
+            {
+                await Shell.Current.GoToAsync("///ModeratorDashboard");
+            }
+            catch
+            {
+                // Если и это не удалось, просто закрываем страницу
+            }
         }
     }
 }

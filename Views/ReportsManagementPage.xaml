@@ -17,38 +17,14 @@
         <converters:TabTextColorConverter x:Key="TabTextColorConverter" />
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
 
-        <!-- КОМПАКТНАЯ ШАПКА КАК В ModeratorDashboardPage -->
-        <Frame Grid.Row="0"
-               BackgroundColor="#512BD4"
-               Padding="20"
-               CornerRadius="0"
-               HasShadow="True">
-            <Grid ColumnDefinitions="Auto,*,Auto">
-                <Button Grid.Column="0"
-                        Text="←"
-                        Clicked="OnBackClicked"
-                        BackgroundColor="Transparent"
-                        TextColor="White"
-                        FontSize="16"
-                        HeightRequest="40"/>
-
-                <Label Grid.Column="1"
-                       Text="🛡️ Управление жалобами"
-                       TextColor="White"
-                       FontSize="18"
-                       FontAttributes="Bold"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"/>
-            </Grid>
-        </Frame>
 
         <!-- Вкладки (компактные, сразу под шапкой) -->
-        <VerticalStackLayout Grid.Row="0" 
+        <VerticalStackLayout Grid.Row="1" 
                              Spacing="0" 
                              VerticalOptions="End"
-                             Margin="20,60,20,0">
+                             Margin="20,10,20,0">
 
             <Grid ColumnDefinitions="*,*"
                   BackgroundColor="{AppThemeBinding Light=#F0F0F0, Dark=#3A3A3A}"
@@ -90,7 +66,7 @@
         </VerticalStackLayout>
 
         <!-- Список жалоб (оставляем без изменений) -->
-        <RefreshView Grid.Row="1" 
+        <RefreshView Grid.Row="2" 
                      Command="{Binding LoadReportsCommand}"
                      IsRefreshing="{Binding IsLoading}">
 
@@ -209,7 +185,7 @@
         </RefreshView>
 
         <!-- Индикатор загрузки -->
-        <ActivityIndicator Grid.Row="0" Grid.RowSpan="2"
+        <ActivityIndicator Grid.Row="1" Grid.RowSpan="2"
                            IsRunning="{Binding IsLoading}"
                            IsVisible="{Binding IsLoading}"
                            Color="#512BD4"

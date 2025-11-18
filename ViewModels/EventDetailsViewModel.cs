@@ -361,7 +361,7 @@ public class EventDetailsViewModel : BaseViewModel
             {
                 // Возвращаемся к жалобам
                 System.Diagnostics.Debug.WriteLine("🔙 Возврат к жалобам");
-                await Shell.Current.GoToAsync("///ReportsManagementPage");
+                await Shell.Current.GoToAsync("ReportsManagementPage");
             }
             else
             {

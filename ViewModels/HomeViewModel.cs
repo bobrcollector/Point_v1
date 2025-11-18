@@ -239,10 +239,14 @@ public class HomeViewModel : BaseViewModel
             var location = await _mapService.GetCurrentLocationAsync();
             System.Diagnostics.Debug.WriteLine($"📍 Получена локация: {location.Latitude}, {location.Longitude}");
 
-            // Конвертируем Event в MapEvent
+            // Конвертируем Event в MapEvent (исключаем заблокированные и неактивные события)
             var mapEvents = new List<MapEvent>();
             foreach (var eventItem in allEvents)
             {
+                // ФИЛЬТРАЦИЯ: не показываем заблокированные или неактивные события на карте
+                if (eventItem.IsBlocked || !eventItem.IsActive)
+                    continue;
+
                 if (eventItem.Latitude.HasValue && eventItem.Longitude.HasValue)
                 {
                     mapEvents.Add(new MapEvent
@@ -435,10 +439,10 @@ public class HomeViewModel : BaseViewModel
                     events = await _dataService.GetEventsAsync();
                 }
 
-                // ФИЛЬТРАЦИЯ: убираем прошедшие события
+                // ФИЛЬТРАЦИЯ: убираем прошедшие и заблокированные события
                 if (events != null)
                 {
-                    var filteredEvents = events.Where(e => e.EventDate > DateTime.Now).ToList();
+                    var filteredEvents = events.Where(e => e.EventDate > DateTime.Now && !e.IsBlocked && e.IsActive).ToList();
 
                     // ОБНОВЛЯЕМ РЕЛЕВАНТНОСТЬ СОБЫТИЙ
                     UpdateEventsRelevance(filteredEvents);
@@ -553,7 +557,7 @@ public class HomeViewModel : BaseViewModel
             // Фильтруем будущие события
             if (filteredEvents != null)
             {
-                filteredEvents = filteredEvents.Where(e => e.EventDate > DateTime.Now).ToList();
+                filteredEvents = filteredEvents.Where(e => e.EventDate > DateTime.Now && !e.IsBlocked && e.IsActive).ToList();
             }
             else
             {

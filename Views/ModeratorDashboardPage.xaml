@@ -16,18 +16,6 @@
 
     <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- Заголовок -->
-        <Frame Grid.Row="0"
-               BackgroundColor="#512BD4"
-               Padding="20"
-               CornerRadius="0"
-               HasShadow="True">
-            <Label Text="🛡️ Панель модератора" 
-                   TextColor="White"
-                   FontSize="20"
-                   FontAttributes="Bold"
-                   HorizontalOptions="Center"/>
-        </Frame>
 
         <!-- Контент -->
         <RefreshView Grid.Row="1" 
@@ -187,16 +175,32 @@
                                                                LineBreakMode="TailTruncation"/>
 
                                                         <!-- Действия -->
-                                                        <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
-                                                                Text="🔍 Рассмотреть"
-                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ResolveReportCommand}"
-                                                                CommandParameter="{Binding .}"
-                                                                BackgroundColor="#512BD4"
-                                                                TextColor="White"
-                                                                HeightRequest="32"
-                                                                CornerRadius="8"
-                                                                FontSize="12"
-                                                                Margin="0,5,0,0"/>
+                                                        <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                                              ColumnDefinitions="*,Auto"
+                                                              ColumnSpacing="10"
+                                                              Margin="0,5,0,0">
+                                                            <Button Grid.Column="0"
+                                                                    Text="🔍 Рассмотреть"
+                                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ResolveReportCommand}"
+                                                                    CommandParameter="{Binding .}"
+                                                                    BackgroundColor="#512BD4"
+                                                                    TextColor="White"
+                                                                    HeightRequest="32"
+                                                                    CornerRadius="8"
+                                                                    FontSize="12"/>
+                                                            
+                                                            <Button Grid.Column="1"
+                                                                    Text="👁️ Событие"
+                                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ViewEventCommand}"
+                                                                    CommandParameter="{Binding TargetEventId}"
+                                                                    BackgroundColor="Transparent"
+                                                                    TextColor="#512BD4"
+                                                                    BorderColor="#512BD4"
+                                                                    BorderWidth="1"
+                                                                    HeightRequest="32"
+                                                                    CornerRadius="8"
+                                                                    FontSize="12"/>
+                                                        </Grid>
                                                     </Grid>
                                                 </Frame>
                                             </Grid>
