@@ -64,7 +64,14 @@ public class HomeViewModel : BaseViewModel
     $"MapHtmlService: {_mapHtmlService != null}");
 
         UpdateAuthState();
-        LoadEventsCommand.Execute(null);
+        // Загружаем интересы пользователя перед загрузкой событий
+        _ = LoadUserInterests().ContinueWith(_ =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                LoadEventsCommand.Execute(null);
+            });
+        });
     }
 
     // СВОЙСТВА
@@ -296,9 +303,12 @@ public class HomeViewModel : BaseViewModel
         }
     }
 
-    private void OnAuthenticationStateChanged(object sender, EventArgs e)
+    private async void OnAuthenticationStateChanged(object sender, EventArgs e)
     {
         UpdateAuthState();
+        // Перезагружаем интересы и события после изменения состояния аутентификации
+        await LoadUserInterests();
+        await LoadEvents();
     }
 
     // ИСПРАВЛЕНИЕ: Используем обработчик без async void - вместо этого вызываем нужный метод из LoadEvents
@@ -368,7 +378,7 @@ public class HomeViewModel : BaseViewModel
         _mapViewStateService.SetMapViewActive(IsMapView);
         System.Diagnostics.Debug.WriteLine($"💾 MapViewStateService обновлена: IsMapViewActive = {IsMapView}");
         
-        await Shell.Current.GoToAsync("//FilterPage");
+        await Shell.Current.GoToAsync(nameof(FilterPage));
     }
 
     public async Task LoadEvents()
@@ -448,7 +458,15 @@ public class HomeViewModel : BaseViewModel
                     UpdateEventsRelevance(filteredEvents);
 
                     // СОРТИРУЕМ ПО РЕЛЕВАНТНОСТИ
-                    Events = SortEventsByRelevance(filteredEvents);
+                    var sortedEvents = SortEventsByRelevance(filteredEvents);
+                    
+                    // Отладочный вывод для проверки категорий
+                    foreach (var evt in sortedEvents.Take(3))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"📋 Событие '{evt.Title}': CategoryIds={string.Join(", ", evt.CategoryIds ?? new List<string>())}, DisplayCategories={string.Join(", ", evt.DisplayCategories)}");
+                    }
+                    
+                    Events = sortedEvents;
                 }
                 else
                 {
@@ -736,10 +754,25 @@ public class HomeViewModel : BaseViewModel
                 System.Diagnostics.Debug.WriteLine($"🎯 Интересы пользователя: {string.Join(", ", userInterests)}");
                 System.Diagnostics.Debug.WriteLine($"🎯 Категория события: {eventItem.CategoryId}");
 
-                // Сравниваем категорию события с названиями интересов пользователя
-                eventItem.IsRelevant = userInterests.Any(userInterest =>
-                    eventItem.CategoryId?.Contains(userInterest) == true ||
-                    userInterest.Contains(eventItem.CategoryId ?? ""));
+                // Сравниваем категории события (CategoryId и CategoryIds) с названиями интересов пользователя
+                var eventCategories = new List<string>();
+                
+                // Добавляем старую категорию
+                if (!string.IsNullOrWhiteSpace(eventItem.CategoryId))
+                {
+                    eventCategories.Add(eventItem.CategoryId);
+                }
+                
+                // Добавляем новые категории из CategoryIds
+                if (eventItem.CategoryIds != null && eventItem.CategoryIds.Count > 0)
+                {
+                    eventCategories.AddRange(eventItem.CategoryIds.Where(c => !string.IsNullOrWhiteSpace(c)));
+                }
+                
+                // Проверяем, есть ли совпадение между категориями события и интересами пользователя
+                eventItem.IsRelevant = eventCategories.Any(eventCategory =>
+                    userInterests.Any(userInterest =>
+                        eventCategory.Contains(userInterest) || userInterest.Contains(eventCategory)));
 
                 System.Diagnostics.Debug.WriteLine($"🎯 Событие '{eventItem.Title}': релевантно = {eventItem.IsRelevant}");
             }

@@ -204,12 +204,26 @@ public class EventDetailsViewModel : BaseViewModel
             if (value != null)
             {
                 UpdateParticipationState();
+                _ = LoadOrganizerAvatar(); // Загружаем аватар организатора
             }
 
             // ДОБАВЛЯЕМ ОБНОВЛЕНИЕ CanParticipate
             OnPropertyChanged(nameof(CanParticipate));
         }
     }
+
+    private ImageSource _organizerAvatar;
+    public ImageSource OrganizerAvatar
+    {
+        get => _organizerAvatar;
+        set
+        {
+            SetProperty(ref _organizerAvatar, value);
+            OnPropertyChanged(nameof(HasOrganizerAvatar));
+        }
+    }
+
+    public bool HasOrganizerAvatar => _organizerAvatar != null;
 
 
     private bool _isParticipating;
@@ -548,6 +562,8 @@ public class EventDetailsViewModel : BaseViewModel
             }
 
             System.Diagnostics.Debug.WriteLine($"✅ Событие загружено: {eventItem.Title}");
+            System.Diagnostics.Debug.WriteLine($"📋 CategoryIds: {string.Join(", ", eventItem.CategoryIds ?? new List<string>())}");
+            System.Diagnostics.Debug.WriteLine($"📋 DisplayCategories: {string.Join(", ", eventItem.DisplayCategories)}");
 
             Event = eventItem;
             UpdateParticipationState();
@@ -556,6 +572,15 @@ public class EventDetailsViewModel : BaseViewModel
             OnPropertyChanged(nameof(Event));
             OnPropertyChanged(nameof(CanParticipate));
             OnPropertyChanged(nameof(ShowOrganizerButtons));
+            
+            // Принудительно обновляем отображение категорий
+            if (Event != null)
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    OnPropertyChanged(nameof(Event));
+                });
+            }
 
         }
         catch (Exception ex)
@@ -699,6 +724,37 @@ public class EventDetailsViewModel : BaseViewModel
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка обновления статистики: {ex.Message}");
+        }
+    }
+
+    private async Task LoadOrganizerAvatar()
+    {
+        try
+        {
+            if (Event == null || string.IsNullOrEmpty(Event.CreatorId))
+            {
+                OrganizerAvatar = null;
+                OnPropertyChanged(nameof(HasOrganizerAvatar));
+                return;
+            }
+
+            var organizer = await _dataService.GetUserAsync(Event.CreatorId);
+            if (organizer != null && !string.IsNullOrEmpty(organizer.AvatarUrl))
+            {
+                OrganizerAvatar = ImageSource.FromUri(new Uri(organizer.AvatarUrl));
+                System.Diagnostics.Debug.WriteLine($"📸 Аватар организатора загружен: {organizer.AvatarUrl}");
+            }
+            else
+            {
+                OrganizerAvatar = null;
+            }
+            OnPropertyChanged(nameof(HasOrganizerAvatar));
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки аватара организатора: {ex.Message}");
+            OrganizerAvatar = null;
+            OnPropertyChanged(nameof(HasOrganizerAvatar));
         }
     }
     private async Task CheckDataServiceAndLoadEvent(string eventId)

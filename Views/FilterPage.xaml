@@ -3,35 +3,11 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              Title="Фильтры"
+             Shell.NavBarIsVisible="True"
              BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#1C1C1E}">
 
     <ScrollView>
         <VerticalStackLayout Spacing="0" Padding="0">
-
-            <!-- Шапка -->
-            <Frame BackgroundColor="#512BD4"
-                   Padding="15,12"
-                   CornerRadius="0"
-                   HasShadow="True">
-                <Grid ColumnDefinitions="Auto,*,Auto">
-                    <Button Grid.Column="0"
-                            Text="✕"
-                            Command="{Binding CloseCommand}"
-                            Style="{StaticResource IconButton}"
-                            BackgroundColor="Transparent"
-                            TextColor="White"
-                            WidthRequest="44"
-                            HeightRequest="44"/>
-
-                    <Label Grid.Column="1"
-                           Text="Фильтры событий"
-                           TextColor="White"
-                           FontSize="18"
-                           FontAttributes="Bold"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center"/>
-                </Grid>
-            </Frame>
 
             <!-- Основной контент -->
             <VerticalStackLayout Spacing="16" Padding="20" Margin="0,12,0,0">

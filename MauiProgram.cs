@@ -133,5 +133,7 @@ public static class MauiProgram
         Routing.RegisterRoute(nameof(SelectInterestsPage), typeof(SelectInterestsPage));
         Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
         Routing.RegisterRoute(nameof(TestInterestsPage), typeof(TestInterestsPage));
+        Routing.RegisterRoute(nameof(ReportsManagementPage), typeof(ReportsManagementPage));
+        Routing.RegisterRoute(nameof(FilterPage), typeof(FilterPage));
     }
 }

@@ -1,4 +1,5 @@
 using System.Globalization;
+using Microsoft.Maui.Controls;
 
 namespace Point_v1.Converters;
 
@@ -8,14 +9,32 @@ public class PendingReportsColorConverter : IValueConverter
     {
         if (value is int count)
         {
-            return count switch
+            var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+            
+            if (isDark)
             {
-                0 => Color.FromArgb("#4CAF50"), // ������� - ��� �����
-                <= 5 => Color.FromArgb("#FF9800"), // ��������� - ���� �����
-                _ => Color.FromArgb("#F44336") // ������� - ����� �����
-            };
+                // Темные версии цветов для темной темы
+                return count switch
+                {
+                    0 => Color.FromArgb("#2E7D32"), // Зеленый - темнее
+                    <= 5 => Color.FromArgb("#E65100"), // Оранжевый - темнее
+                    _ => Color.FromArgb("#C62828") // Красный - темнее
+                };
+            }
+            else
+            {
+                // Светлые версии цветов для светлой темы
+                return count switch
+                {
+                    0 => Color.FromArgb("#4CAF50"), // Зеленый
+                    <= 5 => Color.FromArgb("#FF9800"), // Оранжевый
+                    _ => Color.FromArgb("#F44336") // Красный
+                };
+            }
         }
-        return Color.FromArgb("#4CAF50");
+        return Application.Current?.RequestedTheme == AppTheme.Dark 
+            ? Color.FromArgb("#2E7D32") 
+            : Color.FromArgb("#4CAF50");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

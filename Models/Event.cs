@@ -5,7 +5,8 @@ public class Event
     public string Id { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
-    public string CategoryId { get; set; }
+    public string CategoryId { get; set; } // Оставлено для обратной совместимости
+    public List<string> CategoryIds { get; set; } = new List<string>(); // Новое поле для нескольких категорий
     public string Address { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
@@ -68,4 +69,75 @@ public class Event
     
     // Свойство для проверки возможности редактирования (для использования в UI)
     public bool CanEdit { get; set; }
+    
+    // Свойство для отображения всех категорий
+    public string CategoriesDisplay
+    {
+        get
+        {
+            if (CategoryIds != null && CategoryIds.Count > 0)
+            {
+                return string.Join(", ", CategoryIds);
+            }
+            else if (!string.IsNullOrEmpty(CategoryId))
+            {
+                return CategoryId;
+            }
+            return "Без категории";
+        }
+    }
+    
+    // Свойство для получения списка категорий для отображения
+    public List<string> DisplayCategories
+    {
+        get
+        {
+            var result = new List<string>();
+            
+            if (CategoryIds != null && CategoryIds.Count > 0)
+            {
+                // Фильтруем пустые строки и возвращаем только валидные названия
+                var validCategories = CategoryIds.Where(c => !string.IsNullOrWhiteSpace(c)).ToList();
+                if (validCategories.Count > 0)
+                {
+                    result.AddRange(validCategories);
+                    System.Diagnostics.Debug.WriteLine($"📋 DisplayCategories из CategoryIds: {string.Join(", ", result)}");
+                    return result;
+                }
+            }
+            
+            // Если CategoryIds пустые или содержат только пустые строки, используем CategoryId
+            if (!string.IsNullOrWhiteSpace(CategoryId))
+            {
+                result.Add(CategoryId);
+                System.Diagnostics.Debug.WriteLine($"📋 DisplayCategories из CategoryId: {CategoryId}");
+                return result;
+            }
+            
+            System.Diagnostics.Debug.WriteLine($"📋 DisplayCategories пустой");
+            return result;
+        }
+    }
+    
+    // Свойство для отображения первой категории с количеством остальных
+    public string CategoryDisplay
+    {
+        get
+        {
+            var categories = DisplayCategories;
+            if (categories == null || categories.Count == 0)
+            {
+                return "Без категории";
+            }
+            
+            if (categories.Count == 1)
+            {
+                return categories[0];
+            }
+            
+            // Показываем первую категорию + количество остальных
+            var additionalCount = categories.Count - 1;
+            return $"{categories[0]} +{additionalCount}";
+        }
+    }
 }

@@ -86,18 +86,18 @@
 
                                     <!-- Решенные жалобы -->
                                     <Frame Grid.Row="0" Grid.Column="1"
-                                           BackgroundColor="#E8F5E8"
+                                           BackgroundColor="{AppThemeBinding Light=#E8F5E8, Dark=#1B5E20}"
                                            Padding="20"
                                            CornerRadius="12">
                                         <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
                                             <Label Text="{Binding ResolvedReportsCount}" 
                                                    FontSize="28"
                                                    FontAttributes="Bold"
-                                                   TextColor="#2E7D32"
+                                                   TextColor="{AppThemeBinding Light=#2E7D32, Dark=#81C784}"
                                                    HorizontalOptions="Center"/>
                                             <Label Text="Решено жалоб" 
                                                    FontSize="13"
-                                                   TextColor="#2E7D32"
+                                                   TextColor="{AppThemeBinding Light=#2E7D32, Dark=#81C784}"
                                                    HorizontalOptions="Center"/>
                                         </VerticalStackLayout>
                                     </Frame>
@@ -106,7 +106,7 @@
                                 <!-- Единая кнопка управления жалобами -->
                                 <Button Text="📋 Управление всеми жалобами" 
                                         Command="{Binding ViewAllReportsCommand}"
-                                        BackgroundColor="#512BD4"
+                                        BackgroundColor="{AppThemeBinding Light=#512BD4, Dark=#512BD4}"
                                         TextColor="White"
                                         HeightRequest="45"
                                         CornerRadius="10"
@@ -183,7 +183,7 @@
                                                                     Text="🔍 Рассмотреть"
                                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ResolveReportCommand}"
                                                                     CommandParameter="{Binding .}"
-                                                                    BackgroundColor="#512BD4"
+                                                                    BackgroundColor="{AppThemeBinding Light=#512BD4, Dark=#512BD4}"
                                                                     TextColor="White"
                                                                     HeightRequest="32"
                                                                     CornerRadius="8"
@@ -194,8 +194,8 @@
                                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ViewEventCommand}"
                                                                     CommandParameter="{Binding TargetEventId}"
                                                                     BackgroundColor="Transparent"
-                                                                    TextColor="#512BD4"
-                                                                    BorderColor="#512BD4"
+                                                                    TextColor="{AppThemeBinding Light=#512BD4, Dark=#9880e5}"
+                                                                    BorderColor="{AppThemeBinding Light=#512BD4, Dark=#9880e5}"
                                                                     BorderWidth="1"
                                                                     HeightRequest="32"
                                                                     CornerRadius="8"

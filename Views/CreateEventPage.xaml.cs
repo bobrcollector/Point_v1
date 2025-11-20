@@ -1,5 +1,6 @@
 ﻿using Point_v1.ViewModels;
 using Point_v1.Services;
+using Point_v1.Models;
 
 namespace Point_v1.Views;
 
@@ -45,6 +46,17 @@ public partial class CreateEventPage : ContentPage
                 
                 // Очищаем сохраненные данные
                 LocationSelectionService.Clear();
+            }
+        }
+    }
+
+    private void OnCategoryClicked(object sender, EventArgs e)
+    {
+        if (sender is Button button && button.BindingContext is Interest interest)
+        {
+            if (BindingContext is CreateEventViewModel viewModel)
+            {
+                viewModel.ToggleCategoryCommand.Execute(interest);
             }
         }
     }

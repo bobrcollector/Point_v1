@@ -61,6 +61,7 @@ public class FirebaseAuthService : IAuthService
                     DisplayName = displayName,
                     City = "",
                     About = "",
+                    AvatarUrl = "", // Аватар будет добавлен позже пользователем
                     InterestIds = new List<string>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow

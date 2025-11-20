@@ -7,7 +7,8 @@ public static class CreateEventStateService
 {
     public static string Title { get; set; }
     public static string Description { get; set; }
-    public static Interest SelectedInterest { get; set; }
+    public static Interest SelectedInterest { get; set; } // Оставлено для обратной совместимости
+    public static List<Interest> SelectedInterests { get; set; } = new List<Interest>(); // Новое поле для нескольких категорий
     public static DateTime EventDate { get; set; }
     public static TimeSpan EventTime { get; set; }
     public static int MaxParticipants { get; set; }
@@ -17,6 +18,7 @@ public static class CreateEventStateService
 
     public static bool HasState => !string.IsNullOrEmpty(Title) || 
                                     !string.IsNullOrEmpty(Description) || 
+                                    (SelectedInterests != null && SelectedInterests.Count > 0) ||
                                     SelectedInterest != null ||
                                     !string.IsNullOrEmpty(Address);
 
@@ -24,7 +26,8 @@ public static class CreateEventStateService
     {
         Title = viewModel.Title;
         Description = viewModel.Description;
-        SelectedInterest = viewModel.SelectedInterest;
+        SelectedInterest = viewModel.SelectedInterest; // Для обратной совместимости
+        SelectedInterests = viewModel.SelectedInterests != null ? new List<Interest>(viewModel.SelectedInterests) : new List<Interest>();
         EventDate = viewModel.EventDate;
         EventTime = viewModel.EventTime;
         MaxParticipants = viewModel.MaxParticipants;
@@ -39,7 +42,19 @@ public static class CreateEventStateService
 
         viewModel.Title = Title;
         viewModel.Description = Description;
-        viewModel.SelectedInterest = SelectedInterest;
+        viewModel.SelectedInterest = SelectedInterest; // Для обратной совместимости
+        if (SelectedInterests != null && SelectedInterests.Count > 0)
+        {
+            viewModel.SelectedInterests = new List<Interest>(SelectedInterests);
+            // Обновляем IsSelected для всех интересов
+            if (viewModel.Interests != null)
+            {
+                foreach (var interest in viewModel.Interests)
+                {
+                    interest.IsSelected = SelectedInterests.Any(si => si.Id == interest.Id || si.Name == interest.Name);
+                }
+            }
+        }
         viewModel.EventDate = EventDate;
         viewModel.EventTime = EventTime;
         viewModel.MaxParticipants = MaxParticipants;
@@ -51,6 +66,7 @@ public static class CreateEventStateService
     public static void Clear()
     {
         Title = null;
+        SelectedInterests = new List<Interest>();
         Description = null;
         SelectedInterest = null;
         EventDate = DateTime.Today.AddDays(1);

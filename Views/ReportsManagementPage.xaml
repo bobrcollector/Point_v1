@@ -4,7 +4,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:Point_v1.Models"
              xmlns:converters="clr-namespace:Point_v1.Converters"
-             Title="Управление жалобами">
+             Title="Управление жалобами"
+             Shell.NavBarIsVisible="True"
+             BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#1C1C1E}">
 
     <ContentPage.Resources>
         <converters:ReportTypeConverter x:Key="ReportTypeConverter" />
@@ -18,7 +20,6 @@
     </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*,Auto">
-
 
         <!-- Вкладки (компактные, сразу под шапкой) -->
         <VerticalStackLayout Grid.Row="1" 
@@ -141,7 +142,7 @@
                                                 Text="🔍 Рассмотреть"
                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ResolveReportCommand}"
                                                 CommandParameter="{Binding .}"
-                                                BackgroundColor="#512BD4"
+                                                BackgroundColor="{AppThemeBinding Light=#512BD4, Dark=#512BD4}"
                                                 TextColor="White"
                                                 HeightRequest="35"
                                                 CornerRadius="8"
@@ -153,8 +154,8 @@
                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ViewEventCommand}"
                                                 CommandParameter="{Binding TargetEventId}"
                                                 BackgroundColor="Transparent"
-                                                TextColor="#512BD4"
-                                                BorderColor="#512BD4"
+                                                TextColor="{AppThemeBinding Light=#512BD4, Dark=#9880e5}"
+                                                BorderColor="{AppThemeBinding Light=#512BD4, Dark=#9880e5}"
                                                 BorderWidth="1"
                                                 HeightRequest="35"
                                                 CornerRadius="8"

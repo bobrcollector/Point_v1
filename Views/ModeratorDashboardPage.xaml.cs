@@ -23,12 +23,13 @@ public partial class ModeratorDashboardPage : ContentPage
         try
         {
             System.Diagnostics.Debug.WriteLine("🔄 Переход к управлению жалобами...");
-            await Shell.Current.GoToAsync("//ReportsManagementPage");
+            await Shell.Current.GoToAsync(nameof(ReportsManagementPage));
             System.Diagnostics.Debug.WriteLine("✅ Успешный переход к ReportsManagementPage");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка перехода: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"❌ Stack trace: {ex.StackTrace}");
             await DisplayAlert("Ошибка", "Не удалось открыть страницу жалоб", "OK");
         }
     }

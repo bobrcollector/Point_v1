@@ -24,6 +24,7 @@ public class CreateEventViewModel : BaseViewModel
         OpenMapSearchCommand = new Command(async () => await OpenMapSearch());
         SearchAddressCommand = new Command(async () => await SearchAddress());
         SuggestionSelectedCommand = new Command<string>(async (suggestion) => await OnSuggestionSelected(suggestion));
+        ToggleCategoryCommand = new Command<Interest>((interest) => ToggleCategory(interest));
 
         // Данные будут получены через QueryProperty в CreateEventPage
 
@@ -73,6 +74,27 @@ public class CreateEventViewModel : BaseViewModel
             UpdateCreateCommand();
         }
     }
+
+    private List<Interest> _selectedInterests = new List<Interest>();
+    public List<Interest> SelectedInterests
+    {
+        get => _selectedInterests;
+        set
+        {
+            SetProperty(ref _selectedInterests, value);
+            UpdateCreateCommand();
+            UpdateCategoriesStatus();
+        }
+    }
+
+    private string _categoriesStatus = "";
+    public string CategoriesStatus
+    {
+        get => _categoriesStatus;
+        set => SetProperty(ref _categoriesStatus, value);
+    }
+
+    public ICommand ToggleCategoryCommand { get; }
 
     private DateTime _eventDate;
     public DateTime EventDate
@@ -227,7 +249,7 @@ public class CreateEventViewModel : BaseViewModel
         return !IsBusy &&
                !string.IsNullOrWhiteSpace(Title) &&
                !string.IsNullOrWhiteSpace(Description) &&
-               SelectedInterest != null &&
+               SelectedInterests != null && SelectedInterests.Count > 0 && SelectedInterests.Count <= 3 &&
                !string.IsNullOrWhiteSpace(Address) &&
                MaxParticipants >= 2;
     }
@@ -317,11 +339,15 @@ public class CreateEventViewModel : BaseViewModel
                 Longitude = 37.6173;
             }
 
+            var categoryNames = SelectedInterests.Select(i => i.Name).ToList();
+            System.Diagnostics.Debug.WriteLine($"📝 Сохраняем категории: {string.Join(", ", categoryNames)}");
+            
             var newEvent = new Event
             {
                 Title = Title.Trim(),
                 Description = Description.Trim(),
-                CategoryId = SelectedInterest.Name,
+                CategoryId = SelectedInterests.FirstOrDefault()?.Name ?? "", // Для обратной совместимости
+                CategoryIds = categoryNames, // Сохраняем названия категорий, а не ID
                 EventDate = eventDateTime,
                 Address = Address.Trim(),
                 Latitude = Latitude,
@@ -330,6 +356,9 @@ public class CreateEventViewModel : BaseViewModel
                 CreatorId = _authStateService.CurrentUserId,
                 CreatorName = await GetCurrentUserNameAsync()
             };
+            
+            System.Diagnostics.Debug.WriteLine($"📝 Событие создано с CategoryIds: {string.Join(", ", newEvent.CategoryIds)}");
+            System.Diagnostics.Debug.WriteLine($"📝 DisplayCategories: {string.Join(", ", newEvent.DisplayCategories)}");
 
             System.Diagnostics.Debug.WriteLine($"🎯 Создается событие с координатами: {Latitude}, {Longitude}");
 
@@ -396,24 +425,50 @@ public class CreateEventViewModel : BaseViewModel
     {
         try
         {
-            Interests = await _dataService.GetInterestsAsync();
+            var loadedInterests = await _dataService.GetInterestsAsync();
 
-            if (Interests == null || Interests.Count == 0)
+            if (loadedInterests == null || loadedInterests.Count == 0)
             {
-                Interests = new List<Interest>
+                loadedInterests = new List<Interest>
                 {
-                    new Interest { Name = "🎮 Настольные игры" },
-                    new Interest { Name = "🎭 Косплей" },
-                    new Interest { Name = "🎨 Искусство" },
-                    new Interest { Name = "💻 Программирование" },
-                    new Interest { Name = "📺 Аниме" },
-                    new Interest { Name = "🎵 Музыка" },
-                    new Interest { Name = "🍳 Кулинария" },
-                    new Interest { Name = "📚 Книги" },
-                    new Interest { Name = "🚶‍♂️ Прогулки" },
-                    new Interest { Name = "🎬 Кино" }
+                    new Interest { Name = "🎮 Настольные игры", IsSelected = false },
+                    new Interest { Name = "🎭 Косплей", IsSelected = false },
+                    new Interest { Name = "🎨 Искусство", IsSelected = false },
+                    new Interest { Name = "💻 Программирование", IsSelected = false },
+                    new Interest { Name = "📺 Аниме", IsSelected = false },
+                    new Interest { Name = "🎵 Музыка", IsSelected = false },
+                    new Interest { Name = "🍳 Кулинария", IsSelected = false },
+                    new Interest { Name = "📚 Книги", IsSelected = false },
+                    new Interest { Name = "🚶‍♂️ Прогулки", IsSelected = false },
+                    new Interest { Name = "🎬 Кино", IsSelected = false }
                 };
             }
+            else
+            {
+                // Убеждаемся, что все интересы имеют IsSelected = false при загрузке
+                foreach (var interest in loadedInterests)
+                {
+                    interest.IsSelected = false;
+                }
+            }
+
+            // Восстанавливаем выбранные категории из SelectedInterests
+            if (SelectedInterests != null && SelectedInterests.Count > 0)
+            {
+                foreach (var selected in SelectedInterests)
+                {
+                    var interest = loadedInterests.FirstOrDefault(i => 
+                        (i.Id == selected.Id && !string.IsNullOrEmpty(i.Id)) || 
+                        i.Name == selected.Name);
+                    if (interest != null)
+                    {
+                        interest.IsSelected = true;
+                    }
+                }
+            }
+
+            Interests = loadedInterests;
+            UpdateCategoriesStatus();
         }
         catch (Exception ex)
         {
@@ -511,6 +566,59 @@ public class CreateEventViewModel : BaseViewModel
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка обновления статистики: {ex.Message}");
+        }
+    }
+
+    private void ToggleCategory(Interest interest)
+    {
+        if (interest == null) return;
+
+        if (interest.IsSelected)
+        {
+            // Убираем категорию из выбранных
+            SelectedInterests.RemoveAll(i => (i.Id == interest.Id && !string.IsNullOrEmpty(i.Id)) || i.Name == interest.Name);
+            interest.IsSelected = false;
+        }
+        else
+        {
+            // Проверяем лимит в 3 категории
+            if (SelectedInterests.Count >= 3)
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Application.Current.MainPage.DisplayAlert("Ограничение", "Можно выбрать максимум 3 категории", "OK");
+                });
+                return;
+            }
+
+            // Добавляем категорию в выбранные
+            SelectedInterests.Add(interest);
+            interest.IsSelected = true;
+        }
+
+        UpdateCategoriesStatus();
+        UpdateCreateCommand();
+        
+        // Принудительно обновляем UI для всех интересов
+        var updatedList = Interests?.ToList() ?? new List<Interest>();
+        Interests = null;
+        Interests = updatedList;
+    }
+
+    private void UpdateCategoriesStatus()
+    {
+        var count = SelectedInterests.Count;
+        if (count == 0)
+        {
+            CategoriesStatus = "Выберите категории (максимум 3)";
+        }
+        else if (count == 3)
+        {
+            CategoriesStatus = $"Выбрано {count} категорий (максимум)";
+        }
+        else
+        {
+            CategoriesStatus = $"Выбрано {count} из 3 категорий";
         }
     }
 

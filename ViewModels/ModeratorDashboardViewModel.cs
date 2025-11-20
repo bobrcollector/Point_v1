@@ -78,12 +78,13 @@ public class ModeratorDashboardViewModel : BaseViewModel
         try
         {
             System.Diagnostics.Debug.WriteLine("🔄 Команда перехода к жалобам...");
-            await Shell.Current.GoToAsync("//ReportsManagementPage");
+            await Shell.Current.GoToAsync(nameof(ReportsManagementPage));
             System.Diagnostics.Debug.WriteLine("✅ Успешный переход к ReportsManagementPage");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка перехода: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"❌ Stack trace: {ex.StackTrace}");
             await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось открыть страницу жалоб", "OK");
         }
     }

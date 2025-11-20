@@ -6,6 +6,12 @@
              Title="Создать событие"
              BackgroundColor="{AppThemeBinding Light=#F8F9FA, Dark=#1C1C1E}">
 
+    <ContentPage.Resources>
+        <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+        <converters:BoolToTextColorConverter x:Key="BoolToTextColorConverter" />
+        <converters:BoolToBorderColorConverter x:Key="BoolToBorderColorConverter" />
+    </ContentPage.Resources>
+
     <ScrollView>
         <VerticalStackLayout Spacing="16" Padding="20" BackgroundColor="Transparent">
 
@@ -36,15 +42,37 @@
                         AutoSize="TextChanges"/>
             </VerticalStackLayout>
 
-            <!-- Категория -->
+            <!-- Категории -->
             <VerticalStackLayout Spacing="8">
-                <Label Text="Категория *" 
+                <Label Text="Категории * (максимум 3)" 
                        Style="{StaticResource FormLabel}"/>
-                <Picker Title="Выберите категорию..." 
-                        ItemsSource="{Binding Interests}"
-                        ItemDisplayBinding="{Binding Name}"
-                        SelectedItem="{Binding SelectedInterest}"
-                        HeightRequest="48"/>
+                <Label Text="{Binding CategoriesStatus}" 
+                       FontSize="12"
+                       TextColor="Gray"
+                       Margin="0,-4,0,4"/>
+                <ScrollView HeightRequest="200">
+                    <FlexLayout BindableLayout.ItemsSource="{Binding Interests}"
+                                Direction="Row"
+                                Wrap="Wrap"
+                                JustifyContent="Start"
+                                AlignItems="Start"
+                                AlignContent="Start">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Button Text="{Binding Name}"
+                                        Clicked="OnCategoryClicked"
+                                        BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
+                                        TextColor="{Binding IsSelected, Converter={StaticResource BoolToTextColorConverter}}"
+                                        CornerRadius="20"
+                                        Padding="16,8"
+                                        Margin="4"
+                                        FontSize="14"
+                                        BorderWidth="1"
+                                        BorderColor="{Binding IsSelected, Converter={StaticResource BoolToBorderColorConverter}}"/>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                </ScrollView>
             </VerticalStackLayout>
 
             <!-- Дата и время -->

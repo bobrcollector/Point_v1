@@ -249,7 +249,7 @@
                                                    CornerRadius="8"
                                                    HasShadow="False"
                                                    HorizontalOptions="Start">
-                                                <Label Text="{Binding CategoryId}" 
+                                                <Label Text="{Binding CategoryDisplay}" 
                                                        FontSize="12"
                                                        TextColor="#512BD4"/>
                                             </Frame>

@@ -35,16 +35,27 @@
                                        TextColor="{AppThemeBinding Light=Black, Dark=White}"
                                        LineBreakMode="WordWrap"/>
 
-                                <Frame BackgroundColor="#DFD8F7"
-                                       Padding="8,4"
-                                       CornerRadius="10"
-                                       HasShadow="False"
-                                       HorizontalOptions="Start">
-                                    <Label Text="{Binding Event.CategoryId}" 
-                                           FontSize="12"
-                                           FontAttributes="Bold"
-                                           TextColor="#512BD4"/>
-                                </Frame>
+                                <!-- Категории -->
+                                <FlexLayout BindableLayout.ItemsSource="{Binding Event.DisplayCategories}"
+                                           Direction="Row"
+                                           Wrap="Wrap"
+                                           JustifyContent="Start"
+                                           AlignItems="Start">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate>
+                                            <Frame BackgroundColor="#DFD8F7"
+                                                   Padding="8,4"
+                                                   CornerRadius="10"
+                                                   HasShadow="False"
+                                                   Margin="0,0,4,4">
+                                                <Label Text="{Binding .}" 
+                                                       FontSize="12"
+                                                       FontAttributes="Bold"
+                                                       TextColor="#512BD4"/>
+                                            </Frame>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </FlexLayout>
 
                                 <!-- Пометка о блокировке -->
                                 <Frame IsVisible="{Binding Event.IsBlocked}"
@@ -181,11 +192,23 @@
                                    HeightRequest="50"
                                    WidthRequest="50"
                                    HorizontalOptions="Start">
-                                <Label Text="👤" 
-                                       FontSize="16"
-                                       HorizontalOptions="Center"
-                                       VerticalOptions="Center"
-                                       TextColor="White"/>
+                                <Grid>
+                                    <Image Source="{Binding OrganizerAvatar}"
+                                           Aspect="AspectFill"
+                                           HeightRequest="50"
+                                           WidthRequest="50"
+                                           IsVisible="{Binding HasOrganizerAvatar}">
+                                        <Image.Clip>
+                                            <EllipseGeometry Center="25,25" RadiusX="25" RadiusY="25"/>
+                                        </Image.Clip>
+                                    </Image>
+                                    <Label Text="👤" 
+                                           FontSize="24"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center"
+                                           TextColor="White"
+                                           IsVisible="{Binding HasOrganizerAvatar, Converter={converters:InverseBoolConverter}}"/>
+                                </Grid>
                             </Frame>
 
                             <VerticalStackLayout Grid.Column="1" 

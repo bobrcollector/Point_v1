@@ -130,7 +130,7 @@ public class MapHtmlService
                             '📅 ' + event.DateDisplay + '<br>' +
                             '📍 ' + event.Address + '<br>' +
                             '🎯 ' + event.ParticipantsCount + ' участников<br>' +
-                            '🏷️ ' + event.CategoryId +
+                            '🏷️ ' + (event.CategoryIds && event.CategoryIds.length > 0 ? event.CategoryIds.join(', ') : (event.CategoryId || 'Без категории')) +
                             '</div>' +
                             '<button class=""event-button"" onclick=""openEventDetails(\'' + event.EventId + '\')"">Перейти к событию</button>',
                         balloonContentFooter: ''
@@ -371,7 +371,7 @@ public class MapHtmlService
                             '📅 ' + event.DateDisplay + '<br>' +
                             '📍 ' + event.Address + '<br>' +
                             '🎯 ' + event.ParticipantsCount + ' участников<br>' +
-                            '🏷️ ' + event.CategoryId +
+                            '🏷️ ' + (event.CategoryIds && event.CategoryIds.length > 0 ? event.CategoryIds.join(', ') : (event.CategoryId || 'Без категории')) +
                             '</div>' +
                             '<button class=""event-button"" onclick=""openEventDetails(\'' + event.EventId + '\')"">Перейти к событию</button>',
                         balloonContentFooter: ''

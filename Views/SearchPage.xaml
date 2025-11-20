@@ -158,15 +158,26 @@
                                            TextColor="Gray"/>
                                 </Grid>
 
-                                <Frame BackgroundColor="#DFD8F7"
-                                       Padding="8,4"
-                                       CornerRadius="8"
-                                       HasShadow="False"
-                                       HorizontalOptions="Start">
-                                    <Label Text="{Binding CategoryId}" 
-                                           FontSize="12"
-                                           TextColor="#512BD4"/>
-                                </Frame>
+                                <!-- Категории -->
+                                <FlexLayout BindableLayout.ItemsSource="{Binding DisplayCategories}"
+                                           Direction="Row"
+                                           Wrap="Wrap"
+                                           JustifyContent="Start"
+                                           AlignItems="Start">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate>
+                                            <Frame BackgroundColor="#DFD8F7"
+                                                   Padding="8,4"
+                                                   CornerRadius="8"
+                                                   HasShadow="False"
+                                                   Margin="0,0,4,4">
+                                                <Label Text="{Binding .}" 
+                                                       FontSize="12"
+                                                       TextColor="#512BD4"/>
+                                            </Frame>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </FlexLayout>
                             </VerticalStackLayout>
                         </Frame>
                     </Grid>

@@ -191,7 +191,9 @@ public class DataService : IDataService
     public async Task<List<Event>> GetEventsByInterestAsync(string interestId)
     {
         await Task.Delay(100);
-        return _events.Where(e => e.CategoryId == interestId).ToList();
+        // Поддержка как старого CategoryId, так и нового CategoryIds
+        return _events.Where(e => e.CategoryId == interestId || 
+                                  (e.CategoryIds != null && e.CategoryIds.Contains(interestId))).ToList();
     }
 
     public async Task<List<Event>> GetEventsAsync()
@@ -214,6 +216,12 @@ public class DataService : IDataService
             eventItem.CreatorName = currentUser?.DisplayName ?? "Организатор";
 
             eventItem.ParticipantIds = new List<string> { _authStateService.CurrentUserId };
+
+            // Отладочный вывод для проверки категорий
+            System.Diagnostics.Debug.WriteLine($"📝 Сохранение события: {eventItem.Title}");
+            System.Diagnostics.Debug.WriteLine($"📝 CategoryId: {eventItem.CategoryId}");
+            System.Diagnostics.Debug.WriteLine($"📝 CategoryIds: {string.Join(", ", eventItem.CategoryIds ?? new List<string>())}");
+            System.Diagnostics.Debug.WriteLine($"📝 DisplayCategories: {string.Join(", ", eventItem.DisplayCategories)}");
 
             _events.Add(eventItem);
 

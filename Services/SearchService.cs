@@ -30,7 +30,9 @@ public class SearchService : ISearchService
 
         if (!string.IsNullOrEmpty(category))
         {
-            filteredEvents = filteredEvents.Where(e => e.CategoryId == category);
+            // Поддержка как старого CategoryId, так и нового CategoryIds
+            filteredEvents = filteredEvents.Where(e => e.CategoryId == category || 
+                                                      (e.CategoryIds != null && e.CategoryIds.Contains(category)));
         }
 
         if (date.HasValue)
@@ -45,12 +47,24 @@ public class SearchService : ISearchService
     {
         var events = await _dataService.GetEventsAsync();
         // ИСПРАВЛЕНИЕ: Получаем все категории из будущих активных и незаблокированных событий
-        return events?
-            .Where(e => !string.IsNullOrEmpty(e.CategoryId) && e.IsActive && !e.IsBlocked && e.EventDate > DateTime.Now)
-            .Select(e => e.CategoryId)
-            .Distinct()
-            .OrderBy(c => c)  // Сортируем для удобства
-            .ToList() ?? new List<string>();
+        var categories = new List<string>();
+        
+        foreach (var e in events?.Where(e => e.IsActive && !e.IsBlocked && e.EventDate > DateTime.Now) ?? new List<Event>())
+        {
+            // Добавляем старую категорию, если есть
+            if (!string.IsNullOrEmpty(e.CategoryId))
+            {
+                categories.Add(e.CategoryId);
+            }
+            
+            // Добавляем новые категории из CategoryIds
+            if (e.CategoryIds != null && e.CategoryIds.Count > 0)
+            {
+                categories.AddRange(e.CategoryIds);
+            }
+        }
+        
+        return categories.Distinct().OrderBy(c => c).ToList();
     }
 
     public async Task<List<Event>> GetFilteredEventsAsync(EventFilters filters)
@@ -64,7 +78,9 @@ public class SearchService : ISearchService
         // Фильтр по категории
         if (!string.IsNullOrEmpty(filters.Category) && filters.Category != "Все категории")
         {
-            filteredEvents = filteredEvents.Where(e => e.CategoryId == filters.Category);
+            // Поддержка как старого CategoryId, так и нового CategoryIds
+            filteredEvents = filteredEvents.Where(e => e.CategoryId == filters.Category || 
+                                                      (e.CategoryIds != null && e.CategoryIds.Contains(filters.Category)));
         }
 
         // Фильтр по дате

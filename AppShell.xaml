@@ -4,26 +4,47 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:views="clr-namespace:Point_v1.Views"
        Title="Point_v1"
-       FlyoutBehavior="Disabled">
+       FlyoutBehavior="Disabled"
+       Shell.NavBarHasShadow="False">
+    
+    <Shell.Resources>
+        <Style TargetType="Shell">
+            <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light=White, Dark=White}"/>
+            <Setter Property="Shell.DisabledColor" Value="#B4FFFFFF"/>
+            <Setter Property="Shell.NavBarHasShadow" Value="False"/>
+        </Style>
+        <Style TargetType="ShellContent">
+            <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light=White, Dark=White}"/>
+            <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light=White, Dark=White}"/>
+        </Style>
+        <Style TargetType="TabBar">
+            <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light=#512BD4, Dark=#512BD4}"/>
+            <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light=#6E6E6E, Dark=#8E8E93}"/>
+        </Style>
+        <Style TargetType="Tab">
+            <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light=#512BD4, Dark=#512BD4}"/>
+            <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light=#6E6E6E, Dark=#8E8E93}"/>
+        </Style>
+    </Shell.Resources>
 
     <!-- TabBar для нижней навигации -->
     <TabBar>
-        <Tab Title="Лента" Icon="tab_home.png">
+        <Tab Title="Лента" Icon="tab_home.svg">
             <ShellContent Route="HomePage" ContentTemplate="{DataTemplate views:HomePage}" />
         </Tab>
 
-        <Tab Title="Мои события" Icon="tab_events.png">
+        <Tab Title="Мои события" Icon="tab_events.svg">
             <ShellContent Route="MyEventsPage" ContentTemplate="{DataTemplate views:MyEventsPage}" />
         </Tab>
 
-        <Tab Title="Профиль" Icon="tab_profile.png">
+        <Tab Title="Профиль" Icon="tab_profile.svg">
             <ShellContent Route="ProfilePage" ContentTemplate="{DataTemplate views:ProfilePage}" />
         </Tab>
 
         <!-- Админ-вкладка внутри TabBar -->
         <Tab x:Name="AdminTab" 
-             Title="🛡️ Админ" 
-             Icon="tab_admin.png"
+             Title="Админ" 
+             Icon="tab_admin.svg"
              IsVisible="False">
             <ShellContent Route="ModeratorDashboard" ContentTemplate="{DataTemplate views:ModeratorDashboardPage}" />
         </Tab>

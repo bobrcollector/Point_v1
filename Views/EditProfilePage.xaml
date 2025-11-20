@@ -2,7 +2,14 @@
 <ContentPage x:Class="Point_v1.Views.EditProfilePage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:Point_v1.Converters"
              Title="Редактирование профиля">
+
+    <ContentPage.Resources>
+        <converters:BoolToColorConverter x:Key="BoolToColorConverter" />
+        <converters:BoolToTextColorConverter x:Key="BoolToTextColorConverter" />
+        <converters:BoolToBorderColorConverter x:Key="BoolToBorderColorConverter" />
+    </ContentPage.Resources>
 
     <ScrollView>
         <VerticalStackLayout Spacing="16" Padding="20">
@@ -74,35 +81,33 @@
             <VerticalStackLayout Spacing="12">
                 <Label Text="Мои интересы" 
                        Style="{StaticResource Heading3}"/>
-
-                <Button Text="Выбрать интересы ➕"
-                        Command="{Binding SelectInterestsCommand}"
-                        Style="{StaticResource SmallButton}"
-                        BackgroundColor="#DFD8F7"
-                        TextColor="#512BD4"/>
-
-                <!-- Список выбранных интересов -->
-                <CollectionView ItemsSource="{Binding SelectedInterests}"
-                                SelectionMode="None"
-                                HeightRequest="80">
-                    <CollectionView.ItemsLayout>
-                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="8"/>
-                    </CollectionView.ItemsLayout>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Frame BackgroundColor="#DFD8F7"
-                                   Padding="10,5"
-                                   CornerRadius="12"
-                                   Margin="2"
-                                   HasShadow="False">
-                                <Label Text="{Binding Name}"
-                                       TextColor="#512BD4"
-                                       FontSize="12"
-                                       FontAttributes="Bold"/>
-                            </Frame>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                <Label Text="{Binding InterestsStatus}" 
+                       FontSize="12"
+                       TextColor="Gray"
+                       Margin="0,-4,0,4"/>
+                <ScrollView HeightRequest="200">
+                    <FlexLayout BindableLayout.ItemsSource="{Binding AllInterests}"
+                                Direction="Row"
+                                Wrap="Wrap"
+                                JustifyContent="Start"
+                                AlignItems="Start"
+                                AlignContent="Start">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Button Text="{Binding Name}"
+                                        Clicked="OnInterestClicked"
+                                        BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToColorConverter}}"
+                                        TextColor="{Binding IsSelected, Converter={StaticResource BoolToTextColorConverter}}"
+                                        CornerRadius="20"
+                                        Padding="16,8"
+                                        Margin="4"
+                                        FontSize="14"
+                                        BorderWidth="1"
+                                        BorderColor="{Binding IsSelected, Converter={StaticResource BoolToBorderColorConverter}}"/>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </FlexLayout>
+                </ScrollView>
             </VerticalStackLayout>
 
             <!-- Кнопки действий -->

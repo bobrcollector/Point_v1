@@ -245,7 +245,13 @@ public class FirestoreDataService : IDataService
     }
 
     public Task<bool> AddInterestAsync(Interest interest) => Task.FromResult(true);
-    public Task<List<Event>> GetEventsByInterestAsync(string interestId) => Task.FromResult(new List<Event>());
+    public async Task<List<Event>> GetEventsByInterestAsync(string interestId)
+    {
+        var events = await GetEventsAsync();
+        // Поддержка как старого CategoryId, так и нового CategoryIds
+        return events.Where(e => e.CategoryId == interestId || 
+                                 (e.CategoryIds != null && e.CategoryIds.Contains(interestId))).ToList();
+    }
 
     // РЕАЛЬНАЯ РЕАЛИЗАЦИЯ для работы с пользователями
     public async Task<User> GetUserAsync(string userId)

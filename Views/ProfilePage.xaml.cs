@@ -12,21 +12,27 @@ public partial class ProfilePage : ContentPage
 
     private void OnEditProfileClicked(object sender, EventArgs e)
     {
-        DisplayAlert("Редактирование", "Функция редактирования профиля будет доступна скоро", "OK");
+        DisplayAlert("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ", "OK");
     }
 
     private void OnSettingsClicked(object sender, EventArgs e)
     {
-        DisplayAlert("Настройки", "Настройки приложения будут доступны скоро", "OK");
+        DisplayAlert("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ", "OK");
     }
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
-
-        if (BindingContext is ProfileViewModel viewModel && viewModel.IsAuthenticated)
+        
+        // РџРµСЂРµР·Р°РіСЂСѓР¶Р°РµРј РґР°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РїСЂРё РѕС‚РєСЂС‹С‚РёРё СЃС‚СЂР°РЅРёС†С‹ РїСЂРѕС„РёР»СЏ
+        if (BindingContext is ProfileViewModel viewModel)
         {
-            // Обновляем статистику при каждом открытии профиля
-            _ = viewModel.LoadUserStatistics(viewModel.GetCurrentUserId());
+            await viewModel.LoadUserData();
+            
+            // Р—Р°РіСЂСѓР¶Р°РµРј СЃС‚Р°С‚РёСЃС‚РёРєСѓ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
+            if (viewModel.IsAuthenticated)
+            {
+                _ = viewModel.LoadUserStatistics(viewModel.GetCurrentUserId());
+            }
         }
     }
 }

@@ -31,10 +31,13 @@ public class ReportsManagementViewModel : BaseViewModel
         ResolveReportCommand = new Command<Report>(async (report) => await ResolveReport(report));
         ViewEventCommand = new Command<string>(async (eventId) => await ViewEvent(eventId));
         BlockEventCommand = new Command<string>(async (eventId) => await BlockEvent(eventId));
+        GoBackCommand = new Command(async () => await GoBack());
 
         SelectedTab = "Pending";
         _ = LoadReports();
     }
+    
+    public ICommand GoBackCommand { get; }
 
     private string _selectedTab;
     public string SelectedTab
@@ -336,9 +339,20 @@ public class ReportsManagementViewModel : BaseViewModel
     {
         try
         {
-            // Возврат на предыдущую страницу
-            await Shell.Current.GoToAsync("..");
-            System.Diagnostics.Debug.WriteLine("✅ Возврат на предыдущую страницу");
+            System.Diagnostics.Debug.WriteLine("🔙 Выполняется возврат на предыдущую страницу...");
+            
+            // Пробуем вернуться назад через стек навигации
+            if (Shell.Current.Navigation.NavigationStack.Count > 1)
+            {
+                await Shell.Current.GoToAsync("..");
+                System.Diagnostics.Debug.WriteLine("✅ Возврат на предыдущую страницу через ..");
+            }
+            else
+            {
+                // Если нет предыдущей страницы в стеке, переходим на админ-панель
+                await Shell.Current.GoToAsync("///ModeratorDashboard");
+                System.Diagnostics.Debug.WriteLine("✅ Возврат на админ-панель");
+            }
         }
         catch (Exception ex)
         {
@@ -347,10 +361,11 @@ public class ReportsManagementViewModel : BaseViewModel
             try
             {
                 await Shell.Current.GoToAsync("///ModeratorDashboard");
+                System.Diagnostics.Debug.WriteLine("✅ Fallback: возврат на админ-панель");
             }
-            catch
+            catch (Exception fallbackEx)
             {
-                // Если и это не удалось, просто закрываем страницу
+                System.Diagnostics.Debug.WriteLine($"❌ Ошибка fallback возврата: {fallbackEx.Message}");
             }
         }
     }
