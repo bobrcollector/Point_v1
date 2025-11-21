@@ -2,7 +2,6 @@ using System.Globalization;
 
 namespace Point_v1.Converters;
 
-// Конвертер для цвета вкладки
 public class TabColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -21,7 +20,6 @@ public class TabColorConverter : IValueConverter
     }
 }
 
-// Конвертер для цвета текста вкладки
 public class TabTextColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -39,7 +37,6 @@ public class TabTextColorConverter : IValueConverter
     }
 }
 
-// Конвертер для показа кнопок действий
 public class ShowActionsConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -54,7 +51,6 @@ public class ShowActionsConverter : IValueConverter
     }
 }
 
-// Конвертер для кнопки редактирования
 public class ShowEditButtonConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -69,7 +65,6 @@ public class ShowEditButtonConverter : IValueConverter
     }
 }
 
-// Конвертер для кнопки выхода
 public class ShowLeaveButtonConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

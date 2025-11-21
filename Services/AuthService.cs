@@ -15,7 +15,6 @@ public class AuthService : IAuthService
 
     public AuthService()
     {
-        // Пробуем восстановить состояние при запуске
         LoadAuthState();
     }
 
@@ -23,27 +22,18 @@ public class AuthService : IAuthService
     {
         try
         {
-            await Task.Delay(1500); // Имитация регистрации
-
-            // Валидация
+            await Task.Delay(1500);
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
                 return false;
 
-            // Создаем "нового пользователя"
             _isAuthenticated = true;
             _currentUserId = Guid.NewGuid().ToString();
-
-            // Сохраняем состояние
             SaveAuthState();
-
-            // Уведомляем об изменении
             AuthStateChanged?.Invoke(this, EventArgs.Empty);
-
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"Ошибка регистрации: {ex.Message}");
             return false;
         }
     }
@@ -52,29 +42,21 @@ public class AuthService : IAuthService
     {
         try
         {
-            await Task.Delay(1000); // Имитация входа
-
-            // Валидация
+            await Task.Delay(1000);
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
                 return false;
 
-            // Простая проверка - любой email и пароль "123456"
             if (password != "123456")
                 return false;
 
             _isAuthenticated = true;
             _currentUserId = "user_" + email.GetHashCode();
-
-            // Сохраняем состояние
             SaveAuthState();
-
             AuthStateChanged?.Invoke(this, EventArgs.Empty);
-
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"Ошибка входа: {ex.Message}");
             return false;
         }
     }
@@ -83,10 +65,7 @@ public class AuthService : IAuthService
     {
         _isAuthenticated = false;
         _currentUserId = string.Empty;
-
-        // Очищаем сохраненное состояние
         ClearAuthState();
-
         AuthStateChanged?.Invoke(this, EventArgs.Empty);
         return Task.CompletedTask;
     }
@@ -98,10 +77,7 @@ public class AuthService : IAuthService
             var json = JsonSerializer.Serialize(authData);
             Preferences.Set(AuthKey, json);
         }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Ошибка сохранения состояния: {ex.Message}");
-        }
+        catch { }
     }
 
     private void LoadAuthState()
@@ -119,36 +95,21 @@ public class AuthService : IAuthService
                 }
             }
         }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Ошибка загрузки состояния: {ex.Message}");
-        }
+        catch { }
     }
     public async Task<bool> DeleteAccountAsync()
     {
         try
         {
-            System.Diagnostics.Debug.WriteLine("🗑️ Начало удаления аккаунта (тестовый режим)");
-
-            // Имитация удаления аккаунта
             await Task.Delay(1000);
-
-            // Очищаем состояние аутентификации
             _isAuthenticated = false;
             _currentUserId = string.Empty;
-
-            // Очищаем сохраненное состояние
             ClearAuthState();
-
-            // Уведомляем об изменении состояния
             AuthStateChanged?.Invoke(this, EventArgs.Empty);
-
-            System.Diagnostics.Debug.WriteLine("✅ Аккаунт удален (тестовый режим)");
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ Ошибка удаления аккаунта: {ex.Message}");
             return false;
         }
     }

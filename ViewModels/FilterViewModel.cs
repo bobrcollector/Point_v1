@@ -20,7 +20,6 @@ public class FilterViewModel : BaseViewModel
         ResetFiltersCommand = new Command(async () => await ResetFilters());
         CloseCommand = new Command(async () => await Close());
 
-        // Загружаем текущие значения фильтров
         LoadCurrentFilters();
         LoadAvailableCategories();
     }
@@ -53,7 +52,6 @@ public class FilterViewModel : BaseViewModel
         set => SetProperty(ref _availableCategories, value);
     }
 
-    // НОВОЕ: Сохраняем информацию о том, была ли открыта карта
     private bool _wasMapViewActive = false;
     public bool WasMapViewActive
     {
@@ -91,14 +89,12 @@ public class FilterViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine($"🎯 Применяем фильтры: '{SearchText}', '{SelectedCategory}', {SelectedDate}");
 
-            // Сохраняем фильтры в сервис - это автоматически вызовет FiltersChanged событие
             _filterStateService.SearchText = SearchText;
             _filterStateService.SelectedCategory = SelectedCategory;
             _filterStateService.SelectedDate = SelectedDate;
 
             System.Diagnostics.Debug.WriteLine($"✅ Фильтры сохранены, IsMapViewActive = {_mapViewStateService.IsMapViewActive}");
             
-            // Немедленно возвращаемся на HomePage - LoadEvents уже применит фильтры
             await Shell.Current.GoToAsync("//HomePage");
         }
         catch (Exception ex)
@@ -108,7 +104,7 @@ public class FilterViewModel : BaseViewModel
             {
                 await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось применить фильтры", "OK");
             }
-            catch { /* Игнорируем ошибки при отображении диалога */ }
+            catch { }
         }
     }
 
@@ -120,12 +116,10 @@ public class FilterViewModel : BaseViewModel
             SelectedCategory = "";
             SelectedDate = null;
 
-            // Очищаем фильтры в сервисе - это автоматически вызовет FiltersChanged событие
             _filterStateService.ClearFilters();
 
             System.Diagnostics.Debug.WriteLine($"✅ Фильтры очищены, IsMapViewActive = {_mapViewStateService.IsMapViewActive}");
             
-            // Немедленно возвращаемся на HomePage - LoadEvents уже применит изменения
             await Shell.Current.GoToAsync("//HomePage");
         }
         catch (Exception ex)
@@ -135,7 +129,7 @@ public class FilterViewModel : BaseViewModel
             {
                 await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось сбросить фильтры", "OK");
             }
-            catch { /* Игнорируем ошибки при отображении диалога */ }
+            catch { }
         }
     }
 

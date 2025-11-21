@@ -88,7 +88,6 @@ public class MapLocationPickerViewModel : BaseViewModel
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки карты: {ex.Message}");
-            // Используем карту по умолчанию (Москва)
             var mapHtmlService = new MapHtmlService();
             MapHtmlContent = mapHtmlService.GenerateLocationPickerMapHtml(55.7558, 37.6173, 55.7558, 37.6173);
         }
@@ -106,7 +105,6 @@ public class MapLocationPickerViewModel : BaseViewModel
         
         System.Diagnostics.Debug.WriteLine($"✅ Координаты установлены. HasSelection: {HasSelection}");
         
-        // Получаем адрес по координатам асинхронно
         _ = GetAddressForCoordinates(latitude, longitude);
     }
 
@@ -127,7 +125,6 @@ public class MapLocationPickerViewModel : BaseViewModel
 
     private async Task ConfirmSelection()
     {
-        // Защита от повторного вызова
         if (_isNavigating)
         {
             System.Diagnostics.Debug.WriteLine("⚠️ Навигация уже выполняется, пропускаем повторный вызов");
@@ -146,7 +143,6 @@ public class MapLocationPickerViewModel : BaseViewModel
 
         try
         {
-            // Сохраняем данные в статический сервис
             LocationSelectionService.SelectedLatitude = SelectedLatitude.Value;
             LocationSelectionService.SelectedLongitude = SelectedLongitude.Value;
             LocationSelectionService.SelectedAddress = SelectedAddress;
@@ -160,12 +156,9 @@ public class MapLocationPickerViewModel : BaseViewModel
                 Address = SelectedAddress
             });
 
-            // Используем явный путь к CreateEventPage (состояние сохраняется через LocationSelectionService)
             System.Diagnostics.Debug.WriteLine("🔄 Выполняем навигацию назад к CreateEventPage...");
-            
             try
             {
-                // Используем явный путь - состояние страницы сохранится через LocationSelectionService
                 await Shell.Current.GoToAsync("//CreateEventPage");
                 System.Diagnostics.Debug.WriteLine("✅ Навигация выполнена через Shell.GoToAsync(//CreateEventPage)");
             }
@@ -198,10 +191,7 @@ public class MapLocationPickerViewModel : BaseViewModel
         try
         {
             Cancelled?.Invoke(this, EventArgs.Empty);
-            // Очищаем сохраненные данные
             LocationSelectionService.Clear();
-            
-            // Используем явный путь к CreateEventPage
             System.Diagnostics.Debug.WriteLine("🔄 Выполняем навигацию назад к CreateEventPage (Cancel)...");
             await Shell.Current.GoToAsync("//CreateEventPage");
             System.Diagnostics.Debug.WriteLine("✅ Навигация выполнена (Cancel)");

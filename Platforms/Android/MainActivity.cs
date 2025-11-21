@@ -13,8 +13,6 @@ namespace Point_v1
         {
             base.OnCreate(savedInstanceState);
             
-            // Настраиваем цвет только для status bar (верхняя системная панель)
-            // Нижняя часть (TabBar) остается без изменений
             if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
             {
                 Window.SetStatusBarColor(Android.Graphics.Color.ParseColor("#512BD4"));

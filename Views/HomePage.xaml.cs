@@ -13,13 +13,11 @@ public partial class HomePage : ContentPage
         _viewModel = viewModel;
         BindingContext = _viewModel;
 
-        // Подписываемся на изменение HTML контента
         if (viewModel != null)
         {
             viewModel.PropertyChanged += OnViewModelPropertyChanged;
         }
 
-        // Обработчик сообщений от WebView
         MapWebView.Navigating += OnMapNavigating;
         MapWebView.Navigated += OnMapNavigated;
     }
@@ -35,7 +33,6 @@ public partial class HomePage : ContentPage
             {
                 System.Diagnostics.Debug.WriteLine("🗺️ Загружаем HTML в WebView");
 
-                // Загружаем HTML в WebView
                 var htmlSource = new HtmlWebViewSource { Html = viewModel.MapHtmlContent };
                 MapWebView.Source = htmlSource;
                 System.Diagnostics.Debug.WriteLine("🗺️ WebView источник установлен");
@@ -49,7 +46,6 @@ public partial class HomePage : ContentPage
             {
                 if (viewModel.IsMapView && string.IsNullOrEmpty(viewModel.MapHtmlContent))
                 {
-                    // Если переключились на карту, но контент пустой - загружаем
                     _ = viewModel.LoadMapEvents();
                 }
             }
@@ -57,13 +53,11 @@ public partial class HomePage : ContentPage
         else if (e.PropertyName == nameof(HomeViewModel.HasActiveFilters) || 
                  e.PropertyName == nameof(HomeViewModel.ActiveFilterLabels))
         {
-            // НОВОЕ: Обновляем UI при изменении фильтров
             System.Diagnostics.Debug.WriteLine($"🎯 Обновление фильтров: {e.PropertyName}");
             if (BindingContext is HomeViewModel viewModel)
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    // Принудительно обновляем видимость и содержимое панели фильтров
                     System.Diagnostics.Debug.WriteLine($"🎯 Панель фильтров обновлена: HasActiveFilters = {viewModel.HasActiveFilters}");
                 });
             }
@@ -74,17 +68,14 @@ public partial class HomePage : ContentPage
     {
         System.Diagnostics.Debug.WriteLine($"🗺️ Навигация WebView: {e.Url}");
 
-        // Обрабатываем специальные URL для взаимодействия с картой
         if (e.Url.StartsWith("pointapp://event/"))
         {
-            e.Cancel = true; // Отменяем стандартную навигацию
-
+            e.Cancel = true;
             var eventId = e.Url.Replace("pointapp://event/", "");
             System.Diagnostics.Debug.WriteLine($"🎯 Обработка клика по событию: {eventId}");
 
             if (!string.IsNullOrEmpty(eventId) && eventId != "undefined")
             {
-                // Переходим к деталям события
                 _ = OpenEventDetails(eventId);
             }
         }
@@ -93,20 +84,16 @@ public partial class HomePage : ContentPage
                  e.Url.Contains("yandex.net") ||
                  e.Url.Contains("mc.yandex.ru"))
         {
-            // Разрешаем загрузку всех ресурсов Яндекс
             System.Diagnostics.Debug.WriteLine("🗺️ Загрузка Яндекс ресурсов разрешена");
         }
         else if (e.Url == "about:blank" || e.Url.StartsWith("data:"))
         {
-            // Разрешаем пустые URL и data URI
         }
         else if (e.Url.StartsWith("http") || e.Url.StartsWith("https"))
         {
-            // Блокируем все остальные HTTP/HTTPS URL
             e.Cancel = true;
             System.Diagnostics.Debug.WriteLine($"🚫 Навигация заблокирована: {e.Url}");
         }
-        // Все остальные URL (относительные пути и т.д.) разрешаем
     }
 
     private async void OnReloadMapClicked(object sender, EventArgs e)
@@ -154,7 +141,6 @@ public partial class HomePage : ContentPage
         {
             if (BindingContext is HomeViewModel viewModel)
             {
-                // ИСПРАВЛЕНИЕ: Всегда вызываем LoadEvents которая обновит UI
                 System.Diagnostics.Debug.WriteLine("🗺️ OnAppearing: загружаем события");
                 _ = viewModel.LoadEvents();
             }
@@ -178,12 +164,10 @@ public partial class HomePage : ContentPage
         }
     }
 
-    // ДОБАВЬ метод для проверки выбранного события (для отладки)
     private async void OnCheckSelectedEventClicked(object sender, EventArgs e)
     {
         try
         {
-            // Этот метод можно вызвать для тестирования
             var result = await MapWebView.EvaluateJavaScriptAsync("window.getSelectedEventId()");
             System.Diagnostics.Debug.WriteLine($"🔍 Выбранное событие: {result}");
 
@@ -202,7 +186,6 @@ public partial class HomePage : ContentPage
         }
     }
 
-    // НОВЫЙ МЕТОД: Центрирование карты на событие из ViewModel
     public async Task CenterMapOnEventAsync(string eventId)
     {
         try
@@ -213,7 +196,6 @@ public partial class HomePage : ContentPage
             {
                 try
                 {
-                    // Вызываем JavaScript функцию для центрирования карты
                     await MapWebView.EvaluateJavaScriptAsync($"window.centerMapOnEvent('{eventId}')");
                     System.Diagnostics.Debug.WriteLine($"✅ Карта центрирована на событие: {eventId}");
                 }
@@ -229,7 +211,6 @@ public partial class HomePage : ContentPage
         }
     }
 
-    // НОВЫЙ МЕТОД: Центрирование карты на местоположение пользователя
     public async Task CenterMapOnUserLocationAsync()
     {
         try
@@ -240,7 +221,6 @@ public partial class HomePage : ContentPage
             {
                 try
                 {
-                    // Вызываем JavaScript функцию для центрирования карты на пользователя
                     await MapWebView.EvaluateJavaScriptAsync("window.centerOnUserLocation()");
                     System.Diagnostics.Debug.WriteLine("✅ Карта центрирована на местоположение пользователя");
                 }

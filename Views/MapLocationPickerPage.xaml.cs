@@ -20,8 +20,6 @@ public partial class MapLocationPickerPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        
-        // Устанавливаем начальные координаты, если они переданы
         if (BindingContext is MapLocationPickerViewModel vm)
         {
             if (double.TryParse(InitialLat, out double lat) && 
@@ -30,8 +28,6 @@ public partial class MapLocationPickerPage : ContentPage
                 vm.SelectedLatitude = lat;
                 vm.SelectedLongitude = lon;
             }
-            
-            // Подписываемся на изменения MapHtmlContent
             vm.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(MapLocationPickerViewModel.MapHtmlContent))
@@ -63,8 +59,6 @@ public partial class MapLocationPickerPage : ContentPage
     private void OnWebViewNavigating(object sender, WebNavigatingEventArgs e)
     {
         System.Diagnostics.Debug.WriteLine($"🌐 WebView navigating to: {e.Url}");
-        
-        // Перехватываем сообщения от JavaScript через кастомный протокол
         if (e.Url.StartsWith("app://location?"))
         {
             e.Cancel = true;

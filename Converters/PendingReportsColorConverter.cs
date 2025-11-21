@@ -13,7 +13,6 @@ public class PendingReportsColorConverter : IValueConverter
             
             if (isDark)
             {
-                // Темные версии цветов для темной темы
                 return count switch
                 {
                     0 => Color.FromArgb("#2E7D32"), // Зеленый - темнее
@@ -23,7 +22,6 @@ public class PendingReportsColorConverter : IValueConverter
             }
             else
             {
-                // Светлые версии цветов для светлой темы
                 return count switch
                 {
                     0 => Color.FromArgb("#4CAF50"), // Зеленый

@@ -1,4 +1,3 @@
-// Converters/NegativeBooleanConverter.cs
 using System.Globalization;
 
 namespace Point_v1.Converters;

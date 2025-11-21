@@ -21,14 +21,14 @@ public class EventDetailsViewModel : BaseViewModel
 
         ReportEventCommand = new Command(async () => await ReportEvent());
 
-        // ПРОВЕРКИ, НО БЕЗ ЗАГРУЗКИ СОБЫТИЯ
+
         System.Diagnostics.Debug.WriteLine($"✅ EventDetailsViewModel создан");
         System.Diagnostics.Debug.WriteLine($"✅ DataService: {_dataService != null}");
         System.Diagnostics.Debug.WriteLine($"✅ AuthStateService: {_authStateService != null}");
         System.Diagnostics.Debug.WriteLine($"✅ ReportService: {_reportService != null}");
         System.Diagnostics.Debug.WriteLine($"✅ EventId при создании: {_eventId}");
 
-        // НЕ ВЫЗЫВАЙТЕ LoadEventDetails() ЗДЕСЬ!
+
 
         ToggleParticipationCommand = new Command(async () => await ToggleParticipation());
         GoBackCommand = new Command(async () => await GoToHome());
@@ -60,7 +60,6 @@ public class EventDetailsViewModel : BaseViewModel
             {
                 System.Diagnostics.Debug.WriteLine($"🎯 EventId установлен в ViewModel: {value}");
 
-                // Загружаем данные когда устанавливается EventId
                 if (!string.IsNullOrEmpty(value))
                 {
                     _ = LoadEventDetails();
@@ -87,7 +86,6 @@ public class EventDetailsViewModel : BaseViewModel
 
         try
         {
-            // ИСПОЛЬЗУЕМ _eventId ИЗ ViewModel, А НЕ ПАРАМЕТР
             if (string.IsNullOrEmpty(_eventId))
             {
                 System.Diagnostics.Debug.WriteLine("❌ EventId не установлен в ViewModel!");
@@ -97,7 +95,6 @@ public class EventDetailsViewModel : BaseViewModel
 
             System.Diagnostics.Debug.WriteLine($"🎯 Начало создания жалобы на событие: {_eventId}");
 
-            // ПОЛУЧАЕМ ДАННЫЕ СОБЫТИЯ ПЕРЕД СОЗДАНИЕМ ЖАЛОБЫ
             var eventItem = await _dataService.GetEventAsync(_eventId);
             if (eventItem == null)
             {
@@ -200,14 +197,12 @@ public class EventDetailsViewModel : BaseViewModel
             SetProperty(ref _event, value);
             System.Diagnostics.Debug.WriteLine($"📦 Event установлен: {value?.Title ?? "null"}");
 
-            // Обновляем состояние при изменении события
             if (value != null)
             {
                 UpdateParticipationState();
                 _ = LoadOrganizerAvatar(); // Загружаем аватар организатора
             }
 
-            // ДОБАВЛЯЕМ ОБНОВЛЕНИЕ CanParticipate
             OnPropertyChanged(nameof(CanParticipate));
         }
     }
@@ -323,7 +318,6 @@ public class EventDetailsViewModel : BaseViewModel
                 }
             }
 
-            // ОПРЕДЕЛЯЕМ, ОТКУДА ПРИШЛИ
             CameFromReports = query.ContainsKey("fromReports") && query["fromReports"]?.ToString() == "true";
 
             if (CameFromReports)
@@ -335,7 +329,6 @@ public class EventDetailsViewModel : BaseViewModel
                 System.Diagnostics.Debug.WriteLine("📍 Пришли из обычной навигации");
             }
 
-            // ЗАГРУЖАЕМ СОБЫТИЕ ПОСЛЕ УСТАНОВКИ PARAMETERS
             if (!string.IsNullOrEmpty(EventId))
             {
                 _ = LoadEventDetails();
@@ -373,16 +366,12 @@ public class EventDetailsViewModel : BaseViewModel
         {
             if (CameFromReports)
             {
-                // Возвращаемся к жалобам
                 System.Diagnostics.Debug.WriteLine("🔙 Возврат к жалобам");
                 await Shell.Current.GoToAsync("ReportsManagementPage");
             }
             else
             {
-                // Пробуем разные варианты возврата
                 bool success = false;
-
-                // Вариант 1: Назад по стеку
                 try
                 {
                     await Shell.Current.GoToAsync("..");
@@ -393,8 +382,6 @@ public class EventDetailsViewModel : BaseViewModel
                 {
                     System.Diagnostics.Debug.WriteLine($"❌ Возврат по стеку не сработал: {ex1.Message}");
                 }
-
-                // Вариант 2: На главную
                 if (!success)
                 {
                     try
@@ -447,7 +434,6 @@ public class EventDetailsViewModel : BaseViewModel
     {
         System.Diagnostics.Debug.WriteLine($"❌ Отмена редактирования");
         IsEditing = false;
-        // Очищаем поля редактирования
         EditTitle = "";
         EditDescription = "";
         EditMaxParticipants = 20;
@@ -463,7 +449,6 @@ public class EventDetailsViewModel : BaseViewModel
         {
             IsLoading = true;
 
-            // Обновляем событие из полей редактирования
             Event.Title = EditTitle?.Trim() ?? Event.Title;
             Event.Description = EditDescription?.Trim() ?? Event.Description;
             Event.MaxParticipants = EditMaxParticipants;
@@ -476,7 +461,6 @@ public class EventDetailsViewModel : BaseViewModel
                 IsEditing = false;
                 OnPropertyChanged(nameof(ShowOrganizerButtons));
 
-                // Обновляем отображение
                 OnPropertyChanged(nameof(Event));
             }
             else
@@ -557,7 +541,6 @@ public class EventDetailsViewModel : BaseViewModel
             if (eventItem == null)
             {
                 System.Diagnostics.Debug.WriteLine($"❌ Событие {_eventId} не найдено в DataService");
-                // Не показываем alert здесь - может быть нормальной ситуацией
                 return;
             }
 
@@ -568,12 +551,10 @@ public class EventDetailsViewModel : BaseViewModel
             Event = eventItem;
             UpdateParticipationState();
 
-            // ОБНОВЛЯЕМ ВСЕ ПРИВЯЗКИ
             OnPropertyChanged(nameof(Event));
             OnPropertyChanged(nameof(CanParticipate));
             OnPropertyChanged(nameof(ShowOrganizerButtons));
             
-            // Принудительно обновляем отображение категорий
             if (Event != null)
             {
                 MainThread.BeginInvokeOnMainThread(() =>
@@ -611,7 +592,6 @@ public class EventDetailsViewModel : BaseViewModel
             System.Diagnostics.Debug.WriteLine($"🎯 CurrentUserId: {_authStateService.CurrentUserId}");
             System.Diagnostics.Debug.WriteLine($"🎯 Event.CreatorId: {Event.CreatorId}");
 
-            // ДОБАВЛЯЕМ ОБНОВЛЕНИЕ CanParticipate И ShowOrganizerButtons
             OnPropertyChanged(nameof(CanParticipate));
             OnPropertyChanged(nameof(ShowOrganizerButtons));
         }
@@ -651,7 +631,6 @@ public class EventDetailsViewModel : BaseViewModel
             return;
         }
 
-        // ДОБАВЛЯЕМ ПРОВЕРКУ НА ПРОШЕДШИЕ СОБЫТИЯ
         if (Event?.EventDate <= DateTime.Now)
         {
             await Application.Current.MainPage.DisplayAlert("Событие завершено", "Нельзя участвовать в прошедших событиях", "OK");
@@ -697,7 +676,6 @@ public class EventDetailsViewModel : BaseViewModel
             if (success)
             {
                 await UpdateUserStatistics();
-                // Перезагружаем данные события
                 await LoadEventDetails();
             }
             else
@@ -718,7 +696,6 @@ public class EventDetailsViewModel : BaseViewModel
     {
         try
         {
-            // Просто логируем - статистика обновится при следующем открытии профиля
             System.Diagnostics.Debug.WriteLine("📊 Статистика будет обновлена при следующем открытии профиля");
         }
         catch (Exception ex)
@@ -741,13 +718,52 @@ public class EventDetailsViewModel : BaseViewModel
             var organizer = await _dataService.GetUserAsync(Event.CreatorId);
             if (organizer != null && !string.IsNullOrEmpty(organizer.AvatarUrl))
             {
-                OrganizerAvatar = ImageSource.FromUri(new Uri(organizer.AvatarUrl));
-                System.Diagnostics.Debug.WriteLine($"📸 Аватар организатора загружен: {organizer.AvatarUrl}");
+                if (organizer.AvatarUrl.StartsWith("local:"))
+                {
+                    var localPath = organizer.AvatarUrl.Substring(6); // Убираем префикс "local:"
+                    if (File.Exists(localPath))
+                    {
+                        OrganizerAvatar = ImageSource.FromFile(localPath);
+                        System.Diagnostics.Debug.WriteLine($"📸 Аватар организатора загружен из локального хранилища: {localPath}");
+                        OnPropertyChanged(nameof(HasOrganizerAvatar));
+                        return;
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        OrganizerAvatar = ImageSource.FromUri(new Uri(organizer.AvatarUrl));
+                        System.Diagnostics.Debug.WriteLine($"📸 Аватар организатора загружен из URL: {organizer.AvatarUrl}");
+                        OnPropertyChanged(nameof(HasOrganizerAvatar));
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Ошибка загрузки аватара организатора из URL: {ex.Message}");
+                        
+                        var localPath = Path.Combine(FileSystem.AppDataDirectory, "Avatars", $"avatar_{Event.CreatorId}.jpg");
+                        if (File.Exists(localPath))
+                        {
+                            OrganizerAvatar = ImageSource.FromFile(localPath);
+                            System.Diagnostics.Debug.WriteLine($"📸 Аватар организатора загружен из локального хранилища (резервный): {localPath}");
+                            OnPropertyChanged(nameof(HasOrganizerAvatar));
+                            return;
+                        }
+                    }
+                }
             }
-            else
+            
+            var fallbackLocalPath = Path.Combine(FileSystem.AppDataDirectory, "Avatars", $"avatar_{Event.CreatorId}.jpg");
+            if (File.Exists(fallbackLocalPath))
             {
-                OrganizerAvatar = null;
+                OrganizerAvatar = ImageSource.FromFile(fallbackLocalPath);
+                System.Diagnostics.Debug.WriteLine($"📸 Аватар организатора загружен из локального хранилища (прямая проверка): {fallbackLocalPath}");
+                OnPropertyChanged(nameof(HasOrganizerAvatar));
+                return;
             }
+            
+            OrganizerAvatar = null;
             OnPropertyChanged(nameof(HasOrganizerAvatar));
         }
         catch (Exception ex)

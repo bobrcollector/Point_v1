@@ -22,7 +22,7 @@ public class UserProfileService
                 DisplayName = displayName,
                 City = "",
                 About = "",
-                AvatarUrl = "", // Аватар будет добавлен позже пользователем
+                AvatarUrl = "",
                 InterestIds = new List<string>(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -50,7 +50,6 @@ public class UserProfileService
         }
     }
 
-    // Добавим метод для получения профиля
     public async Task<User> GetUserProfile(string userId)
     {
         try

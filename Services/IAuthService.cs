@@ -8,7 +8,5 @@ public interface IAuthService
     Task<bool> SignIn(string email, string password);
     Task SignOut();
     Task<bool> DeleteAccountAsync();
-
-    // События изменения
     event EventHandler AuthStateChanged;
 }

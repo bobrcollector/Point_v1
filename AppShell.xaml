@@ -15,45 +15,44 @@
         </Style>
         <Style TargetType="ShellContent">
             <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light=White, Dark=White}"/>
-            <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light=White, Dark=White}"/>
         </Style>
         <Style TargetType="TabBar">
-            <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light=#512BD4, Dark=#512BD4}"/>
+            <Setter Property="Shell.TabBarForegroundColor" Value="#4B0082"/>
+            <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Light=#6E6E6E, Dark=#8E8E93}"/>
             <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light=#6E6E6E, Dark=#8E8E93}"/>
         </Style>
         <Style TargetType="Tab">
-            <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light=#512BD4, Dark=#512BD4}"/>
+            <Setter Property="Shell.TabBarForegroundColor" Value="#4B0082"/>
+            <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Light=#6E6E6E, Dark=#8E8E93}"/>
             <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light=#6E6E6E, Dark=#8E8E93}"/>
         </Style>
     </Shell.Resources>
 
-    <!-- TabBar для нижней навигации -->
-    <TabBar>
-        <Tab Title="Лента" Icon="tab_home.svg">
+    <TabBar Shell.TabBarForegroundColor="#4B0082" Shell.TabBarUnselectedColor="#6E6E6E">
+        <Tab Title="Лента" Icon="tab_home.svg" Shell.TabBarForegroundColor="#4B0082">
             <ShellContent Route="HomePage" ContentTemplate="{DataTemplate views:HomePage}" />
         </Tab>
 
-        <Tab Title="Мои события" Icon="tab_events.svg">
+        <Tab Title="Мои события" Icon="tab_events.svg" Shell.TabBarForegroundColor="#4B0082">
             <ShellContent Route="MyEventsPage" ContentTemplate="{DataTemplate views:MyEventsPage}" />
         </Tab>
 
-        <Tab Title="Профиль" Icon="tab_profile.svg">
+        <Tab Title="Профиль" Icon="tab_profile.svg" Shell.TabBarForegroundColor="#4B0082">
             <ShellContent Route="ProfilePage" ContentTemplate="{DataTemplate views:ProfilePage}" />
         </Tab>
 
-        <!-- Админ-вкладка внутри TabBar -->
         <Tab x:Name="AdminTab" 
              Title="Админ" 
              Icon="tab_admin.svg"
-             IsVisible="False">
+             IsVisible="False"
+             Shell.TabBarForegroundColor="#4B0082">
             <ShellContent Route="ModeratorDashboard" ContentTemplate="{DataTemplate views:ModeratorDashboardPage}" />
         </Tab>
     </TabBar>
 
-    <!-- Регистрация маршрутов для админ-панели -->
+
     <ShellContent Route="ReportsManagementPage" ContentTemplate="{DataTemplate views:ReportsManagementPage}" />
 
-    <!-- Маршруты для навигации -->
     <ShellContent Route="LoginPage" ContentTemplate="{DataTemplate views:LoginPage}" />
     <ShellContent Route="CreateEventPage" ContentTemplate="{DataTemplate views:CreateEventPage}" />
     <ShellContent Route="FilterPage" ContentTemplate="{DataTemplate views:FilterPage}" />
@@ -65,5 +64,5 @@
     <ShellContent Route="SettingsPage" ContentTemplate="{DataTemplate views:SettingsPage}" />
     <ShellContent Route="MapLocationPickerPage" ContentTemplate="{DataTemplate views:MapLocationPickerPage}" />
     
-    <!-- ReportsManagementPage уже зарегистрирован выше -->
+
 </Shell>

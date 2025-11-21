@@ -77,7 +77,6 @@ public class ReportsManagementViewModel : BaseViewModel
     {
         try
         {
-            // ДОБАВЬТЕ ПРОВЕРКУ СЕРВИСОВ
             if (_reportService == null || _authService == null || _authStateService == null)
             {
                 System.Diagnostics.Debug.WriteLine("❌ Сервисы не инициализированы");
@@ -172,10 +171,8 @@ public class ReportsManagementViewModel : BaseViewModel
 
         if (string.IsNullOrEmpty(notes))
         {
-            return; // Пользователь отменил
+            return;
         }
-
-        // Если одобряем жалобу, спрашиваем, нужно ли заблокировать событие
         bool shouldBlock = false;
         if (approve)
         {
@@ -187,7 +184,6 @@ public class ReportsManagementViewModel : BaseViewModel
             );
         }
 
-        // Сначала решаем жалобу
         var success = await _reportService.ResolveReportAsync(
             report.Id,
             _authStateService.CurrentUserId,
@@ -197,13 +193,12 @@ public class ReportsManagementViewModel : BaseViewModel
 
         if (success)
         {
-            // Если нужно заблокировать событие
             if (shouldBlock)
             {
                 var blockSuccess = await _dataService.BlockEventAsync(
                     report.TargetEventId,
                     _authStateService.CurrentUserId,
-                    notes // Используем причину одобрения как причину блокировки
+                    notes
                 );
 
                 if (blockSuccess)
@@ -247,7 +242,6 @@ public class ReportsManagementViewModel : BaseViewModel
 
             System.Diagnostics.Debug.WriteLine($"🔄 Переход к событию: {eventId}");
 
-            // Проверяем, существует ли событие
             var eventItem = await _dataService.GetEventAsync(eventId);
             if (eventItem == null)
             {
@@ -255,7 +249,6 @@ public class ReportsManagementViewModel : BaseViewModel
                 return;
             }
 
-            // ПЕРЕДАЕМ ПАРАМЕТР, ЧТО ПРИШЛИ ИЗ ЖАЛОБ
             await Shell.Current.GoToAsync($"{nameof(EventDetailsPage)}?eventId={eventId}&fromReports=true");
             System.Diagnostics.Debug.WriteLine($"✅ Переход к событию выполнен (из жалоб)");
         }
@@ -276,7 +269,6 @@ public class ReportsManagementViewModel : BaseViewModel
                 return;
             }
 
-            // Запрашиваем причину блокировки
             var reason = await Application.Current.MainPage.DisplayPromptAsync(
                 "Блокировка события",
                 "Укажите причину блокировки события:",
@@ -288,10 +280,8 @@ public class ReportsManagementViewModel : BaseViewModel
 
             if (string.IsNullOrWhiteSpace(reason))
             {
-                return; // Пользователь отменил
+                return;
             }
-
-            // Подтверждение
             var confirm = await Application.Current.MainPage.DisplayAlert(
                 "Подтверждение",
                 "Вы уверены, что хотите заблокировать это событие?",
@@ -317,7 +307,7 @@ public class ReportsManagementViewModel : BaseViewModel
                     "Событие успешно заблокировано",
                     "OK"
                 );
-                await LoadReports(); // Обновляем список
+                await LoadReports();
             }
             else
             {
@@ -341,7 +331,6 @@ public class ReportsManagementViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine("🔙 Выполняется возврат на предыдущую страницу...");
             
-            // Пробуем вернуться назад через стек навигации
             if (Shell.Current.Navigation.NavigationStack.Count > 1)
             {
                 await Shell.Current.GoToAsync("..");
@@ -349,7 +338,6 @@ public class ReportsManagementViewModel : BaseViewModel
             }
             else
             {
-                // Если нет предыдущей страницы в стеке, переходим на админ-панель
                 await Shell.Current.GoToAsync("///ModeratorDashboard");
                 System.Diagnostics.Debug.WriteLine("✅ Возврат на админ-панель");
             }
@@ -357,7 +345,6 @@ public class ReportsManagementViewModel : BaseViewModel
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка возврата: {ex.Message}");
-            // Fallback на админ-панель, если возврат назад не удался
             try
             {
                 await Shell.Current.GoToAsync("///ModeratorDashboard");

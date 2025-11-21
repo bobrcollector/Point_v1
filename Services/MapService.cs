@@ -6,7 +6,6 @@ public class MapService : IMapService
 {
     private readonly IDataService _dataService;
 
-    // Поля для rate limiting
     private DateTime _lastRequestTime = DateTime.MinValue;
     private readonly object _lockObject = new object();
 
@@ -15,7 +14,6 @@ public class MapService : IMapService
         _dataService = dataService;
     }
 
-    // Метод для соблюдения rate limit (1 запрос в секунду)
     private async Task WaitForRateLimit()
     {
         lock (_lockObject)
@@ -35,7 +33,6 @@ public class MapService : IMapService
     {
         try
         {
-            // Проверяем разрешения
             var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
             
             if (status != PermissionStatus.Granted)
@@ -44,10 +41,9 @@ public class MapService : IMapService
                 if (status != PermissionStatus.Granted)
                 {
                     System.Diagnostics.Debug.WriteLine("📍 Разрешение на геолокацию отклонено");
-                    return new Location(55.7558, 37.6173); // Default Moscow location
+                    return new Location(55.7558, 37.6173);
                 }
             }
-
             var request = new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10));
             var location = await Geolocation.Default.GetLocationAsync(request);
 
@@ -74,7 +70,6 @@ public class MapService : IMapService
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка получения локации: {ex.Message}");
         }
 
-        // Default Moscow location fallback
         return new Location(55.7558, 37.6173);
     }
 
@@ -89,7 +84,6 @@ public class MapService : IMapService
 
             foreach (var eventItem in events)
             {
-                // ФИЛЬТРАЦИЯ: добавляем только будущие, активные и незаблокированные события
                 if (eventItem.EventDate <= DateTime.Now || eventItem.IsBlocked || !eventItem.IsActive)
                     continue;
 
@@ -127,8 +121,6 @@ public class MapService : IMapService
         try
         {
             System.Diagnostics.Debug.WriteLine($"📍 Яндекс обратное геокодирование: {latitude}, {longitude}");
-
-            // Яндекс Обратное геокодирование
             var url = $"https://geocode-maps.yandex.ru/1.x/?apikey=1a0b162d-9aa4-4d51-8441-151469a3c82a&format=json&geocode={longitude},{latitude}&lang=ru_RU";
 
             using var client = new HttpClient();
@@ -172,8 +164,6 @@ public class MapService : IMapService
                 return null;
 
             System.Diagnostics.Debug.WriteLine($"🔍 Поиск координат через Яндекс для: {address}");
-
-            // Яндекс Геокодер API
             var url = $"https://geocode-maps.yandex.ru/1.x/?apikey=1a0b162d-9aa4-4d51-8441-151469a3c82a&format=json&geocode={Uri.EscapeDataString(address)}&lang=ru_RU";
 
             using var client = new HttpClient();
@@ -222,8 +212,6 @@ public class MapService : IMapService
                 return new List<string>();
 
             System.Diagnostics.Debug.WriteLine($"🔍 Поиск подсказок через Яндекс для: {query}");
-
-            // Яндекс Геокодер API для автодополнения
             var url = $"https://geocode-maps.yandex.ru/1.x/?apikey=1a0b162d-9aa4-4d51-8441-151469a3c82a&format=json&geocode={Uri.EscapeDataString(query)}&lang=ru_RU&results=5";
 
             using var client = new HttpClient();
@@ -264,7 +252,6 @@ public class MapService : IMapService
         }
     }
 
-    // Вспомогательные методы (без изменений)
     private string SimplifyAddress(string fullAddress)
     {
         if (string.IsNullOrEmpty(fullAddress))

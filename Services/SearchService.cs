@@ -17,7 +17,6 @@ public class SearchService : ISearchService
 
         if (allEvents == null) return new List<Event>();
 
-        // ИСПРАВЛЕНИЕ: Исключаем завершенные, заблокированные и неактивные события
         var filteredEvents = allEvents.Where(e => e.IsActive && !e.IsBlocked && e.EventDate > DateTime.Now);
 
         if (!string.IsNullOrEmpty(query))
@@ -30,7 +29,6 @@ public class SearchService : ISearchService
 
         if (!string.IsNullOrEmpty(category))
         {
-            // Поддержка как старого CategoryId, так и нового CategoryIds
             filteredEvents = filteredEvents.Where(e => e.CategoryId == category || 
                                                       (e.CategoryIds != null && e.CategoryIds.Contains(category)));
         }
@@ -46,18 +44,13 @@ public class SearchService : ISearchService
     public async Task<List<string>> GetAvailableCategoriesAsync()
     {
         var events = await _dataService.GetEventsAsync();
-        // ИСПРАВЛЕНИЕ: Получаем все категории из будущих активных и незаблокированных событий
         var categories = new List<string>();
-        
         foreach (var e in events?.Where(e => e.IsActive && !e.IsBlocked && e.EventDate > DateTime.Now) ?? new List<Event>())
         {
-            // Добавляем старую категорию, если есть
             if (!string.IsNullOrEmpty(e.CategoryId))
             {
                 categories.Add(e.CategoryId);
             }
-            
-            // Добавляем новые категории из CategoryIds
             if (e.CategoryIds != null && e.CategoryIds.Count > 0)
             {
                 categories.AddRange(e.CategoryIds);
@@ -75,21 +68,17 @@ public class SearchService : ISearchService
 
         var filteredEvents = allEvents.Where(e => e.IsActive && !e.IsBlocked);
 
-        // Фильтр по категории
         if (!string.IsNullOrEmpty(filters.Category) && filters.Category != "Все категории")
         {
-            // Поддержка как старого CategoryId, так и нового CategoryIds
             filteredEvents = filteredEvents.Where(e => e.CategoryId == filters.Category || 
                                                       (e.CategoryIds != null && e.CategoryIds.Contains(filters.Category)));
         }
 
-        // Фильтр по дате
         if (filters.Date.HasValue)
         {
             filteredEvents = filteredEvents.Where(e => e.EventDate.Date == filters.Date.Value.Date);
         }
 
-        // Фильтр по статусу участия
         if (!string.IsNullOrEmpty(filters.ParticipationStatus))
         {
             switch (filters.ParticipationStatus)
@@ -98,15 +87,11 @@ public class SearchService : ISearchService
                     filteredEvents = filteredEvents.Where(e => e.HasFreeSpots);
                     break;
                 case "Я участвую":
-                    // Здесь нужно добавить логику проверки участия текущего пользователя
                     break;
                 case "Я не участвую":
-                    // Логика для событий, где пользователь не участвует
                     break;
             }
         }
-
-        // Фильтр по количеству участников
         if (!string.IsNullOrEmpty(filters.ParticipantCount))
         {
             switch (filters.ParticipantCount)
@@ -123,7 +108,6 @@ public class SearchService : ISearchService
             }
         }
 
-        // Сортировка
         var eventsList = filteredEvents.ToList();
         if (!string.IsNullOrEmpty(filters.SortOption))
         {

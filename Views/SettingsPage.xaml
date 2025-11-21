@@ -181,7 +181,7 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- ОПАСНЫЕ ДЕЙСТВИЯ -->
+            <!-- Удаление аккаунта -->
             <Frame Style="{StaticResource SectionHeaderFrame}">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="Опасные действия" 

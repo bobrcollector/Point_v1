@@ -15,7 +15,6 @@ public class FirebaseRestService
         _httpClient = new HttpClient();
     }
 
-    // Аутентификация через REST API
     public async Task<FirebaseAuthResponse> SignInWithEmailAndPassword(string email, string password)
     {
         try
@@ -131,7 +130,6 @@ public class FirebaseRestService
         }
     }
 
-    // Работа с событиями
     public async Task<List<Event>> GetEventsAsync()
     {
         try
@@ -180,7 +178,6 @@ public class FirebaseRestService
         }
     }
 
-    // НОВЫЕ МЕТОДЫ ДЛЯ ОБНОВЛЕНИЯ И УДАЛЕНИЯ СОБЫТИЙ
     public async Task<bool> UpdateEventAsync(Event eventItem)
     {
         try
@@ -249,7 +246,6 @@ public class FirebaseRestService
         }
     }
 
-    // Работа с пользователями
     public async Task<List<User>> GetUsersAsync()
     {
         try
@@ -378,7 +374,6 @@ public class FirebaseRestService
         }
     }
 
-    // Загрузка аватара в Firebase Storage
     public async Task<string> UploadAvatarAsync(string filePath, string userId, string idToken)
     {
         try
@@ -389,12 +384,8 @@ public class FirebaseRestService
                 return null;
             }
 
-            // Используем уникальный путь для каждого пользователя: avatars/{userId}.jpg
-            // Это гарантирует, что каждый пользователь имеет свой уникальный аватар
             var fileName = $"avatars/{userId}.jpg";
             var bucketName = "point-v1.firebasestorage.app";
-            
-            // Используем правильный endpoint для загрузки через REST API v1
             var storageUrl = $"https://firebasestorage.googleapis.com/upload/storage/v1/b/{bucketName}/o?uploadType=media&name={Uri.EscapeDataString(fileName)}";
             
             System.Diagnostics.Debug.WriteLine($"📤 Загрузка аватара для пользователя {userId} в путь: {fileName}");
@@ -421,7 +412,6 @@ public class FirebaseRestService
                     
                     if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.Name))
                     {
-                        // Получаем токен для скачивания (может быть строкой или массивом)
                         string downloadToken = null;
                         if (uploadResult.DownloadTokens != null)
                         {
@@ -437,7 +427,6 @@ public class FirebaseRestService
 
                         if (!string.IsNullOrEmpty(downloadToken))
                         {
-                            // Формируем публичный URL для скачивания
                             var downloadUrl = $"https://firebasestorage.googleapis.com/v0/b/point-v1.firebasestorage.app/o/{Uri.EscapeDataString(fileName)}?alt=media&token={downloadToken}";
                             System.Diagnostics.Debug.WriteLine($"✅ Аватар загружен: {downloadUrl}");
                             return downloadUrl;
@@ -448,8 +437,6 @@ public class FirebaseRestService
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки аватара (Status: {response.StatusCode}): {errorContent}");
-                    
-                    // Попробуем альтернативный метод загрузки через multipart
                     if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         System.Diagnostics.Debug.WriteLine("🔄 Пробуем альтернативный метод загрузки...");
@@ -468,7 +455,6 @@ public class FirebaseRestService
         }
     }
 
-    // Альтернативный метод загрузки через multipart/form-data
     private async Task<string> UploadAvatarMultipartAsync(string filePath, string userId, string idToken, string fileName)
     {
         try
@@ -481,13 +467,9 @@ public class FirebaseRestService
             using (var fileStream = File.OpenRead(filePath))
             {
                 var boundary = $"----WebKitFormBoundary{DateTime.UtcNow.Ticks}";
-                
-                // Создаем multipart content вручную для правильного формата
                 var multipartContent = new MultipartContent("related", boundary);
                 multipartContent.Headers.Remove("Content-Type");
                 multipartContent.Headers.TryAddWithoutValidation("Content-Type", $"multipart/related; boundary={boundary}");
-                
-                // Первая часть - метаданные в JSON
                 var metadata = new
                 {
                     contentType = "image/jpeg"
@@ -496,8 +478,6 @@ public class FirebaseRestService
                 var metadataContent = new StringContent(metadataJson, Encoding.UTF8, "application/json");
                 metadataContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
                 multipartContent.Add(metadataContent);
-                
-                // Вторая часть - файл
                 var fileContent = new StreamContent(fileStream);
                 fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
                 multipartContent.Add(fileContent);
@@ -519,7 +499,6 @@ public class FirebaseRestService
                     
                     if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.Name))
                     {
-                        // Получаем токен для скачивания
                         string downloadToken = null;
                         if (uploadResult.DownloadTokens != null)
                         {

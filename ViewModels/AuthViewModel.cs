@@ -13,19 +13,10 @@ public class AuthViewModel : BaseViewModel
         _authService = authService;
         _navigationService = navigationService;
 
-        System.Diagnostics.Debug.WriteLine("AuthViewModel создан!");
-        System.Diagnostics.Debug.WriteLine($"AuthService: {authService != null}");
-        System.Diagnostics.Debug.WriteLine($"NavigationService: {navigationService != null}");
-
-        // Команды для форм
         LoginCommand = new Command(async () => await Login(), () => CanLogin());
         RegisterCommand = new Command(async () => await Register(), () => CanRegister());
-
-        // Команды для навигации между страницами
         GoToLoginPageCommand = new Command(async () => await GoToLoginPage());
         GoToRegisterPageCommand = new Command(async () => await GoToRegisterPage());
-
-        // Подписываемся на изменение состояния аутентификации
         _authService.AuthStateChanged += OnAuthStateChanged;
     }
 
@@ -101,7 +92,6 @@ public class AuthViewModel : BaseViewModel
         set => SetProperty(ref _successMessage, value);
     }
 
-    // Новые свойства для валидации
     private string _passwordValidationMessage = "";
     public string PasswordValidationMessage
     {
@@ -130,7 +120,6 @@ public class AuthViewModel : BaseViewModel
         set => SetProperty(ref _passwordValidationColor, value);
     }
 
-    // Команды
     public Command LoginCommand { get; }
     public Command RegisterCommand { get; }
     public ICommand GoToLoginPageCommand { get; }
@@ -175,29 +164,27 @@ public class AuthViewModel : BaseViewModel
             IsBusy = true;
             ClearErrors();
 
-            // Валидация email
             if (string.IsNullOrWhiteSpace(Email))
             {
-                ErrorMessage = "Введите email";
+                ErrorMessage = "Р’РІРµРґРёС‚Рµ email";
                 return;
             }
 
             if (!IsValidEmail(Email))
             {
-                ErrorMessage = "Введите корректный email адрес";
+                ErrorMessage = "Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅС‹Р№ email Р°РґСЂРµСЃ";
                 return;
             }
 
-            // Валидация пароля
             if (string.IsNullOrWhiteSpace(Password))
             {
-                ErrorMessage = "Введите пароль";
+                ErrorMessage = "Р’РІРµРґРёС‚Рµ РїР°СЂРѕР»СЊ";
                 return;
             }
 
             if (Password.Length < 6)
             {
-                ErrorMessage = "Пароль должен содержать минимум 6 символов";
+                ErrorMessage = "РџР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РјРёРЅРёРјСѓРј 6 СЃРёРјРІРѕР»РѕРІ";
                 return;
             }
 
@@ -205,12 +192,11 @@ public class AuthViewModel : BaseViewModel
 
             if (success)
             {
-                SuccessMessage = "Вход выполнен успешно!";
-                // Навигация произойдет автоматически через AuthStateChanged
+                SuccessMessage = "Р’С‹ СѓСЃРїРµС€РЅРѕ РІРѕС€Р»Рё!";
             }
             else
             {
-                ErrorMessage = "Неверный email или пароль";
+                ErrorMessage = "РќРµРІРµСЂРЅС‹Р№ email РёР»Рё РїР°СЂРѕР»СЊ";
             }
         }
         catch (Exception ex)
@@ -232,49 +218,45 @@ public class AuthViewModel : BaseViewModel
             IsBusy = true;
             ClearErrors();
 
-            // Валидация имени
             if (string.IsNullOrWhiteSpace(DisplayName))
             {
-                ErrorMessage = "Введите имя пользователя";
+                ErrorMessage = "Р’РІРµРґРёС‚Рµ РёРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ";
                 return;
             }
 
             if (DisplayName.Length < 2)
             {
-                ErrorMessage = "Имя должно содержать минимум 2 символа";
+                ErrorMessage = "РРјСЏ РґРѕР»Р¶РЅРѕ СЃРѕРґРµСЂР¶Р°С‚СЊ РјРёРЅРёРјСѓРј 2 СЃРёРјРІРѕР»Р°";
                 return;
             }
 
-            // Валидация email
             if (string.IsNullOrWhiteSpace(Email))
             {
-                ErrorMessage = "Введите email";
+                ErrorMessage = "Р’РІРµРґРёС‚Рµ email";
                 return;
             }
 
             if (!IsValidEmail(Email))
             {
-                ErrorMessage = "Введите корректный email адрес";
+                ErrorMessage = "Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅС‹Р№ email Р°РґСЂРµСЃ";
                 return;
             }
 
-            // Валидация пароля
             if (string.IsNullOrWhiteSpace(Password))
             {
-                ErrorMessage = "Введите пароль";
+                ErrorMessage = "Р’РІРµРґРёС‚Рµ РїР°СЂРѕР»СЊ";
                 return;
             }
 
             if (Password.Length < 6)
             {
-                ErrorMessage = "Пароль должен содержать минимум 6 символов";
+                ErrorMessage = "РџР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РјРёРЅРёРјСѓРј 6 СЃРёРјРІРѕР»РѕРІ";
                 return;
             }
 
-            // Проверка подтверждения пароля
             if (Password != ConfirmPassword)
             {
-                ErrorMessage = "Пароли не совпадают";
+                ErrorMessage = "РџР°СЂРѕР»Рё РЅРµ СЃРѕРІРїР°РґР°СЋС‚";
                 return;
             }
 
@@ -282,11 +264,11 @@ public class AuthViewModel : BaseViewModel
 
             if (success)
             {
-                SuccessMessage = "Регистрация прошла успешно!";
+                SuccessMessage = "Р РµРіРёСЃС‚СЂР°С†РёСЏ РїСЂРѕС€Р»Р° СѓСЃРїРµС€РЅРѕ!";
             }
             else
             {
-                ErrorMessage = "Ошибка регистрации. Возможно, email уже используется";
+                ErrorMessage = "РћС€РёР±РєР° СЂРµРіРёСЃС‚СЂР°С†РёРё. РџСЂРѕРІРµСЂСЊС‚Рµ, email СѓР¶Рµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅ";
             }
         }
         catch (Exception ex)
@@ -301,19 +283,16 @@ public class AuthViewModel : BaseViewModel
 
     private async Task GoToLoginPage()
     {
-        System.Diagnostics.Debug.WriteLine("Переход на LoginPage");
         await Shell.Current.GoToAsync("//LoginPage");
     }
 
     private async Task GoToRegisterPage()
     {
-        System.Diagnostics.Debug.WriteLine("Переход на RegisterPage");
         await Shell.Current.GoToAsync("//RegisterPage");
     }
 
     private async void OnAuthStateChanged(object sender, EventArgs e)
     {
-        // При успешной аутентификации переходим на главную
         if (_authService.IsAuthenticated)
         {
             await _navigationService.GoToHomeAsync();
@@ -338,24 +317,24 @@ public class AuthViewModel : BaseViewModel
         var errorMessage = ex.Message.ToLower();
 
         if (errorMessage.Contains("network") || errorMessage.Contains("internet"))
-            return "Проверьте подключение к интернету";
+            return "РџСЂРѕРІРµСЂСЊС‚Рµ РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє РёРЅС‚РµСЂРЅРµС‚Сѓ";
 
         if (errorMessage.Contains("email_already_in_use") || errorMessage.Contains("email already exists"))
-            return "Этот email уже используется";
+            return "Р­С‚РѕС‚ email СѓР¶Рµ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅ";
 
         if (errorMessage.Contains("invalid_email") || errorMessage.Contains("invalid email"))
-            return "Неверный формат email";
+            return "РќРµРІРµСЂРЅС‹Р№ С„РѕСЂРјР°С‚ email";
 
         if (errorMessage.Contains("user_not_found") || errorMessage.Contains("user not found"))
-            return "Пользователь с таким email не найден";
+            return "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЃ С‚Р°РєРёРј email РЅРµ РЅР°Р№РґРµРЅ";
 
         if (errorMessage.Contains("wrong_password") || errorMessage.Contains("invalid password"))
-            return "Неверный пароль";
+            return "РќРµРІРµСЂРЅС‹Р№ РїР°СЂРѕР»СЊ";
 
         if (errorMessage.Contains("weak_password") || errorMessage.Contains("password is weak"))
-            return "Пароль слишком слабый";
+            return "РЎР»РёС€РєРѕРј СЃР»Р°Р±С‹Р№ РїР°СЂРѕР»СЊ";
 
-        return "Произошла ошибка. Попробуйте еще раз";
+        return "РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР°. РџРѕРїСЂРѕР±СѓР№С‚Рµ РїРѕР·Р¶Рµ";
     }
 
     private void ValidatePassword()
@@ -369,12 +348,12 @@ public class AuthViewModel : BaseViewModel
 
         if (Password.Length < 6)
         {
-            PasswordValidationMessage = "Слишком короткий пароль";
+            PasswordValidationMessage = "РЎР»РёС€РєРѕРј РєРѕСЂРѕС‚РєРёР№ РїР°СЂРѕР»СЊ";
             PasswordValidationColor = Color.FromArgb("#D32F2F");
         }
         else
         {
-            PasswordValidationMessage = "Пароль подходит";
+            PasswordValidationMessage = "РџР°СЂРѕР»СЊ РїРѕРґС…РѕРґРёС‚";
             PasswordValidationColor = Color.FromArgb("#4CAF50");
         }
     }
@@ -383,19 +362,19 @@ public class AuthViewModel : BaseViewModel
     {
         if (string.IsNullOrEmpty(ConfirmPassword))
         {
-            ConfirmPasswordValidationMessage = "Подтвердите пароль";
+            ConfirmPasswordValidationMessage = "РџРѕРґС‚РІРµСЂРґРёС‚Рµ РїР°СЂРѕР»СЊ";
             PasswordsMatch = false;
             return;
         }
 
         if (Password == ConfirmPassword)
         {
-            ConfirmPasswordValidationMessage = "Пароли совпадают";
+            ConfirmPasswordValidationMessage = "РџР°СЂРѕР»Рё СЃРѕРІРїР°РґР°СЋС‚";
             PasswordsMatch = true;
         }
         else
         {
-            ConfirmPasswordValidationMessage = "Пароли не совпадают";
+            ConfirmPasswordValidationMessage = "РџР°СЂРѕР»Рё РЅРµ СЃРѕРІРїР°РґР°СЋС‚";
             PasswordsMatch = false;
         }
     }

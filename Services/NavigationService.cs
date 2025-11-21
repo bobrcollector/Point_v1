@@ -18,8 +18,6 @@ public class NavigationService : INavigationService
     {
         await Shell.Current.GoToAsync("//ProfilePage");
     }
-
-    // днаюбэ щрнр лернд
     public async Task GoToAsync(string route)
     {
         await Shell.Current.GoToAsync(route);

@@ -21,7 +21,7 @@
 
     <Grid RowDefinitions="Auto,Auto,*,Auto">
 
-        <!-- Вкладки (компактные, сразу под шапкой) -->
+        <!-- Вкладки -->
         <VerticalStackLayout Grid.Row="1" 
                              Spacing="0" 
                              VerticalOptions="End"

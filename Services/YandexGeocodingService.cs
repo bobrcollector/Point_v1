@@ -26,8 +26,6 @@ public class YandexGeocodingService
 
             var response = await _httpClient.GetStringAsync(url);
             var json = JsonDocument.Parse(response);
-
-            // Парсим ответ Яндекс Геокодера
             var featureMember = json.RootElement
                 .GetProperty("response")
                 .GetProperty("GeoObjectCollection")

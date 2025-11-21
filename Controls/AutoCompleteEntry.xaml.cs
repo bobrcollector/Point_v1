@@ -52,8 +52,6 @@ public partial class AutoCompleteEntry : ContentView
             SuggestionsList.IsVisible = false;
             return;
         }
-
-        // Показываем подсказки если они есть
         if (Suggestions?.Count > 0)
         {
             SuggestionsList.IsVisible = true;
@@ -69,7 +67,7 @@ public partial class AutoCompleteEntry : ContentView
     {
         if (e.CurrentSelection.FirstOrDefault() is string selectedSuggestion)
         {
-            Text = selectedSuggestion.Split(" - ")[0]; // Берем только основную часть
+            Text = selectedSuggestion.Split(" - ")[0];
             SuggestionsList.IsVisible = false;
 
             SuggestionSelectedCommand?.Execute(selectedSuggestion);

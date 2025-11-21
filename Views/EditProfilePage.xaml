@@ -33,7 +33,7 @@
                     <TapGestureRecognizer Command="{Binding ChangeAvatarCommand}" />
                 </Frame.GestureRecognizers>
 
-                <!-- Просто показываем Image, он сам разберется с источником -->
+
                 <Image Source="{Binding AvatarImage}"
                        Aspect="AspectFill"
                        BackgroundColor="#512BD4"

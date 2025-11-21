@@ -137,36 +137,25 @@
                                            TextColor="Gray"
                                            LineBreakMode="TailTruncation"/>
 
-                                    <!-- Категории и метка "Моё событие" -->
+                                    <!-- Категория и метка "Моё событие" -->
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                        <!-- Категории -->
-                                        <FlexLayout Grid.Column="0"
-                                                   BindableLayout.ItemsSource="{Binding DisplayCategories}"
-                                                   Direction="Row"
-                                                   Wrap="Wrap"
-                                                   JustifyContent="Start"
-                                                   AlignItems="Start">
-                                            <BindableLayout.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Frame BackgroundColor="#DFD8F7"
-                                                           Padding="8,4"
-                                                           CornerRadius="10"
-                                                           HasShadow="False"
-                                                           Margin="0,0,4,4">
-                                                        <Label Text="{Binding .}" 
-                                                               FontSize="12"
-                                                               TextColor="#512BD4"
-                                                               FontAttributes="Bold"/>
-                                                    </Frame>
-                                                </DataTemplate>
-                                            </BindableLayout.ItemTemplate>
-                                        </FlexLayout>
+                                        <!-- Категория -->
+                                        <Frame Grid.Column="0"
+                                               BackgroundColor="#DFD8F7"
+                                               Padding="8,4"
+                                               CornerRadius="8"
+                                               HasShadow="False"
+                                               HorizontalOptions="Start">
+                                            <Label Text="{Binding CategoryDisplay}" 
+                                                   FontSize="12"
+                                                   TextColor="#512BD4"/>
+                                        </Frame>
 
                                         <!-- Метка "Моё событие" -->
                                         <Frame Grid.Column="1"
                                                BackgroundColor="#4CAF50"
                                                Padding="8,4"
-                                               CornerRadius="10"
+                                               CornerRadius="8"
                                                HasShadow="False"
                                                HorizontalOptions="End"
                                                IsVisible="{Binding ShowMyEventBadge}">

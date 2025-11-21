@@ -8,7 +8,6 @@ public class IsRelevantToBorderColorConverter : IValueConverter
     {
         if (value is bool isRelevant && isRelevant)
         {
-            // Яркая зеленая рамка
             return Color.FromArgb("#4CAF50");
         }
         return Colors.Transparent;

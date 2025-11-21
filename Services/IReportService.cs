@@ -4,7 +4,7 @@ namespace Point_v1.Services;
 
 public interface IReportService
 {
-    Task<bool> CreateReportAsync(string eventId, string reporterId, ReportType type, string reason); // ИСПРАВЛЕНО: ReportType вместо Report
+    Task<bool> CreateReportAsync(string eventId, string reporterId, ReportType type, string reason); 
     Task<List<Report>> GetPendingReportsAsync();
     Task<List<Report>> GetResolvedReportsAsync();
     Task<Report> GetReportAsync(string reportId);

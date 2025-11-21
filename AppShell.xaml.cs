@@ -10,8 +10,10 @@ public partial class AppShell : Shell
 {
     private readonly IAuthorizationService _authorizationService;
     private readonly IAuthStateService _authStateService;
+    private static readonly Color SelectedTabColor = Color.FromArgb("#4B0082");
+    private static readonly Color LightUnselectedTabColor = Color.FromArgb("#6E6E6E");
+    private static readonly Color DarkUnselectedTabColor = Color.FromArgb("#8E8E93");
 
-    // Конструктор по умолчанию для дизайнера
     public AppShell() : this(null, null)
     {
     }
@@ -24,48 +26,34 @@ public partial class AppShell : Shell
 
             _authorizationService = authorizationService;
             _authStateService = authStateService;
-            
-            // Подписываемся на событие навигации для установки цвета navigation bar
             this.Navigated += OnShellNavigated;
-            
-            // Настраиваем цвет navigation bar при инициализации
+            this.Loaded += OnShellLoaded;
+            this.HandlerChanged += OnHandlerChanged;
+            this.PropertyChanged += OnShellPropertyChanged;
             SetNavigationBarColor();
-            
-            // Настраиваем цвета TabBar с небольшой задержкой для полной загрузки
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(100);
-                MainThread.BeginInvokeOnMainThread(() => SetTabBarColors());
-            });
+            SetTabBarColors();
 
-            System.Diagnostics.Debug.WriteLine($"========== 🔧 AppShell инициализируется ==========");
-            System.Diagnostics.Debug.WriteLine($"  - IAuthorizationService: {(_authorizationService != null ? "✅" : "❌")}");
-            System.Diagnostics.Debug.WriteLine($"  - IAuthStateService: {(_authStateService != null ? "✅" : "❌")}");
-
-            // Проверяем, что сервисы не null
             if (_authStateService != null)
             {
                 _authStateService.AuthenticationStateChanged += OnAuthenticationStateChanged;
-                System.Diagnostics.Debug.WriteLine("✅ Обработчик AuthenticationStateChanged подписан");
-                _ = CheckAdminPermissions();
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(300);
+                    MainThread.BeginInvokeOnMainThread(async () => await CheckAdminPermissions());
+                });
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("⚠️ AuthStateService is null - админ-панель отключена");
                 AdminTab.IsVisible = false;
             }
-            System.Diagnostics.Debug.WriteLine($"========== ✅ AppShell инициализация завершена ==========");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ Ошибка в конструкторе AppShell: {ex.Message}");
-            System.Diagnostics.Debug.WriteLine($"❌ Stack trace: {ex.StackTrace}");
         }
     }
 
     private async void OnAuthenticationStateChanged(object sender, EventArgs e)
     {
-        System.Diagnostics.Debug.WriteLine("========== 🔄 AuthenticationStateChanged событие вызвано ==========");
         await CheckAdminPermissions();
     }
 
@@ -73,31 +61,39 @@ public partial class AppShell : Shell
     {
         try
         {
-            System.Diagnostics.Debug.WriteLine($"========== 🔍 Проверка прав модератора ==========");
-            System.Diagnostics.Debug.WriteLine($"  - IsAuthenticated: {_authStateService?.IsAuthenticated}");
-            System.Diagnostics.Debug.WriteLine($"  - CurrentUserId: {_authStateService?.CurrentUserId}");
-            System.Diagnostics.Debug.WriteLine($"  - AuthorizationService != null: {_authorizationService != null}");
-
             if (_authStateService?.IsAuthenticated == true && _authorizationService != null)
             {
                 var isModerator = await _authorizationService.IsModeratorAsync();
-                System.Diagnostics.Debug.WriteLine($"✅ Проверка прав завершена: модератор = {isModerator}");
                 AdminTab.IsVisible = isModerator;
-                System.Diagnostics.Debug.WriteLine($"🛡️ AdminTab.IsVisible = {AdminTab.IsVisible}");
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"⚠️ Пользователь не аутентифицирован или сервис отсутствует");
                 AdminTab.IsVisible = false;
             }
-            System.Diagnostics.Debug.WriteLine($"========== ✅ Проверка прав завершена ==========");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine($"❌ Ошибка проверки прав: {ex.Message}");
-            System.Diagnostics.Debug.WriteLine($"❌ Stack trace: {ex.StackTrace}");
             AdminTab.IsVisible = false;
         }
+    }
+
+    private void OnShellLoaded(object sender, EventArgs e)
+    {
+        SetTabBarColors();
+    }
+
+    private void OnHandlerChanged(object sender, EventArgs e)
+    {
+        SetTabBarColors();
+#if ANDROID
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await Task.Delay(50);
+            SetTabBarColors();
+            await Task.Delay(100);
+            SetTabBarColors();
+        });
+#endif
     }
 
     protected override void OnDisappearing()
@@ -108,75 +104,184 @@ public partial class AppShell : Shell
             _authStateService.AuthenticationStateChanged -= OnAuthenticationStateChanged;
         }
         this.Navigated -= OnShellNavigated;
+        this.Loaded -= OnShellLoaded;
+        this.HandlerChanged -= OnHandlerChanged;
+        this.PropertyChanged -= OnShellPropertyChanged;
     }
     
     private void SetNavigationBarColor()
     {
         try
         {
-            // Устанавливаем цвет только для navigation bar (верхняя часть)
-            Shell.SetForegroundColor(this, Colors.White);
             Shell.SetTitleColor(this, Colors.White);
-            
-            System.Diagnostics.Debug.WriteLine("✅ Цвет navigation bar установлен при инициализации");
         }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"❌ Ошибка установки цвета navigation bar: {ex.Message}");
-        }
+        catch { }
     }
     
     private void SetTabBarColors()
     {
         try
         {
-            // Находим TabBar и устанавливаем цвета для него
+            var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+            var unselectedColor = isDark ? DarkUnselectedTabColor : LightUnselectedTabColor;
+            Shell.SetTabBarForegroundColor(this, SelectedTabColor);
+            Shell.SetTabBarUnselectedColor(this, unselectedColor);
             var tabBar = this.Items.OfType<TabBar>().FirstOrDefault();
             if (tabBar != null)
             {
-                var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
-                
-                // Устанавливаем цвета для TabBar - индиго (#4B0082) для выбранной вкладки
-                Shell.SetForegroundColor(tabBar, Color.FromArgb("#4B0082")); // Индиго для выбранной вкладки
-                Shell.SetUnselectedColor(tabBar, isDark ? Color.FromArgb("#8E8E93") : Color.FromArgb("#6E6E6E")); // Серый для невыбранных
-                
-                // Также устанавливаем цвета для каждой вкладки индивидуально
+                Shell.SetTabBarForegroundColor(tabBar, SelectedTabColor);
+                Shell.SetTabBarUnselectedColor(tabBar, unselectedColor);
+                Shell.SetTabBarForegroundColor(tabBar, SelectedTabColor);
+                Shell.SetTabBarUnselectedColor(tabBar, unselectedColor);
                 foreach (var tab in tabBar.Items.OfType<Tab>())
                 {
-                    Shell.SetForegroundColor(tab, Color.FromArgb("#4B0082"));
-                    Shell.SetUnselectedColor(tab, isDark ? Color.FromArgb("#8E8E93") : Color.FromArgb("#6E6E6E"));
+                    Shell.SetTabBarForegroundColor(tab, SelectedTabColor);
+                    Shell.SetTabBarUnselectedColor(tab, unselectedColor);
+                    Shell.SetTabBarForegroundColor(tab, SelectedTabColor);
+                    Shell.SetTabBarUnselectedColor(tab, unselectedColor);
                 }
-                
-                System.Diagnostics.Debug.WriteLine($"✅ Цвета TabBar установлены: выбранная #512BD4, невыбранная {(isDark ? "#8E8E93" : "#6E6E6E")}");
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("⚠️ TabBar не найден");
+#if ANDROID
+                SetAndroidTabBarColors();
+#endif
+#if WINDOWS
+                SetWindowsTabBarColors();
+#endif
             }
         }
-        catch (Exception ex)
+        catch { }
+    }
+
+#if ANDROID
+    private void SetAndroidTabBarColors()
+    {
+        try
         {
-            System.Diagnostics.Debug.WriteLine($"❌ Ошибка установки цветов TabBar: {ex.Message}");
-            System.Diagnostics.Debug.WriteLine($"❌ Stack trace: {ex.StackTrace}");
+            var handler = this.Handler;
+            if (handler?.PlatformView != null)
+            {
+                var platformView = handler.PlatformView as Android.Views.View;
+                if (platformView != null)
+                {
+                    var bottomNavView = FindBottomNavigationView(platformView);
+                    if (bottomNavView != null)
+                    {
+                        var selectedColor = Android.Graphics.Color.ParseColor("#4B0082");
+                        var unselectedColor = Android.Graphics.Color.ParseColor("#6E6E6E");
+                        var textColorStateList = CreateAndroidColorStateList(selectedColor, unselectedColor);
+                        bottomNavView.ItemTextColor = textColorStateList;
+                        var iconColorStateList = CreateAndroidColorStateList(selectedColor, unselectedColor);
+                        bottomNavView.ItemIconTintList = iconColorStateList;
+                        bottomNavView.RefreshDrawableState();
+                    }
+                }
+            }
         }
+        catch { }
+    }
+
+    private Google.Android.Material.BottomNavigation.BottomNavigationView FindBottomNavigationView(Android.Views.View view)
+    {
+        if (view is Google.Android.Material.BottomNavigation.BottomNavigationView bottomNav)
+        {
+            return bottomNav;
+        }
+
+        if (view is Android.Views.ViewGroup viewGroup)
+        {
+            for (int i = 0; i < viewGroup.ChildCount; i++)
+            {
+                var child = viewGroup.GetChildAt(i);
+                var result = FindBottomNavigationView(child);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private Android.Content.Res.ColorStateList CreateAndroidColorStateList(Android.Graphics.Color selectedColor, Android.Graphics.Color unselectedColor)
+    {
+        var states = new int[][]
+        {
+            new int[] { Android.Resource.Attribute.StateChecked },
+            new int[] { -Android.Resource.Attribute.StateChecked }
+        };
+
+        var colors = new int[]
+        {
+            selectedColor,
+            unselectedColor
+        };
+
+        return new Android.Content.Res.ColorStateList(states, colors);
+    }
+#endif
+
+#if WINDOWS
+    private void SetWindowsTabBarColors()
+    {
+        try
+        {
+            var handler = this.Handler;
+            if (handler?.PlatformView != null)
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    var tabBar = this.Items.OfType<TabBar>().FirstOrDefault();
+                    if (tabBar != null)
+                    {
+                        Shell.SetTabBarForegroundColor(tabBar, SelectedTabColor);
+                        var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+                        var unselectedColor = isDark ? DarkUnselectedTabColor : LightUnselectedTabColor;
+                        Shell.SetTabBarUnselectedColor(tabBar, unselectedColor);
+                        foreach (var tab in tabBar.Items.OfType<Tab>())
+                        {
+                            Shell.SetTabBarForegroundColor(tab, SelectedTabColor);
+                            Shell.SetTabBarUnselectedColor(tab, unselectedColor);
+                        }
+                    }
+                });
+            }
+        }
+        catch { }
+    }
+#endif
+    
+    private void OnShellPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        try
+        {
+            if (e.PropertyName == nameof(CurrentItem))
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    SetTabBarColors();
+                    await Task.Delay(50);
+                    SetTabBarColors();
+                    await Task.Delay(100);
+                    SetTabBarColors();
+                    await Task.Delay(150);
+                    SetTabBarColors();
+                });
+            }
+        }
+        catch { }
     }
     
     private void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
     {
         try
         {
-            // Устанавливаем цвет navigation bar при каждой навигации (только верхняя часть)
             var currentPage = this.CurrentPage;
             if (currentPage != null)
             {
-                // Устанавливаем цвет фона navigation bar только для страниц, которые не являются TabBar
                 if (!(currentPage is TabBar))
                 {
                     Shell.SetBackgroundColor(currentPage, Color.FromArgb("#512BD4"));
-                    Shell.SetForegroundColor(currentPage, Colors.White);
                     Shell.SetTitleColor(currentPage, Colors.White);
-                    
-                    // Настраиваем кнопку "Назад" для страниц, которые должны её показывать
                     if (currentPage is FilterPage filterPage)
                     {
                         if (filterPage.BindingContext is FilterViewModel filterVm)
@@ -201,13 +306,16 @@ public partial class AppShell : Shell
                     }
                 }
             }
-            
-            // Обновляем цвета TabBar при навигации
-            SetTabBarColors();
+            _ = CheckAdminPermissions();
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                SetTabBarColors();
+                await Task.Delay(50);
+                SetTabBarColors();
+                await Task.Delay(100);
+                SetTabBarColors();
+            });
         }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"❌ Ошибка установки цвета navigation bar при навигации: {ex.Message}");
-        }
+        catch { }
     }
 }

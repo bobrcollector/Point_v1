@@ -32,10 +32,7 @@ public class HomeViewModel : BaseViewModel
 
         _authStateService.AuthenticationStateChanged += OnAuthenticationStateChanged;
         
-        // НОВОЕ: Подписываемся на изменение фильтров для автоматического применения
         _filterStateService.FiltersChanged += OnFiltersChanged;
-
-        // Команды
         GoToLoginCommand = new Command(async () => await GoToLogin());
         CreateEventCommand = new Command(async () => await CreateEvent());
         JoinEventCommand = new Command<string>(async (eventId) => await JoinEvent(eventId));
@@ -64,7 +61,6 @@ public class HomeViewModel : BaseViewModel
     $"MapHtmlService: {_mapHtmlService != null}");
 
         UpdateAuthState();
-        // Загружаем интересы пользователя перед загрузкой событий
         _ = LoadUserInterests().ContinueWith(_ =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
@@ -74,7 +70,6 @@ public class HomeViewModel : BaseViewModel
         });
     }
 
-    // СВОЙСТВА
     private bool _isGuestMode = true;
     public bool IsGuestMode
     {
@@ -117,7 +112,6 @@ public class HomeViewModel : BaseViewModel
         set => SetProperty(ref _hasActiveFilters, value);
     }
 
-    // список активных фильтров для отображения
     private List<string> _activeFilterLabels = new List<string>();
     public List<string> ActiveFilterLabels
     {
@@ -156,7 +150,6 @@ public class HomeViewModel : BaseViewModel
     }
 
 
-    // КОМАНДЫ
     public ICommand GoToLoginCommand { get; }
     public ICommand CreateEventCommand { get; }
     public ICommand JoinEventCommand { get; }
@@ -176,11 +169,9 @@ public class HomeViewModel : BaseViewModel
         IsMapView = true;
         _mapViewStateService.SetMapViewActive(true);
 
-        // Принудительно обновляем свойства
         OnPropertyChanged(nameof(IsListView));
         OnPropertyChanged(nameof(IsMapView));
 
-        // НОВОЕ: Проверяем есть ли активные фильтры и применяем их
         if (_filterStateService.HasActiveFilters)
         {
             System.Diagnostics.Debug.WriteLine("🗺️ SwitchToMap: применяем активные фильтры");
@@ -200,7 +191,6 @@ public class HomeViewModel : BaseViewModel
         IsMapView = false;
         _mapViewStateService.SetMapViewActive(false);
 
-        // Принудительно обновляем свойства
         OnPropertyChanged(nameof(IsListView));
         OnPropertyChanged(nameof(IsMapView));
 
@@ -219,14 +209,12 @@ public class HomeViewModel : BaseViewModel
             var mapEvents = await _mapService.GetEventsNearbyAsync(location);
             System.Diagnostics.Debug.WriteLine($"🎯 Найдено событий для карты: {mapEvents?.Count ?? 0}");
 
-            // Генерируем HTML с картой и маркером местоположения пользователя
             MapHtmlContent = _mapHtmlService.GenerateMapHtml(mapEvents, location.Latitude, location.Longitude, showUserLocation: true);
             System.Diagnostics.Debug.WriteLine($"🗺️ HTML карты сгенерирован, длина: {MapHtmlContent?.Length ?? 0}");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки событий на карту: {ex.Message}");
-            // Генерируем карту по умолчанию
             MapHtmlContent = _mapHtmlService.GenerateMapHtml(new List<MapEvent>(), showUserLocation: true);
         }
         finally
@@ -246,11 +234,9 @@ public class HomeViewModel : BaseViewModel
             var location = await _mapService.GetCurrentLocationAsync();
             System.Diagnostics.Debug.WriteLine($"📍 Получена локация: {location.Latitude}, {location.Longitude}");
 
-            // Конвертируем Event в MapEvent (исключаем заблокированные и неактивные события)
             var mapEvents = new List<MapEvent>();
             foreach (var eventItem in allEvents)
             {
-                // ФИЛЬТРАЦИЯ: не показываем заблокированные или неактивные события на карте
                 if (eventItem.IsBlocked || !eventItem.IsActive)
                     continue;
 
@@ -273,15 +259,12 @@ public class HomeViewModel : BaseViewModel
 
             System.Diagnostics.Debug.WriteLine($"🎯 Найдено событий для карты: {mapEvents?.Count ?? 0}");
 
-            // Генерируем HTML с картой, центрированной на выбранное событие
-            // Не показываем маркер пользователя когда фокусируемся на событие из поиска
             MapHtmlContent = _mapHtmlService.GenerateMapHtmlWithCenter(mapEvents, focusedEventId, location.Latitude, location.Longitude, showUserLocation: false);
             System.Diagnostics.Debug.WriteLine($"🗺️ HTML карты сгенерирован, длина: {MapHtmlContent?.Length ?? 0}");
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки событий на карту: {ex.Message}");
-            // Генерируем карту по умолчанию
             MapHtmlContent = _mapHtmlService.GenerateMapHtml(new List<MapEvent>());
         }
         finally
@@ -297,7 +280,6 @@ public class HomeViewModel : BaseViewModel
 
         if (propertyName == nameof(SearchQuery))
         {
-            // Сохраняем поисковый запрос в фильтры
             _filterStateService.SearchText = SearchQuery;
             UpdateFiltersStatus();
         }
@@ -306,12 +288,10 @@ public class HomeViewModel : BaseViewModel
     private async void OnAuthenticationStateChanged(object sender, EventArgs e)
     {
         UpdateAuthState();
-        // Перезагружаем интересы и события после изменения состояния аутентификации
         await LoadUserInterests();
         await LoadEvents();
     }
 
-    // ИСПРАВЛЕНИЕ: Используем обработчик без async void - вместо этого вызываем нужный метод из LoadEvents
     private void OnFiltersChanged(object sender, EventArgs e)
     {
         System.Diagnostics.Debug.WriteLine("🎯 OnFiltersChanged вызван");
@@ -374,7 +354,6 @@ public class HomeViewModel : BaseViewModel
     {
         System.Diagnostics.Debug.WriteLine($"🗺️ OpenFilters: текущая вкладка - {(IsMapView ? "Карта" : "Список")}");
         
-        // Сохраняем текущее состояние перед открытием фильтров
         _mapViewStateService.SetMapViewActive(IsMapView);
         System.Diagnostics.Debug.WriteLine($"💾 MapViewStateService обновлена: IsMapViewActive = {IsMapView}");
         
@@ -389,34 +368,29 @@ public class HomeViewModel : BaseViewModel
         {
             IsLoading = true;
 
-            // ЗАГРУЖАЕМ ИНТЕРЕСЫ ПОЛЬЗОВАТЕЛЯ
             if (IsAuthenticated)
             {
                 await LoadUserInterests();
             }
 
-            // ВОССТАНАВЛИВАЕМ СОСТОЯНИЕ КАРТЫ ПОСЛЕ ВОЗВРАТА С ФИЛЬТРОВ
             bool shouldBeMapView = _mapViewStateService.IsMapViewActive;
             System.Diagnostics.Debug.WriteLine($"🗺️ LoadEvents: shouldBeMapView = {shouldBeMapView}, IsMapView = {IsMapView}, HasActiveFilters = {_filterStateService.HasActiveFilters}");
 
             if (shouldBeMapView && !IsMapView)
             {
-                // Переключаемся на карту если вернулись с фильтров
                 System.Diagnostics.Debug.WriteLine("🗺️ Переключение на карту после возврата с фильтров");
                 await SwitchToMap();
                 
-                // ГАРАНТИРУЕМ: если есть активные фильтры, применяем их на карте
                 if (_filterStateService.HasActiveFilters)
                 {
                     await ApplyFiltersToMap();
                 }
                 
-                return; // Выход после переключения
+                return; 
             }
 
             if (IsMapView)
             {
-                // НОВОЕ: если на вкладке карты и есть активные фильтры - применяем их
                 if (_filterStateService.HasActiveFilters)
                 {
                     System.Diagnostics.Debug.WriteLine("🗺️ На карте есть активные фильтры - применяем их");
@@ -449,18 +423,11 @@ public class HomeViewModel : BaseViewModel
                     events = await _dataService.GetEventsAsync();
                 }
 
-                // ФИЛЬТРАЦИЯ: убираем прошедшие и заблокированные события
                 if (events != null)
                 {
                     var filteredEvents = events.Where(e => e.EventDate > DateTime.Now && !e.IsBlocked && e.IsActive).ToList();
-
-                    // ОБНОВЛЯЕМ РЕЛЕВАНТНОСТЬ СОБЫТИЙ
                     UpdateEventsRelevance(filteredEvents);
-
-                    // СОРТИРУЕМ ПО РЕЛЕВАНТНОСТИ
                     var sortedEvents = SortEventsByRelevance(filteredEvents);
-                    
-                    // Отладочный вывод для проверки категорий
                     foreach (var evt in sortedEvents.Take(3))
                     {
                         System.Diagnostics.Debug.WriteLine($"📋 Событие '{evt.Title}': CategoryIds={string.Join(", ", evt.CategoryIds ?? new List<string>())}, DisplayCategories={string.Join(", ", evt.DisplayCategories)}");
@@ -505,8 +472,6 @@ public class HomeViewModel : BaseViewModel
         {
             IsLoading = true;
             System.Diagnostics.Debug.WriteLine($"🔍 Выполняется поиск: '{SearchQuery}'");
-
-            // Сохраняем поиск в фильтры
             _filterStateService.SearchText = SearchQuery;
 
             if (string.IsNullOrWhiteSpace(SearchQuery) && !_filterStateService.HasActiveFilters)
@@ -515,14 +480,12 @@ public class HomeViewModel : BaseViewModel
             }
             else
             {
-                // Используем SearchService для поиска с учетом всех фильтров
                 var results = await _searchService.SearchEventsAsync(
                     _filterStateService.SearchText,
                     _filterStateService.SelectedCategory,
                     _filterStateService.SelectedDate
                 );
 
-                // НОВОЕ: если открыта карта, обновляем её с центром на первый результат
                 if (IsMapView && results.Count > 0)
                 {
                     await LoadMapEventsWithFocus(results, results[0].Id);
@@ -555,8 +518,6 @@ public class HomeViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine("🗺️ Применение фильтров к карте");
             IsLoading = true;
-
-            // Получаем отфильтрованные события
             List<Event> filteredEvents;
 
             if (_filterStateService.HasActiveFilters)
@@ -571,8 +532,6 @@ public class HomeViewModel : BaseViewModel
             {
                 filteredEvents = await _dataService.GetEventsAsync();
             }
-
-            // Фильтруем будущие события
             if (filteredEvents != null)
             {
                 filteredEvents = filteredEvents.Where(e => e.EventDate > DateTime.Now && !e.IsBlocked && e.IsActive).ToList();
@@ -583,15 +542,12 @@ public class HomeViewModel : BaseViewModel
             }
 
             System.Diagnostics.Debug.WriteLine($"🎯 Найдено отфильтрованных событий: {filteredEvents.Count}");
-
-            // Загружаем карту с отфильтрованными событиями
             if (filteredEvents.Count > 0)
             {
                 await LoadMapEventsWithFocus(filteredEvents, filteredEvents[0].Id);
             }
             else
             {
-                // Если нет событий, показываем пустую карту
                 var location = await _mapService.GetCurrentLocationAsync();
                 MapHtmlContent = _mapHtmlService.GenerateMapHtml(new List<MapEvent>(), location.Latitude, location.Longitude, showUserLocation: true);
                 UpdateEmptyView();
@@ -622,8 +578,6 @@ public class HomeViewModel : BaseViewModel
 
             System.Diagnostics.Debug.WriteLine($"🎯 UpdateFiltersStatus: HasActiveFilters {oldHasActiveFilters} -> {HasActiveFilters}");
             System.Diagnostics.Debug.WriteLine($"🎯 Активные фильтры: {string.Join(", ", ActiveFilterLabels ?? new List<string>())}");
-            
-            // НОВОЕ: Явно вызываем PropertyChanged для обновления UI
             if (oldHasActiveFilters != HasActiveFilters)
             {
                 OnPropertyChanged(nameof(HasActiveFilters));
@@ -650,7 +604,6 @@ public class HomeViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine($"🎯 Переход к событию из Home: {eventId}");
 
-            // Проверяем существование события
             var eventItem = await _dataService.GetEventAsync(eventId);
             if (eventItem == null)
             {
@@ -658,7 +611,6 @@ public class HomeViewModel : BaseViewModel
                 return;
             }
 
-            // ИСПОЛЬЗУЕМ ПРОСТО СТРОКУ ВМЕСТО nameof()
             await Shell.Current.GoToAsync($"{nameof(EventDetailsPage)}?eventId={eventId}");
             System.Diagnostics.Debug.WriteLine($"✅ Успешный переход к событию из Home");
         }
@@ -705,8 +657,6 @@ public class HomeViewModel : BaseViewModel
             if (user?.InterestIds != null)
             {
                 UserInterestIds = user.InterestIds;
-
-                // ОТЛАДОЧНАЯ ИНФОРМАЦИЯ
                 var allInterests = GetDefaultInterests();
                 var userInterestNames = allInterests
                     .Where(i => UserInterestIds.Contains(i.Id))
@@ -723,21 +673,17 @@ public class HomeViewModel : BaseViewModel
         }
     }
 
-    // Метод для проверки, подходит ли событие по интересам
     private void UpdateEventsRelevance(List<Event> events)
     {
         if (!IsAuthenticated || UserInterestIds.Count == 0)
         {
-            // Сбрасываем релевантность если пользователь не авторизован
             foreach (var eventItem in events)
             {
                 eventItem.IsRelevant = false;
             }
             return;
         }
-
-        // ЗАГРУЖАЕМ ВСЕ ИНТЕРЕСЫ ДЛЯ СРАВНЕНИЯ
-        var allInterests = GetDefaultInterests(); // Используем тот же список что в CreateEvent
+        var allInterests = GetDefaultInterests();
 
         System.Diagnostics.Debug.WriteLine($"🎯 Сравниваем события с интересами пользователя: {UserInterestIds.Count} интересов");
 
@@ -745,7 +691,6 @@ public class HomeViewModel : BaseViewModel
         {
             try
             {
-                // Находим интерес по ID из UserInterestIds
                 var userInterests = allInterests
                     .Where(interest => UserInterestIds.Contains(interest.Id))
                     .Select(interest => interest.Name)
@@ -753,23 +698,16 @@ public class HomeViewModel : BaseViewModel
 
                 System.Diagnostics.Debug.WriteLine($"🎯 Интересы пользователя: {string.Join(", ", userInterests)}");
                 System.Diagnostics.Debug.WriteLine($"🎯 Категория события: {eventItem.CategoryId}");
-
-                // Сравниваем категории события (CategoryId и CategoryIds) с названиями интересов пользователя
                 var eventCategories = new List<string>();
-                
-                // Добавляем старую категорию
                 if (!string.IsNullOrWhiteSpace(eventItem.CategoryId))
                 {
                     eventCategories.Add(eventItem.CategoryId);
                 }
-                
-                // Добавляем новые категории из CategoryIds
                 if (eventItem.CategoryIds != null && eventItem.CategoryIds.Count > 0)
                 {
                     eventCategories.AddRange(eventItem.CategoryIds.Where(c => !string.IsNullOrWhiteSpace(c)));
                 }
                 
-                // Проверяем, есть ли совпадение между категориями события и интересами пользователя
                 eventItem.IsRelevant = eventCategories.Any(eventCategory =>
                     userInterests.Any(userInterest =>
                         eventCategory.Contains(userInterest) || userInterest.Contains(eventCategory)));
@@ -801,7 +739,9 @@ public class HomeViewModel : BaseViewModel
         new Interest { Id = "12", Name = "📸 Фотография" },
         new Interest { Id = "13", Name = "🎮 Видеоигры" },
         new Interest { Id = "14", Name = "📖 Книги" },
-        new Interest { Id = "15", Name = "🚗 Автомобили" }
+        new Interest { Id = "15", Name = "🚗 Автомобили" },
+        new Interest { Id = "16", Name = "🏥 Медицина" },
+        new Interest { Id = "17", Name = "📌 Прочее" }
     };
     }
 
@@ -828,8 +768,6 @@ public class HomeViewModel : BaseViewModel
         SearchQuery = "";
         
         System.Diagnostics.Debug.WriteLine($"🧹 Фильтры очищены. IsMapView={IsMapView}, HasActiveFilters={_filterStateService.HasActiveFilters}");
-        
-        // Принудительно обновляем статус фильтров
         UpdateFiltersStatus();
         
         if (IsMapView)

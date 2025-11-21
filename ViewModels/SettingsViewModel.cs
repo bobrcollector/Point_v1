@@ -16,7 +16,6 @@ public class SettingsViewModel : BaseViewModel
         _dataService = dataService;
         _authService = authService;
 
-        // Инициализация команд
         ChangePasswordCommand = new Command(async () => await ChangePassword());
         ClearCacheCommand = new Command(async () => await ClearCache());
         OpenTermsCommand = new Command(async () => await OpenTerms());
@@ -26,11 +25,7 @@ public class SettingsViewModel : BaseViewModel
         DownloadDataCommand = new Command(async () => await DownloadData());
         DeleteAccountCommand = new Command(async () => await DeleteAccount());
 
-        // Инициализация языков
         InitializeLanguages();
-
-        // Settings will be loaded when page appears (OnAppearing)
-        // to avoid issues with Application.Current during app startup
     }
 
     #region Properties - Язык и регион
@@ -209,7 +204,6 @@ public class SettingsViewModel : BaseViewModel
             "Deutsch"
         };
 
-        // Загружаем сохраненный язык
         var savedLanguage = Preferences.Get("AppLanguage", "Русский");
         SelectedLanguage = savedLanguage;
     }
@@ -222,28 +216,16 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            // Загружаем язык
             SelectedLanguage = Preferences.Get("AppLanguage", "Русский");
-
-            // Загружаем настройки безопасности
             IsTwoFactorEnabled = Preferences.Get("TwoFactorEnabled", false);
-
-            // Загружаем настройки приватности
             IsProfileVisible = Preferences.Get("ProfileVisible", true);
             IsEventHistoryVisible = Preferences.Get("EventHistoryVisible", true);
             IsPersonalizedRecommendations = Preferences.Get("PersonalizedRecommendations", true);
-
-            // Загружаем настройки уведомлений
             IsEventNotificationsEnabled = Preferences.Get("EventNotificationsEnabled", true);
             IsMessageNotificationsEnabled = Preferences.Get("MessageNotificationsEnabled", true);
             IsMarketingNotificationsEnabled = Preferences.Get("MarketingNotificationsEnabled", false);
-
-            // Загрузка темы (только загружаем значение, не применяем)
-            // Тема будет применена при изменении переключателя или при следующем запуске приложения
             var savedTheme = Preferences.Get("AppTheme", "System");
             IsDarkThemeEnabled = savedTheme == "Dark";
-
-            // Загружаем информацию о приложении
             AppVersion = AppInfo.Current.VersionString;
             CalculateCacheSize();
 
@@ -268,7 +250,6 @@ public class SettingsViewModel : BaseViewModel
             Preferences.Set("MessageNotificationsEnabled", IsMessageNotificationsEnabled);
             Preferences.Set("MarketingNotificationsEnabled", IsMarketingNotificationsEnabled);
 
-            // Сохранение темы
             var theme = IsDarkThemeEnabled ? "Dark" : "Light";
             Preferences.Set("AppTheme", theme);
 
@@ -311,14 +292,8 @@ public class SettingsViewModel : BaseViewModel
                 return;
             }
 
-            // TODO: Реализовать смену пароля в Firebase
-            // var authService = Application.Current.Handler.MauiContext.Services.GetService<IAuthService>();
-            // var success = await authService.ChangePassword(CurrentPassword, NewPassword);
-
             await Application.Current.MainPage.DisplayAlert("Успех",
                 "Пароль успешно изменен", "OK");
-
-            // Очищаем поля
             CurrentPassword = string.Empty;
             NewPassword = string.Empty;
             ConfirmPassword = string.Empty;
@@ -338,7 +313,6 @@ public class SettingsViewModel : BaseViewModel
         if (isEnabled)
         {
             System.Diagnostics.Debug.WriteLine("🔐 Двухфакторная аутентификация включена");
-            // TODO: Настроить двухфакторную аутентификацию
         }
         else
         {
@@ -353,7 +327,6 @@ public class SettingsViewModel : BaseViewModel
     private void OnLanguageChanged(string language)
     {
         System.Diagnostics.Debug.WriteLine($"🌐 Язык изменен на: {language}");
-        // TODO: Реализовать смену языка в приложении
         SaveSettings();
     }
 
@@ -377,7 +350,6 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            // Проверяем, что Application уже инициализирован
             if (Application.Current == null)
             {
                 System.Diagnostics.Debug.WriteLine("⚠️ Application.Current is null, тема будет применена позже");
@@ -472,7 +444,7 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            // TODO: Открыть условия использования (например, в веб-браузере или встроенном просмотрщике)
+
             await Application.Current.MainPage.DisplayAlert("Условия использования",
                 "Здесь будут отображены условия использования приложения", "OK");
 
@@ -488,7 +460,7 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            // TODO: Открыть политику конфиденциальности
+
             await Application.Current.MainPage.DisplayAlert("Политика конфиденциальности",
                 "Здесь будут отображены политика конфиденциальности приложения", "OK");
 
@@ -504,7 +476,7 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            // TODO: Открыть справку
+
             await Application.Current.MainPage.DisplayAlert("Справка",
                 "Здесь будет отображена справка по использованию приложения", "OK");
 
@@ -524,7 +496,7 @@ public class SettingsViewModel : BaseViewModel
     {
         try
         {
-            // TODO: Реализовать просмотр активных сессий
+
             await Application.Current.MainPage.DisplayAlert("Активные сессии",
                 "Здесь будут отображены все активные сессии на разных устройствах", "OK");
 
@@ -545,7 +517,6 @@ public class SettingsViewModel : BaseViewModel
 
             if (confirm)
             {
-                // TODO: Реализовать выгрузку данных пользователя
                 await Application.Current.MainPage.DisplayAlert("Успех",
                     "Ваши данные готовы к скачиванию. Ссылка будет отправлена на ваш email.", "OK");
 
@@ -578,7 +549,7 @@ public class SettingsViewModel : BaseViewModel
 
             if (!secondConfirm) return;
 
-            // Используем сервис, переданный через конструктор
+
             var success = await _authService.DeleteAccountAsync();
 
             if (success)
@@ -588,7 +559,7 @@ public class SettingsViewModel : BaseViewModel
 
                 System.Diagnostics.Debug.WriteLine("✅ Аккаунт удален успешно");
 
-                // Переходим на страницу входа
+
                 await Shell.Current.GoToAsync("//LoginPage");
             }
             else

@@ -16,10 +16,8 @@ public class SearchViewModel : BaseViewModel
         ClearFiltersCommand = new Command(async () => await ClearFilters());
         ApplyFiltersCommand = new Command(async () => await ApplyFilters());
 
-        // ПРАВИЛЬНАЯ РЕАЛИЗАЦИЯ КОМАНДЫ НАЗАД
         GoBackCommand = new Command(async () => await GoBack());
 
-        // Загружаем доступные категории
         LoadAvailableCategories();
     }
 

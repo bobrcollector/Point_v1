@@ -26,8 +26,6 @@ public class CreateEventViewModel : BaseViewModel
         SuggestionSelectedCommand = new Command<string>(async (suggestion) => await OnSuggestionSelected(suggestion));
         ToggleCategoryCommand = new Command<Interest>((interest) => ToggleCategory(interest));
 
-        // Данные будут получены через QueryProperty в CreateEventPage
-
         LoadInterests();
 
         EventDate = DateTime.Today.AddDays(1);
@@ -184,13 +182,8 @@ public class CreateEventViewModel : BaseViewModel
         {
             if (SetProperty(ref _selectedSuggestion, value) && !string.IsNullOrEmpty(value))
             {
-                // Показываем статус выбора
                 SelectionStatus = "✓ Адрес выбран";
-
-                // Обрабатываем выбор подсказки
                 _ = OnSuggestionSelected(value);
-
-                // Через 2 секунды скрываем статус
                 Task.Delay(2000).ContinueWith(_ =>
                 {
                     MainThread.BeginInvokeOnMainThread(() => SelectionStatus = "");
@@ -222,7 +215,6 @@ public class CreateEventViewModel : BaseViewModel
         {
             IsBusy = true;
 
-            // Здесь можно добавить поиск координат по адресу (обратное геокодирование)
             var location = await _mapService.GetCoordinatesFromAddressAsync(Address);
 
             if (location != null)
@@ -277,11 +269,8 @@ public class CreateEventViewModel : BaseViewModel
                 Latitude = location.Latitude;
                 Longitude = location.Longitude;
 
-                // Получаем нормальный адрес по координатам
                 var address = await _mapService.GetAddressFromCoordinatesAsync(location.Latitude, location.Longitude);
                 Address = address;
-
-                // Скрываем подсказки
                 AddressSuggestions = new List<string>();
 
                 System.Diagnostics.Debug.WriteLine($"📍 Местоположение определено: {Address}");
@@ -300,7 +289,6 @@ public class CreateEventViewModel : BaseViewModel
             System.Diagnostics.Debug.WriteLine($"❌ Ошибка определения местоположения: {ex.Message}");
             ErrorMessage = "Не удалось определить местоположение";
 
-            // Устанавливаем координаты Москвы по умолчанию с нормальным адресом
             Latitude = 55.7558;
             Longitude = 37.6173;
             Address = "Москва, Россия";
@@ -332,7 +320,6 @@ public class CreateEventViewModel : BaseViewModel
                 return;
             }
 
-            // Если координаты не определены, используем Москву по умолчанию
             if (!Latitude.HasValue || !Longitude.HasValue)
             {
                 Latitude = 55.7558;
@@ -366,7 +353,6 @@ public class CreateEventViewModel : BaseViewModel
 
             if (success)
             {
-                // Очищаем сохраненное состояние формы
                 CreateEventStateService.Clear();
                 LocationSelectionService.Clear();
                 
@@ -440,19 +426,19 @@ public class CreateEventViewModel : BaseViewModel
                     new Interest { Name = "🍳 Кулинария", IsSelected = false },
                     new Interest { Name = "📚 Книги", IsSelected = false },
                     new Interest { Name = "🚶‍♂️ Прогулки", IsSelected = false },
-                    new Interest { Name = "🎬 Кино", IsSelected = false }
+                    new Interest { Name = "🎬 Кино", IsSelected = false },
+                    new Interest { Name = "🏥 Медицина", IsSelected = false },
+                    new Interest { Name = "📌 Прочее", IsSelected = false }
                 };
             }
             else
             {
-                // Убеждаемся, что все интересы имеют IsSelected = false при загрузке
                 foreach (var interest in loadedInterests)
                 {
                     interest.IsSelected = false;
                 }
             }
 
-            // Восстанавливаем выбранные категории из SelectedInterests
             if (SelectedInterests != null && SelectedInterests.Count > 0)
             {
                 foreach (var selected in SelectedInterests)
@@ -501,13 +487,8 @@ public class CreateEventViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine($"🎯 Выбрана подсказка: {suggestion}");
 
-            // Устанавливаем адрес в поле ввода
             Address = suggestion;
-
-            // Очищаем подсказки
             AddressSuggestions = new List<string>();
-
-            // Получаем координаты для выбранного адреса
             var location = await _mapService.GetCoordinatesFromAddressAsync(suggestion);
 
             if (location != null)
@@ -516,7 +497,6 @@ public class CreateEventViewModel : BaseViewModel
                 Longitude = location.Longitude;
                 System.Diagnostics.Debug.WriteLine($"📍 Координаты определены: {Latitude}, {Longitude}");
 
-                // Показываем подтверждение
                 SelectionStatus = "✓ Координаты определены";
             }
             else
@@ -534,18 +514,11 @@ public class CreateEventViewModel : BaseViewModel
     {
         try
         {
-            // Сохраняем состояние формы перед навигацией
             CreateEventStateService.SaveState(this);
             System.Diagnostics.Debug.WriteLine("💾 Состояние формы сохранено перед открытием карты");
-            
-            // Очищаем предыдущие данные выбора
             LocationSelectionService.Clear();
-            
-            // Открываем страницу выбора местоположения на карте
             var latParam = Latitude.HasValue ? Latitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
             var lonParam = Longitude.HasValue ? Longitude.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
-            
-            // Используем путь с // для добавления в стек навигации (сохраняет состояние текущей страницы)
             await Shell.Current.GoToAsync($"//MapLocationPickerPage?lat={latParam}&lon={lonParam}");
         }
         catch (Exception ex)
@@ -559,8 +532,6 @@ public class CreateEventViewModel : BaseViewModel
     {
         try
         {
-            // Просто перезагружаем данные профиля при возврате на главную
-            // Статистика обновится автоматически при следующем открытии профиля
             System.Diagnostics.Debug.WriteLine("📊 Статистика будет обновлена при следующем открытии профиля");
         }
         catch (Exception ex)
@@ -575,13 +546,11 @@ public class CreateEventViewModel : BaseViewModel
 
         if (interest.IsSelected)
         {
-            // Убираем категорию из выбранных
             SelectedInterests.RemoveAll(i => (i.Id == interest.Id && !string.IsNullOrEmpty(i.Id)) || i.Name == interest.Name);
             interest.IsSelected = false;
         }
         else
         {
-            // Проверяем лимит в 3 категории
             if (SelectedInterests.Count >= 3)
             {
                 MainThread.BeginInvokeOnMainThread(async () =>
@@ -591,7 +560,6 @@ public class CreateEventViewModel : BaseViewModel
                 return;
             }
 
-            // Добавляем категорию в выбранные
             SelectedInterests.Add(interest);
             interest.IsSelected = true;
         }
@@ -599,7 +567,6 @@ public class CreateEventViewModel : BaseViewModel
         UpdateCategoriesStatus();
         UpdateCreateCommand();
         
-        // Принудительно обновляем UI для всех интересов
         var updatedList = Interests?.ToList() ?? new List<Interest>();
         Interests = null;
         Interests = updatedList;

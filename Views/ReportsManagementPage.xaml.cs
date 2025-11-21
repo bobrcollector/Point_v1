@@ -25,23 +25,18 @@ public partial class ReportsManagementPage : ContentPage
 
         try
         {
-            // Устанавливаем цвет navigation bar для этой страницы
             Shell.SetBackgroundColor(this, Color.FromArgb("#512BD4"));
             Shell.SetForegroundColor(this, Colors.White);
             Shell.SetTitleColor(this, Colors.White);
             
             if (BindingContext is ReportsManagementViewModel vm)
             {
-                // Настраиваем стандартную кнопку "Назад" через Shell
-                // Shell автоматически покажет кнопку "Назад", если есть предыдущая страница в стеке
-                // Если нет, используем кастомную команду
                 Shell.SetBackButtonBehavior(this, new BackButtonBehavior
                 {
                     Command = vm.GoBackCommand,
                     IsEnabled = true,
-                    IconOverride = null // Используем стандартную иконку стрелки
+                    IconOverride = null
                 });
-                
                 System.Diagnostics.Debug.WriteLine("🔄 OnAppearing: Загрузка жалоб...");
                 await vm.LoadReports(); 
             }

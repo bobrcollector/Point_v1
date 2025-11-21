@@ -21,17 +21,14 @@ public class SelectInterestsViewModel : BaseViewModel
         _dataService = dataService;
         _navigationService = navigationService;
 
-        // Инициализируем данные
         AllInterests = allInterests;
         SelectedInterests = new List<Interest>(selectedInterests);
 
-        // Помечаем выбранные интересы
         foreach (var interest in AllInterests)
         {
             interest.IsSelected = SelectedInterests.Any(si => si.Id == interest.Id);
         }
 
-        // Команды
         ToggleInterestCommand = new Command<Interest>((interest) => ToggleInterest(interest));
         SaveInterestsCommand = new Command(async () => await SaveInterests());
         CancelCommand = new Command(async () => await Cancel());
@@ -53,7 +50,6 @@ public class SelectInterestsViewModel : BaseViewModel
         set => SetProperty(ref _selectedInterests, value);
     }
 
-    // Команды
     public ICommand ToggleInterestCommand { get; }
     public ICommand SaveInterestsCommand { get; }
     public ICommand CancelCommand { get; }
@@ -63,8 +59,6 @@ public class SelectInterestsViewModel : BaseViewModel
         if (interest != null)
         {
             interest.IsSelected = !interest.IsSelected;
-
-            // Обновляем выбранные интересы
             SelectedInterests = AllInterests.Where(i => i.IsSelected).ToList();
 
             System.Diagnostics.Debug.WriteLine($"🎯 Интерес '{interest.Name}' {(interest.IsSelected ? "выбран" : "удален")}");
@@ -77,8 +71,6 @@ public class SelectInterestsViewModel : BaseViewModel
         try
         {
             System.Diagnostics.Debug.WriteLine($"💾 Сохранение {SelectedInterests.Count} интересов...");
-
-            // Сохраняем профиль с обновленными интересами
             var user = new User
             {
                 Id = _authService.CurrentUserId,

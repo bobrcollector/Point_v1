@@ -57,7 +57,6 @@ public class FirestoreDataService : IDataService
         {
             eventItem.CreatorId = _authService.CurrentUserId;
 
-            // ИСПРАВЛЕНИЕ: получаем пользователя по ID
             var currentUser = await GetUserAsync(_authService.CurrentUserId);
             eventItem.CreatorName = currentUser?.DisplayName ?? "Организатор";
         }
@@ -65,14 +64,11 @@ public class FirestoreDataService : IDataService
         return await _firebaseRest.AddEventAsync(eventItem);
     }
 
-    // НОВЫЕ МЕТОДЫ ДЛЯ МОИХ СОБЫТИЙ
     public async Task<List<Event>> GetUserEventsAsync(string userId)
     {
         try
         {
             var events = await GetEventsAsync();
-            // Все созданные события (активные и заблокированные, и прошлые и будущие)
-            // Заблокированные события тоже показываем, чтобы пользователь видел свои заблокированные события
             var userEvents = events.Where(e => e.CreatorId == userId && (e.IsActive || e.IsBlocked)).ToList();
             System.Diagnostics.Debug.WriteLine($"📥 Загружено созданных событий пользователя: {userEvents.Count}");
             return userEvents;
@@ -91,9 +87,9 @@ public class FirestoreDataService : IDataService
             var events = await GetEventsAsync();
             var participatingEvents = events.Where(e =>
                 e.ParticipantIds.Contains(userId) &&
-                e.CreatorId != userId && // исключаем события, где пользователь создатель
+                e.CreatorId != userId &&
                 e.IsActive &&
-                e.EventDate > DateTime.Now // только БУДУЩИЕ события для участия
+                e.EventDate > DateTime.Now
             ).ToList();
 
             System.Diagnostics.Debug.WriteLine($"📥 Загружено событий для участия: {participatingEvents.Count}");
@@ -111,13 +107,8 @@ public class FirestoreDataService : IDataService
         try
         {
             var events = await GetEventsAsync();
-
-            // ВКЛЮЧАЕМ В АРХИВ:
-            // 1. Созданные пользователем И завершенные события
-            // 2. События, в которых пользователь участвовал И которые завершены
-            // 3. Заблокированные события (созданные пользователем или в которых он участвовал)
             var archivedEvents = events.Where(e =>
-                (e.EventDate < DateTime.Now || e.IsBlocked) && // ЗАВЕРШЕННЫЕ ИЛИ ЗАБЛОКИРОВАННЫЕ события
+                (e.EventDate < DateTime.Now || e.IsBlocked) &&
                 (e.CreatorId == userId ||
                  (e.ParticipantIds != null && e.ParticipantIds.Contains(userId)))
             ).ToList();
@@ -132,7 +123,6 @@ public class FirestoreDataService : IDataService
         }
     }
 
-    // РЕАЛИЗАЦИЯ МЕТОДОВ УЧАСТИЯ В СОБЫТИЯХ
     public async Task<bool> JoinEventAsync(string eventId, string userId)
     {
         try
@@ -143,7 +133,6 @@ public class FirestoreDataService : IDataService
             if (eventItem != null && !eventItem.ParticipantIds.Contains(userId))
             {
                 eventItem.ParticipantIds.Add(userId);
-                // Обновляем событие в базе данных через FirebaseRestService
                 return await _firebaseRest.UpdateEventAsync(eventItem);
             }
 
@@ -166,7 +155,6 @@ public class FirestoreDataService : IDataService
             if (eventItem != null && eventItem.ParticipantIds.Contains(userId))
             {
                 eventItem.ParticipantIds.Remove(userId);
-                // Обновляем событие в базе данных через FirebaseRestService
                 return await _firebaseRest.UpdateEventAsync(eventItem);
             }
 
@@ -179,12 +167,10 @@ public class FirestoreDataService : IDataService
         }
     }
 
-    // ИСПРАВЛЕННЫЕ МЕТОДЫ ДЛЯ РЕДАКТИРОВАНИЯ И УДАЛЕНИЯ
     public async Task<bool> UpdateEventAsync(Event eventItem)
     {
         try
         {
-            // Используем FirebaseRestService для обновления
             return await _firebaseRest.UpdateEventAsync(eventItem);
         }
         catch (Exception ex)
@@ -198,7 +184,6 @@ public class FirestoreDataService : IDataService
     {
         try
         {
-            // Используем FirebaseRestService для удаления
             return await _firebaseRest.DeleteEventAsync(eventId);
         }
         catch (Exception ex)
@@ -219,12 +204,10 @@ public class FirestoreDataService : IDataService
                 return false;
             }
 
-            // Устанавливаем поля блокировки
             eventItem.IsBlocked = true;
             eventItem.BlockedBy = moderatorId;
             eventItem.BlockedAt = DateTime.Now;
             eventItem.BlockReason = reason;
-            // Помечаем как неактивное
             eventItem.IsActive = false;
 
             System.Diagnostics.Debug.WriteLine($"🔒 Блокировка события {eventId} модератором {moderatorId}: {reason}");
@@ -238,7 +221,6 @@ public class FirestoreDataService : IDataService
         }
     }
 
-    // СУЩЕСТВУЮЩИЕ МЕТОДЫ
     public async Task<List<Interest>> GetInterestsAsync()
     {
         return await Task.FromResult(GetDefaultInterests());
@@ -248,17 +230,14 @@ public class FirestoreDataService : IDataService
     public async Task<List<Event>> GetEventsByInterestAsync(string interestId)
     {
         var events = await GetEventsAsync();
-        // Поддержка как старого CategoryId, так и нового CategoryIds
         return events.Where(e => e.CategoryId == interestId || 
                                  (e.CategoryIds != null && e.CategoryIds.Contains(interestId))).ToList();
     }
 
-    // РЕАЛЬНАЯ РЕАЛИЗАЦИЯ для работы с пользователями
     public async Task<User> GetUserAsync(string userId)
     {
         try
         {
-            // Используем FirebaseRestService для получения пользователя
             var users = await GetAllUsersAsync();
             var user = users.FirstOrDefault(u => u.Id == userId);
             
@@ -268,7 +247,6 @@ public class FirestoreDataService : IDataService
                 user = new User { Id = userId, DisplayName = "Пользователь", Role = UserRole.User };
             }
             
-            // ТЕСТОВАЯ ЛОГИКА: установим определенных пользователей как модераторов для тестирования
             if (userId == "test_moderator" || userId == "admin_test")
             {
                 user.Role = UserRole.Admin;
@@ -290,7 +268,6 @@ public class FirestoreDataService : IDataService
     {
         try
         {
-            // Используем FirebaseRestService для сохранения
             return await _firebaseRest.AddOrUpdateUserAsync(user);
         }
         catch (Exception ex)
@@ -305,9 +282,6 @@ public class FirestoreDataService : IDataService
         try
         {
             var users = await _firebaseRest.GetUsersAsync();
-            
-            // ТЕСТОВАЯ ЛОГИКА: Для демонстрации, установим первого пользователя как модератора
-            // В production нужно получать роли из Firebase
             foreach (var user in users)
             {
                 System.Diagnostics.Debug.WriteLine($"👤 Пользователь из Firebase: {user.Id}, Role: {user.Role}");
@@ -340,7 +314,9 @@ public class FirestoreDataService : IDataService
             new Interest { Id = "12", Name = "📸 Фотография" },
             new Interest { Id = "13", Name = "🎮 Видеоигры" },
             new Interest { Id = "14", Name = "📖 Книги" },
-            new Interest { Id = "15", Name = "🚗 Автомобили" }
+            new Interest { Id = "15", Name = "🚗 Автомобили" },
+            new Interest { Id = "16", Name = "🏥 Медицина" },
+            new Interest { Id = "17", Name = "📌 Прочее" }
         };
     }
     public async Task<int> GetUserCreatedEventsCountAsync(string userId)
@@ -348,7 +324,6 @@ public class FirestoreDataService : IDataService
         try
         {
             var events = await GetEventsAsync();
-            // ПРОШЕДШИЕ созданные события
             return events.Count(e =>
                 e.CreatorId == userId &&
                 e.IsActive &&
@@ -367,13 +342,12 @@ public class FirestoreDataService : IDataService
         try
         {
             var events = await GetEventsAsync();
-            // ПРОШЕДШИЕ события участия
             return events.Count(e =>
                 e.ParticipantIds != null &&
                 e.ParticipantIds.Contains(userId) &&
-                e.CreatorId != userId && // исключаем события, где пользователь создатель
+                e.CreatorId != userId &&
                 e.IsActive &&
-                e.EventDate < DateTime.Now // ТОЛЬКО ПРОШЕДШИЕ
+                e.EventDate < DateTime.Now
             );
         }
         catch (Exception ex)
@@ -388,10 +362,9 @@ public class FirestoreDataService : IDataService
         try
         {
             var events = await GetEventsAsync();
-            // БУДУЩИЕ события (созданные + участия)
             return events.Count(e =>
                 e.IsActive &&
-                e.EventDate > DateTime.Now && // ТОЛЬКО БУДУЩИЕ
+                e.EventDate > DateTime.Now &&
                 (e.CreatorId == userId ||
                  (e.ParticipantIds != null && e.ParticipantIds.Contains(userId)))
             );

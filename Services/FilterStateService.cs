@@ -8,7 +8,6 @@ public class FilterStateService
     private List<string> _selectedInterests = new List<string>();
     private List<string> _cachedFilterLabels = new List<string>();
 
-    // Событие для уведомления об изменении фильтров
     public event EventHandler FiltersChanged;
 
     public string SearchText
@@ -62,7 +61,6 @@ public class FilterStateService
         SelectedDate.HasValue ||
         SelectedInterests.Any();
 
-    // Список активных фильтров для отображения с кешированием
     public List<string> ActiveFilterLabels
     {
         get
@@ -70,17 +68,16 @@ public class FilterStateService
             var labels = new List<string>();
 
             if (!string.IsNullOrEmpty(SearchText))
-                labels.Add($"?? \"{SearchText}\"");
+                labels.Add($"рџ”Ќ \"{SearchText}\"");
 
             if (!string.IsNullOrEmpty(SelectedCategory))
-                labels.Add($"??? {SelectedCategory}");
+                labels.Add($"рџЏ·пёЏ {SelectedCategory}");
 
             if (SelectedDate.HasValue)
-                labels.Add($"?? {SelectedDate.Value:dd.MM.yyyy}");
+                labels.Add($"рџ“… {SelectedDate.Value:dd.MM.yyyy}");
 
-            // Кешируем значение для отслеживания изменений
             _cachedFilterLabels = labels;
-            System.Diagnostics.Debug.WriteLine($"?? ActiveFilterLabels обновлены: {string.Join(", ", labels)}");
+            System.Diagnostics.Debug.WriteLine($"рџЋЇ ActiveFilterLabels РѕР±РЅРѕРІР»РµРЅС‹: {string.Join(", ", labels)}");
             
             return labels;
         }
@@ -95,11 +92,9 @@ public class FilterStateService
         _cachedFilterLabels.Clear();
         OnFiltersChanged();
     }
-
-    // Метод для уведомления об изменении фильтров
     private void OnFiltersChanged()
     {
-        System.Diagnostics.Debug.WriteLine($"?? FiltersChanged вызвано: SearchText='{_searchText}', Category='{_selectedCategory}', Date={_selectedDate}, HasActiveFilters={HasActiveFilters}");
+        System.Diagnostics.Debug.WriteLine($"рџЋЇ FiltersChanged РІС‹Р·РІР°РЅ: SearchText='{_searchText}', Category='{_selectedCategory}', Date={_selectedDate}, HasActiveFilters={HasActiveFilters}");
         FiltersChanged?.Invoke(this, EventArgs.Empty);
     }
 }

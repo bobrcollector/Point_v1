@@ -8,12 +8,10 @@ public class BoolToColorConverter : IValueConverter
     {
         if (value is bool boolValue && boolValue)
         {
-            // Активный - фиолетовый
             return Color.FromArgb("#512BD4");
         }
         else
         {
-            // Неактивный - серый
             return Application.Current.RequestedTheme == AppTheme.Dark
                 ? Color.FromArgb("#3A3A3A")
                 : Color.FromArgb("#E0E0E0");

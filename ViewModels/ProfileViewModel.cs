@@ -20,14 +20,11 @@ public class ProfileViewModel : BaseViewModel
         _navigationService = navigationService;
         _firebaseRest = new FirebaseRestService();
 
-        // Подписываемся на изменение состояния аутентификации
         _authStateService.AuthenticationStateChanged += OnAuthenticationStateChanged;
-
-        // Инициализация команд
         EditProfileCommand = new Command(async () => await EditProfile());
         SaveProfileCommand = new Command(async () => await SaveProfile());
         CancelCommand = new Command(async () => await Cancel());
-        SelectInterestsCommand = new Command(async () => await SelectInterests()); // Оставлено для совместимости, но не используется
+        SelectInterestsCommand = new Command(async () => await SelectInterests());
         SignOutCommand = new Command(async () => await SignOut());
         ToggleInterestCommand = new Command<Interest>((interest) => ToggleInterestDirect(interest));
         SaveInterestsCommand = new Command(async () => await SaveInterests());
@@ -35,7 +32,6 @@ public class ProfileViewModel : BaseViewModel
         ChangeAvatarCommand = new Command(async () => await ChangeAvatar());
         GoToSettingsCommand = new Command(async () => await GoToSettings());
 
-        // Загружаем данные пользователя
         _ = LoadUserData();
     }
 
@@ -61,7 +57,6 @@ public class ProfileViewModel : BaseViewModel
         set => SetProperty(ref _upcomingEventsCount, value);
     }
 
-    // Свойства для временных данных
     private List<Interest> _tempSelectedInterests = new();
     public List<Interest> TempSelectedInterests
     {
@@ -76,7 +71,6 @@ public class ProfileViewModel : BaseViewModel
         set => SetProperty(ref _tempAllInterests, value);
     }
 
-    // Основные свойства профиля
     private string _userName = "Пользователь";
     public string UserName
     {
@@ -153,7 +147,6 @@ public class ProfileViewModel : BaseViewModel
         set => SetProperty(ref _isGuestMode, value);
     }
 
-    // Свойства для аватара
     private ImageSource _avatarImage = "👤";
     public ImageSource AvatarImage
     {
@@ -168,7 +161,6 @@ public class ProfileViewModel : BaseViewModel
         set => SetProperty(ref _avatarPath, value);
     }
 
-    // Команды
     public ICommand EditProfileCommand { get; }
     public ICommand SaveProfileCommand { get; }
     public ICommand CancelCommand { get; }
@@ -194,7 +186,6 @@ public class ProfileViewModel : BaseViewModel
         }
         else
         {
-            // Сбрасываем данные при выходе
             UserName = "Пользователь";
             UserEmail = "";
             DisplayName = "";
@@ -202,7 +193,6 @@ public class ProfileViewModel : BaseViewModel
             About = "";
             SelectedInterests = new List<Interest>();
 
-            // Сбрасываем статистику
             CreatedEventsCount = 0;
             ParticipatedEventsCount = 0;
             UpcomingEventsCount = 0;
@@ -219,7 +209,6 @@ public class ProfileViewModel : BaseViewModel
             var userId = _authStateService.CurrentUserId;
             System.Diagnostics.Debug.WriteLine($"🔄 Загрузка профиля для пользователя: {userId}");
 
-            // Загружаем данные пользователя из базы
             var user = await _dataService.GetUserAsync(userId);
             if (user != null)
             {
@@ -229,24 +218,18 @@ public class ProfileViewModel : BaseViewModel
                 City = user.City;
                 About = user.About;
 
-                // Загружаем интересы пользователя
                 SelectedInterests = await GetUserInterests(user.InterestIds);
                 System.Diagnostics.Debug.WriteLine($"👤 Загружено интересов пользователя: {SelectedInterests.Count}");
 
-                // ЗАГРУЖАЕМ СТАТИСТИКУ
                 await LoadUserStatistics(userId);
-
-                // ЗАГРУЖАЕМ АВАТАР
                 await LoadAvatarAsync();
             }
             else
             {
-                // Если пользователь не найден в базе, используем базовые данные
                 UserName = "Пользователь";
                 UserEmail = userId;
                 SelectedInterests = new List<Interest>();
 
-                // Сбрасываем статистику
                 CreatedEventsCount = 0;
                 ParticipatedEventsCount = 0;
                 UpcomingEventsCount = 0;
@@ -260,7 +243,6 @@ public class ProfileViewModel : BaseViewModel
             IsGuestMode = true;
             SelectedInterests = new List<Interest>();
 
-            // Сбрасываем статистику
             CreatedEventsCount = 0;
             ParticipatedEventsCount = 0;
             UpcomingEventsCount = 0;
@@ -276,12 +258,10 @@ public class ProfileViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine($"📊 Загрузка статистики для пользователя: {userId}");
 
-            // Загружаем статистику параллельно для скорости
             var createdTask = _dataService.GetUserCreatedEventsCountAsync(userId);
             var participatedTask = _dataService.GetUserParticipatedEventsCountAsync(userId);
             var upcomingTask = _dataService.GetUserUpcomingEventsCountAsync(userId);
 
-            // Ждем завершения всех задач
             await Task.WhenAll(createdTask, participatedTask, upcomingTask);
 
             CreatedEventsCount = createdTask.Result;
@@ -333,7 +313,6 @@ public class ProfileViewModel : BaseViewModel
         try
         {
             var userId = _authStateService.CurrentUserId;
-            // Загружаем текущего пользователя, чтобы сохранить все данные включая AvatarUrl
             var currentUser = await _dataService.GetUserAsync(userId);
             var user = new User
             {
@@ -343,7 +322,6 @@ public class ProfileViewModel : BaseViewModel
                 City = City,
                 About = About,
                 InterestIds = SelectedInterests.Select(i => i.Id).ToList(),
-                // Сохраняем AvatarUrl из текущего пользователя (если он был загружен ранее)
                 AvatarUrl = currentUser?.AvatarUrl ?? string.Empty,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -352,16 +330,9 @@ public class ProfileViewModel : BaseViewModel
 
             if (success)
             {
-                // ОБНОВЛЯЕМ ДАННЫЕ НА СТРАНИЦЕ ПРОФИЛЯ
                 UserName = DisplayName;
-
-                // Перезагружаем аватар из базы данных после сохранения
                 await LoadAvatarAsync();
-                
-                // Перезагружаем интересы из базы для обновления UI
                 await LoadUserInterestsFromDatabase();
-                
-                // Обновляем отображение интересов
                 OnPropertyChanged(nameof(SelectedInterests));
 
                 await Application.Current.MainPage.DisplayAlert("Успех", "Профиль сохранен", "OK");
@@ -391,10 +362,7 @@ public class ProfileViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine("🔄 Начало загрузки интересов...");
 
-            // ЗАГРУЖАЕМ ДАННЫЕ ПЕРЕД ПЕРЕХОДОМ
             await LoadAllInterests();
-
-            // КОПИРУЕМ ДАННЫЕ ВО ВРЕМЕННЫЕ СПИСКИ
             CopyToTempData();
 
             System.Diagnostics.Debug.WriteLine($"📊 Загружено интересов во временном списке: {TempAllInterests?.Count ?? 0}");
@@ -419,7 +387,6 @@ public class ProfileViewModel : BaseViewModel
 
     private async Task SignOut()
     {
-        // Нужно использовать IAuthService для выхода
         var authService = Application.Current.Handler.MauiContext.Services.GetService<IAuthService>();
         await authService.SignOut();
         await _navigationService.GoToLoginAsync();
@@ -430,7 +397,6 @@ public class ProfileViewModel : BaseViewModel
         await _navigationService.GoToLoginAsync();
     }
 
-    // Публичный метод для загрузки интересов (из страницы)
     public async Task LoadInterestsForSelection()
     {
         await LoadAllInterests();
@@ -442,46 +408,32 @@ public class ProfileViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine("🔄 Загрузка интересов из DataService...");
 
-            // ОТЛАДКА: проверяем текущее состояние
             System.Diagnostics.Debug.WriteLine($"📊 Текущее состояние - SelectedInterests: {SelectedInterests?.Count ?? 0}");
-
             var interests = await _dataService.GetInterestsAsync();
-
             if (interests == null || interests.Count == 0)
             {
                 System.Diagnostics.Debug.WriteLine("❌ Не удалось загрузить интересы из базы");
                 return;
             }
-
-            // ВАЖНО: ЕСЛИ SelectedInterests ПУСТОЙ - ЗАГРУЖАЕМ ИЗ БАЗЫ
             if (SelectedInterests?.Count == 0)
             {
                 System.Diagnostics.Debug.WriteLine("🔄 SelectedInterests пустой, загружаем из базы данных пользователя...");
                 await LoadUserInterestsFromDatabase();
             }
 
-            // СОХРАНЯЕМ ВЫБРАННЫЕ ID ИЗ ОСНОВНОГО СПИСКА
             var selectedIds = SelectedInterests?.Select(si => si.Id).ToList() ?? new List<string>();
-
             System.Diagnostics.Debug.WriteLine($"🎯 Сохранено выбранных ID: {selectedIds.Count}");
-
-            // ИСПОЛЬЗУЕМ ВРЕМЕННЫЙ СПИСОК ДЛЯ ВЫБОРА
             TempAllInterests = interests;
             System.Diagnostics.Debug.WriteLine($"📥 Получено интересов из базы: {interests.Count}");
 
-            // Помечаем выбранные интересы ВО ВРЕМЕННОМ СПИСКЕ
             foreach (var interest in TempAllInterests)
             {
                 interest.IsSelected = selectedIds.Contains(interest.Id);
                 System.Diagnostics.Debug.WriteLine($"🎯 Интерес '{interest.Name}': {interest.IsSelected} (ID: {interest.Id})");
             }
 
-            // ОБНОВЛЯЕМ ВРЕМЕННЫЙ SelectedInterests
             TempSelectedInterests = TempAllInterests.Where(i => i.IsSelected).ToList();
-
             System.Diagnostics.Debug.WriteLine($"🎯 Итоговое количество выбранных во временном списке: {TempSelectedInterests.Count}");
-
-            // ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ПРИВЯЗКУ ДЛЯ ВРЕМЕННЫХ ДАННЫХ
             OnPropertyChanged(nameof(TempAllInterests));
             OnPropertyChanged(nameof(TempSelectedInterests));
 
@@ -497,7 +449,6 @@ public class ProfileViewModel : BaseViewModel
     {
         try
         {
-            // СНАЧАЛА загружаем интересы пользователя из базы, если они не загружены
             if (SelectedInterests == null || SelectedInterests.Count == 0)
             {
                 System.Diagnostics.Debug.WriteLine("🔄 SelectedInterests пустой, загружаем из базы...");
@@ -508,7 +459,6 @@ public class ProfileViewModel : BaseViewModel
 
             if (interests == null || interests.Count == 0)
             {
-                // Используем дефолтные интересы
                 interests = new List<Interest>
                 {
                     new Interest { Id = "1", Name = "🎲 Настольные игры", IsSelected = false },
@@ -520,19 +470,19 @@ public class ProfileViewModel : BaseViewModel
                     new Interest { Id = "7", Name = "🍳 Кулинария", IsSelected = false },
                     new Interest { Id = "8", Name = "📚 Книги", IsSelected = false },
                     new Interest { Id = "9", Name = "🚶‍♂️ Прогулки", IsSelected = false },
-                    new Interest { Id = "10", Name = "🎬 Кино", IsSelected = false }
+                    new Interest { Id = "10", Name = "🎬 Кино", IsSelected = false },
+                    new Interest { Id = "16", Name = "🏥 Медицина", IsSelected = false },
+                    new Interest { Id = "17", Name = "📌 Прочее", IsSelected = false }
                 };
             }
             else
             {
-                // Убеждаемся, что все интересы имеют IsSelected = false при загрузке
                 foreach (var interest in interests)
                 {
                     interest.IsSelected = false;
                 }
             }
 
-            // Восстанавливаем выбранные интересы из SelectedInterests
             if (SelectedInterests != null && SelectedInterests.Count > 0)
             {
                 System.Diagnostics.Debug.WriteLine($"🎯 Восстанавливаем {SelectedInterests.Count} выбранных интересов");
@@ -568,7 +518,6 @@ public class ProfileViewModel : BaseViewModel
         }
     }
 
-    // Новый метод для загрузки интересов пользователя из базы
     private async Task LoadUserInterestsFromDatabase()
     {
         try
@@ -596,21 +545,12 @@ public class ProfileViewModel : BaseViewModel
         {
             System.Diagnostics.Debug.WriteLine($"🎯 Переключаем интерес: {interest.Name} -> {!interest.IsSelected}");
 
-            // ПЕРЕКЛЮЧАЕМ ВЫБОР
             interest.IsSelected = !interest.IsSelected;
-
-            // ОБНОВЛЯЕМ ВРЕМЕННЫЕ ВЫБРАННЫЕ ИНТЕРЕСЫ
             TempSelectedInterests = TempAllInterests.Where(i => i.IsSelected).ToList();
-
             System.Diagnostics.Debug.WriteLine($"📊 Теперь выбрано во временном списке: {TempSelectedInterests.Count} интересов");
-
-            // ВАЖНО: ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ВСЕГО СПИСКА
-            // Создаем новый список, чтобы заставить FlexLayout перерисоваться
             var newList = new List<Interest>(TempAllInterests);
             TempAllInterests = null;
             TempAllInterests = newList;
-
-            // ОБНОВЛЯЕМ ПРИВЯЗКИ
             OnPropertyChanged(nameof(TempAllInterests));
             OnPropertyChanged(nameof(TempSelectedInterests));
 
@@ -624,20 +564,17 @@ public class ProfileViewModel : BaseViewModel
 
         if (interest.IsSelected)
         {
-            // Убираем интерес из выбранных
             SelectedInterests.RemoveAll(i => (i.Id == interest.Id && !string.IsNullOrEmpty(i.Id)) || i.Name == interest.Name);
             interest.IsSelected = false;
         }
         else
         {
-            // Добавляем интерес в выбранные
             SelectedInterests.Add(interest);
             interest.IsSelected = true;
         }
 
         UpdateInterestsStatus();
         
-        // Принудительно обновляем UI для всех интересов
         var updatedList = AllInterests?.ToList() ?? new List<Interest>();
         AllInterests = null;
         AllInterests = updatedList;
@@ -660,12 +597,8 @@ public class ProfileViewModel : BaseViewModel
     {
         try
         {
-            // ПЕРЕНОСИМ ДАННЫЕ ИЗ ВРЕМЕННОГО СПИСКА В ОСНОВНОЙ
             SelectedInterests = new List<Interest>(TempSelectedInterests);
-
             System.Diagnostics.Debug.WriteLine($"💾 Сохранение {SelectedInterests.Count} интересов...");
-
-            // Сохраняем ВЕСЬ профиль с обновленными интересами
             var user = new User
             {
                 Id = _authStateService.CurrentUserId,
@@ -677,7 +610,6 @@ public class ProfileViewModel : BaseViewModel
                 UpdatedAt = DateTime.UtcNow
             };
 
-            // ОТЛАДКА: выводим какие интересы сохраняются
             System.Diagnostics.Debug.WriteLine("💾 Сохраняемые интересы:");
             foreach (var interest in SelectedInterests)
             {
@@ -690,13 +622,8 @@ public class ProfileViewModel : BaseViewModel
             {
                 System.Diagnostics.Debug.WriteLine("✅ Интересы успешно сохранены в базу");
 
-                // Перезагружаем интересы из базы для обновления UI
                 await LoadUserInterestsFromDatabase();
-                
-                // Обновляем отображение интересов в профиле
                 OnPropertyChanged(nameof(SelectedInterests));
-                
-                // Возвращаемся в редактирование профиля
                 await _navigationService.GoToAsync($"../{nameof(EditProfilePage)}");
                 await Application.Current.MainPage.DisplayAlert("Успех", "Интересы сохранены", "OK");
             }
@@ -717,7 +644,6 @@ public class ProfileViewModel : BaseViewModel
     {
         System.Diagnostics.Debug.WriteLine($"📋 Копируем данные в временные списки: {SelectedInterests?.Count ?? 0} выбранных интересов");
 
-        // Копируем основные данные во временные
         if (AllInterests?.Count > 0)
         {
             TempAllInterests = new List<Interest>(AllInterests);
@@ -725,7 +651,6 @@ public class ProfileViewModel : BaseViewModel
 
             System.Diagnostics.Debug.WriteLine($"📋 Скопировано: {TempAllInterests.Count} интересов, {TempSelectedInterests.Count} выбранных");
 
-            // ОБНОВЛЯЕМ ПРИВЯЗКИ
             OnPropertyChanged(nameof(TempAllInterests));
             OnPropertyChanged(nameof(TempSelectedInterests));
         }
@@ -742,10 +667,6 @@ public class ProfileViewModel : BaseViewModel
 
     public ICommand GoToSettingsCommand { get; }
 
-    // В конструкторе инициализируй:
-
-
-    // Метод навигации:
     private async Task GoToSettings()
     {
         await _navigationService.GoToAsync(nameof(SettingsPage));
@@ -770,9 +691,13 @@ public class ProfileViewModel : BaseViewModel
                         return;
                     }
 
-                    // СОХРАНЯЕМ ФАЙЛ ЛОКАЛЬНО с уникальным именем для каждого пользователя
-                    var timestamp = DateTime.UtcNow.Ticks;
-                    var localFilePath = Path.Combine(FileSystem.CacheDirectory, $"avatar_{userId}_{timestamp}.jpg");
+                    var avatarsDirectory = Path.Combine(FileSystem.AppDataDirectory, "Avatars");
+                    if (!Directory.Exists(avatarsDirectory))
+                    {
+                        Directory.CreateDirectory(avatarsDirectory);
+                    }
+                    
+                    var localFilePath = Path.Combine(avatarsDirectory, $"avatar_{userId}.jpg");
 
                     using (var sourceStream = await file.OpenReadAsync())
                     using (var localStream = File.OpenWrite(localFilePath))
@@ -780,53 +705,58 @@ public class ProfileViewModel : BaseViewModel
                         await sourceStream.CopyToAsync(localStream);
                     }
 
-                    // Получаем токен из SecureStorage
+                    System.Diagnostics.Debug.WriteLine($"💾 Аватар сохранен локально: {localFilePath}");
+
+                    AvatarPath = localFilePath;
+                    AvatarImage = ImageSource.FromFile(localFilePath);
+
                     var idToken = await SecureStorage.GetAsync("firebase_token");
+                    string avatarUrl = null;
                     
-                    if (string.IsNullOrEmpty(idToken))
+                    if (!string.IsNullOrEmpty(idToken))
                     {
-                        await Application.Current.MainPage.DisplayAlert("Ошибка", "Необходима авторизация для загрузки аватара", "OK");
-                        return;
-                    }
-
-                    // Загружаем аватар в Firebase Storage (каждый пользователь имеет свой уникальный путь)
-                    var avatarUrl = await _firebaseRest.UploadAvatarAsync(localFilePath, userId, idToken);
-
-                    if (!string.IsNullOrEmpty(avatarUrl))
-                    {
-                        // Сохраняем URL в базе данных
-                        var user = await _dataService.GetUserAsync(userId);
-                        if (user != null)
+                        try
                         {
-                            user.AvatarUrl = avatarUrl;
-                            user.UpdatedAt = DateTime.UtcNow;
-                            var success = await _dataService.UpdateUserAsync(user);
-                            
-                            if (success)
+                            avatarUrl = await _firebaseRest.UploadAvatarAsync(localFilePath, userId, idToken);
+                            if (!string.IsNullOrEmpty(avatarUrl))
                             {
-                                // Обновляем локальное свойство AvatarUrl для немедленного отображения
-                                // Обновляем отображение из Firebase Storage
-                                AvatarPath = localFilePath;
-                                AvatarImage = ImageSource.FromUri(new Uri(avatarUrl));
-
-                                System.Diagnostics.Debug.WriteLine($"📸 Аватар загружен в Firebase Storage для пользователя {userId}: {avatarUrl}");
-                                await Application.Current.MainPage.DisplayAlert("Успех", "Аватар изменен и сохранен", "OK");
+                                System.Diagnostics.Debug.WriteLine($"📸 Аватар загружен в Firebase Storage: {avatarUrl}");
                             }
                             else
                             {
-                                await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось сохранить аватар в профиль", "OK");
+                                System.Diagnostics.Debug.WriteLine($"⚠️ Не удалось загрузить в Firebase, используем локальный файл");
                             }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            await Application.Current.MainPage.DisplayAlert("Ошибка", "Пользователь не найден", "OK");
+                            System.Diagnostics.Debug.WriteLine($"⚠️ Ошибка загрузки в Firebase: {ex.Message}, используем локальный файл");
                         }
                     }
                     else
                     {
-                        // Если не удалось загрузить в Firebase, показываем ошибку
-                        await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось загрузить аватар в облако. Попробуйте позже.", "OK");
-                        System.Diagnostics.Debug.WriteLine($"❌ Не удалось загрузить аватар в Firebase Storage для пользователя {userId}");
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Токен не найден, используем только локальный файл");
+                    }
+
+                    var user = await _dataService.GetUserAsync(userId);
+                    if (user != null)
+                    {
+                        user.AvatarUrl = !string.IsNullOrEmpty(avatarUrl) ? avatarUrl : $"local:{localFilePath}";
+                        user.UpdatedAt = DateTime.UtcNow;
+                        var success = await _dataService.UpdateUserAsync(user);
+                        
+                        if (success)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"✅ Аватар сохранен в профиль пользователя {userId}");
+                            await Application.Current.MainPage.DisplayAlert("Успех", "Аватар изменен и сохранен", "OK");
+                        }
+                        else
+                        {
+                            await Application.Current.MainPage.DisplayAlert("Ошибка", "Не удалось сохранить аватар в профиль", "OK");
+                        }
+                    }
+                    else
+                    {
+                        await Application.Current.MainPage.DisplayAlert("Ошибка", "Пользователь не найден", "OK");
                     }
                 }
             }
@@ -859,29 +789,65 @@ public class ProfileViewModel : BaseViewModel
                 return;
             }
 
-            // Всегда загружаем аватар из базы данных (из Firebase Storage)
             var user = await _dataService.GetUserAsync(userId);
             
             if (user != null && !string.IsNullOrEmpty(user.AvatarUrl))
             {
-                // Загружаем аватар из Firebase Storage - каждый пользователь имеет свой уникальный URL
-                try
+                if (user.AvatarUrl.StartsWith("local:"))
                 {
-                    AvatarImage = ImageSource.FromUri(new Uri(user.AvatarUrl));
-                    System.Diagnostics.Debug.WriteLine($"📸 Аватар загружен из Firebase Storage для пользователя {userId}: {user.AvatarUrl}");
+                    var localPath = user.AvatarUrl.Substring(6); // Убираем префикс "local:"
+                    if (File.Exists(localPath))
+                    {
+                        AvatarPath = localPath;
+                        AvatarImage = ImageSource.FromFile(localPath);
+                        System.Diagnostics.Debug.WriteLine($"📸 Аватар загружен из локального хранилища: {localPath}");
+                        return;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Локальный файл не найден: {localPath}");
+                    }
                 }
-                catch (Exception uriEx)
+                else
                 {
-                    System.Diagnostics.Debug.WriteLine($"❌ Ошибка загрузки аватара по URL: {uriEx.Message}");
-                    AvatarImage = "👤";
+                    try
+                    {
+                        AvatarImage = ImageSource.FromUri(new Uri(user.AvatarUrl));
+                        System.Diagnostics.Debug.WriteLine($"📸 Аватар загружен из URL: {user.AvatarUrl}");
+                        
+                        var localPath = Path.Combine(FileSystem.AppDataDirectory, "Avatars", $"avatar_{userId}.jpg");
+                        if (File.Exists(localPath))
+                        {
+                            AvatarPath = localPath;
+                        }
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"⚠️ Ошибка загрузки аватара из URL: {ex.Message}");
+                        
+                        var localPath = Path.Combine(FileSystem.AppDataDirectory, "Avatars", $"avatar_{userId}.jpg");
+                        if (File.Exists(localPath))
+                        {
+                            AvatarPath = localPath;
+                            AvatarImage = ImageSource.FromFile(localPath);
+                            System.Diagnostics.Debug.WriteLine($"📸 Аватар загружен из локального хранилища (резервный): {localPath}");
+                            return;
+                        }
+                    }
                 }
             }
-            else
+            
+            var fallbackLocalPath = Path.Combine(FileSystem.AppDataDirectory, "Avatars", $"avatar_{userId}.jpg");
+            if (File.Exists(fallbackLocalPath))
             {
-                // Если аватара нет в базе, показываем дефолтный
-                AvatarImage = "👤";
-                System.Diagnostics.Debug.WriteLine($"📸 Аватар не найден для пользователя {userId}, используется дефолтный");
+                AvatarPath = fallbackLocalPath;
+                AvatarImage = ImageSource.FromFile(fallbackLocalPath);
+                System.Diagnostics.Debug.WriteLine($"📸 Аватар загружен из локального хранилища (прямая проверка): {fallbackLocalPath}");
+                return;
             }
+            
+            AvatarImage = "👤";
         }
         catch (Exception ex)
         {

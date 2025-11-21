@@ -6,7 +6,6 @@ public class IsNotStringConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        // Возвращает true если это НЕ строка (т.е. не эмодзи)
         return value is not string;
     }
 
@@ -20,7 +19,6 @@ public class IsNotNullConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        // Возвращает true если значение не null
         return value != null;
     }
 

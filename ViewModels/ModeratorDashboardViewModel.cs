@@ -184,7 +184,6 @@ public class ModeratorDashboardViewModel : BaseViewModel
             return; // Пользователь отменил
         }
 
-        // Если одобряем жалобу, спрашиваем, нужно ли заблокировать событие
         bool shouldBlock = false;
         if (approve)
         {
@@ -196,7 +195,6 @@ public class ModeratorDashboardViewModel : BaseViewModel
             );
         }
 
-        // Сначала решаем жалобу
         var success = await _reportService.ResolveReportAsync(
             report.Id,
             _authStateService.CurrentUserId,
@@ -206,13 +204,12 @@ public class ModeratorDashboardViewModel : BaseViewModel
 
         if (success)
         {
-            // Если нужно заблокировать событие
             if (shouldBlock)
             {
                 var blockSuccess = await _dataService.BlockEventAsync(
                     report.TargetEventId,
                     _authStateService.CurrentUserId,
-                    notes // Используем причину одобрения как причину блокировки
+                    notes
                 );
 
                 if (blockSuccess)
@@ -289,7 +286,6 @@ public class ModeratorDashboardViewModel : BaseViewModel
 
             System.Diagnostics.Debug.WriteLine($"🔄 Переход к событию: {eventId}");
 
-            // Проверяем, существует ли событие
             var eventItem = await _dataService.GetEventAsync(eventId);
             if (eventItem == null)
             {
@@ -297,7 +293,6 @@ public class ModeratorDashboardViewModel : BaseViewModel
                 return;
             }
 
-            // ПЕРЕДАЕМ ПАРАМЕТР, ЧТО ПРИШЛИ ИЗ ЖАЛОБ
             await Shell.Current.GoToAsync($"{nameof(EventDetailsPage)}?eventId={eventId}&fromReports=true");
             System.Diagnostics.Debug.WriteLine($"✅ Переход к событию выполнен (из жалоб)");
         }
@@ -318,7 +313,6 @@ public class ModeratorDashboardViewModel : BaseViewModel
                 return;
             }
 
-            // Запрашиваем причину блокировки
             var reason = await Application.Current.MainPage.DisplayPromptAsync(
                 "Блокировка события",
                 "Укажите причину блокировки события:",
@@ -333,7 +327,6 @@ public class ModeratorDashboardViewModel : BaseViewModel
                 return; // Пользователь отменил
             }
 
-            // Подтверждение
             var confirm = await Application.Current.MainPage.DisplayAlert(
                 "Подтверждение",
                 "Вы уверены, что хотите заблокировать это событие?",
@@ -359,7 +352,7 @@ public class ModeratorDashboardViewModel : BaseViewModel
                     "Событие успешно заблокировано",
                     "OK"
                 );
-                await LoadDashboardData(); // Обновляем данные
+                await LoadDashboardData();
             }
             else
             {

@@ -8,8 +8,6 @@ public partial class FilterPage : ContentPage
     {
         InitializeComponent();
         BindingContext = viewModel;
-        
-        // Настраиваем кнопку "Назад" в конструкторе
         if (viewModel != null)
         {
             Shell.SetBackButtonBehavior(this, new BackButtonBehavior
@@ -26,15 +24,11 @@ public partial class FilterPage : ContentPage
 
         try
         {
-            // Устанавливаем цвет navigation bar для этой страницы
             Shell.SetBackgroundColor(this, Color.FromArgb("#512BD4"));
             Shell.SetForegroundColor(this, Colors.White);
             Shell.SetTitleColor(this, Colors.White);
-            
-            // Переустанавливаем BackButtonBehavior после загрузки
             if (BindingContext is FilterViewModel vm)
             {
-                // Настраиваем стандартную кнопку "Назад" через Shell
                 Shell.SetBackButtonBehavior(this, new BackButtonBehavior
                 {
                     Command = vm.CloseCommand,

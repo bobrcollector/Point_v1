@@ -11,16 +11,15 @@ public class User
     public string City { get; set; }
     public string About { get; set; }
     public string AvatarUrl { get; set; }
-
-    //   :
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public int CreatedEventsCount { get; set; } = 0;
     public int ParticipatedEventsCount { get; set; } = 0;
 }
+
 public enum UserRole
 {
-    User = 0,       // 
-    Organizer = 1,  //  
-    Moderator = 2,  //  
-    Admin = 3       //  
+    User = 0,
+    Organizer = 1,
+    Moderator = 2,
+    Admin = 3
 }

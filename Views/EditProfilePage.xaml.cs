@@ -17,7 +17,6 @@ public partial class EditProfilePage : ContentPage
         
         if (BindingContext is ProfileViewModel viewModel)
         {
-            // Загружаем интересы при открытии страницы
             await viewModel.LoadAllInterestsForEdit();
         }
     }

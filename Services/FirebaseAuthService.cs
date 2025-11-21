@@ -50,7 +50,6 @@ public class FirebaseAuthService : IAuthService
     {
         try
         {
-            // Используем Dependency Injection чтобы получить DataService
             var dataService = MauiProgram.CreateMauiApp().Services.GetService<IDataService>();
             if (dataService != null)
             {
@@ -61,7 +60,7 @@ public class FirebaseAuthService : IAuthService
                     DisplayName = displayName,
                     City = "",
                     About = "",
-                    AvatarUrl = "", // Аватар будет добавлен позже пользователем
+                    AvatarUrl = "",
                     InterestIds = new List<string>(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
@@ -84,8 +83,7 @@ public class FirebaseAuthService : IAuthService
             if (authResult != null && !string.IsNullOrEmpty(authResult.IdToken))
             {
                 _currentUserToken = authResult.IdToken;
-                _currentUserId = authResult.LocalId; // Используем реальный ID из Firebase
-
+                _currentUserId = authResult.LocalId;
                 await SaveSession();
                 AuthStateChanged?.Invoke(this, EventArgs.Empty);
                 return true;
@@ -99,7 +97,6 @@ public class FirebaseAuthService : IAuthService
         }
     }
 
-    // Остальные методы остаются без изменений...
     public async Task SignOut()
     {
         _currentUserToken = null;
@@ -119,24 +116,18 @@ public class FirebaseAuthService : IAuthService
             }
 
             System.Diagnostics.Debug.WriteLine("🗑️ Начало процесса удаления аккаунта");
-
-            // Удаляем профиль пользователя из базы данных
             try
             {
                 var dataService = MauiProgram.CreateMauiApp().Services.GetService<IDataService>();
                 if (dataService != null && !string.IsNullOrEmpty(_currentUserId))
                 {
-                    // TODO: Добавить метод DeleteUserAsync в IDataService если нужно
                     System.Diagnostics.Debug.WriteLine($"📥 Удаляем пользовательские данные для {_currentUserId}");
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"⚠️ Ошибка удаления данных пользователя: {ex.Message}");
-                // Продолжаем процесс удаления даже если ошибка в удалении данных
             }
-
-            // Удаляем аккаунт в Firebase
             var success = await _firebaseRest.DeleteAccountAsync(_currentUserToken);
 
             if (success)

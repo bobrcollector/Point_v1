@@ -10,8 +10,6 @@ public partial class SelectInterestsPage : ContentPage
         BindingContext = viewModel;
 
         System.Diagnostics.Debug.WriteLine("🔄 SelectInterestsPage создана");
-
-        // СРАЗУ КОПИРУЕМ ДАННЫЕ ПРИ СОЗДАНИИ СТРАНИЦЫ
         if (BindingContext is ProfileViewModel vm)
         {
             vm.CopyToTempData();
@@ -25,7 +23,6 @@ public partial class SelectInterestsPage : ContentPage
 
         if (BindingContext is ProfileViewModel vm)
         {
-            // ЕСЛИ ВРЕМЕННЫЕ ДАННЫЕ ПУСТЫЕ - ЗАГРУЖАЕМ
             if (vm.TempAllInterests?.Count == 0)
             {
                 System.Diagnostics.Debug.WriteLine("🔄 Временные данные пустые, загружаем...");
@@ -34,8 +31,6 @@ public partial class SelectInterestsPage : ContentPage
             else
             {
                 System.Diagnostics.Debug.WriteLine($"✅ Временные данные уже есть: {vm.TempAllInterests.Count} интересов");
-
-                // ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ПРИВЯЗКИ
                 Device.BeginInvokeOnMainThread(() =>
                 {
                     vm.OnPropertyChanged(nameof(vm.TempAllInterests));

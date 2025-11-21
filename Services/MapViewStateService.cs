@@ -1,8 +1,5 @@
 namespace Point_v1.Services;
 
-/// <summary>
-/// Сервис для отслеживания текущего состояния вкладки (карта или список)
-/// </summary>
 public class MapViewStateService
 {
     private bool _isMapViewActive = false;
@@ -15,6 +12,6 @@ public class MapViewStateService
     public void SetMapViewActive(bool isActive)
     {
         _isMapViewActive = isActive;
-        System.Diagnostics.Debug.WriteLine($"??? MapViewStateService: IsMapViewActive = {_isMapViewActive}");
+        System.Diagnostics.Debug.WriteLine($"рџ—єпёЏ MapViewStateService: IsMapViewActive = {_isMapViewActive}");
     }
 }

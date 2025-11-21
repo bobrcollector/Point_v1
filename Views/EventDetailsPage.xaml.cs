@@ -20,8 +20,6 @@ public partial class EventDetailsPage : ContentPage
             {
                 System.Diagnostics.Debug.WriteLine($"🎯 Query Property получен: {value}");
                 viewModel.EventId = value;
-
-                // Загружаем данные события
                 _ = viewModel.LoadEventDetails();
             }
         }
@@ -33,7 +31,6 @@ public partial class EventDetailsPage : ContentPage
 
         if (BindingContext is EventDetailsViewModel viewModel)
         {
-            // Если EventId еще не установлен, ждем применения query parameters
             if (string.IsNullOrEmpty(viewModel.EventId))
             {
                 await Task.Delay(100);

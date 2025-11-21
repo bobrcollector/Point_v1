@@ -15,19 +15,14 @@ public partial class CreateEventPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-
-        // Обрабатываем данные, переданные обратно со страницы выбора местоположения
         if (BindingContext is CreateEventViewModel viewModel)
         {
-            // Восстанавливаем состояние формы
             if (CreateEventStateService.HasState)
             {
                 System.Diagnostics.Debug.WriteLine("💾 Восстанавливаем состояние формы из CreateEventStateService");
                 CreateEventStateService.RestoreState(viewModel);
                 System.Diagnostics.Debug.WriteLine("✅ Состояние формы восстановлено");
             }
-            
-            // Проверяем, есть ли сохраненные данные в LocationSelectionService
             if (LocationSelectionService.HasSelection)
             {
                 System.Diagnostics.Debug.WriteLine($"📍 Восстанавливаем координаты из LocationSelectionService: lat={LocationSelectionService.SelectedLatitude}, lon={LocationSelectionService.SelectedLongitude}");
@@ -43,8 +38,6 @@ public partial class CreateEventPage : ContentPage
                 viewModel.SelectionStatus = $"✅ Местоположение выбрано: {viewModel.Address}";
                 
                 System.Diagnostics.Debug.WriteLine($"✅ Координаты восстановлены: Address={viewModel.Address}");
-                
-                // Очищаем сохраненные данные
                 LocationSelectionService.Clear();
             }
         }

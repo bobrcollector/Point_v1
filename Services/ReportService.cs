@@ -119,17 +119,12 @@ public class ReportService : IReportService
             report.ResolvedBy = moderatorId;
             report.ResolvedAt = DateTime.UtcNow;
             report.ModeratorNotes = moderatorNotes;
-
-            // Обновляем в Firebase
             var success = await _firebaseRest.UpdateReportAsync(report);
 
             if (success && approveReport)
             {
-                // Если жалоба одобрена - скрываем событие
                 await HideReportedEventAsync(report.TargetEventId, moderatorId);
             }
-
-            // Логируем действие
             await LogModerationActionAsync(moderatorId, report);
 
             return success;

@@ -15,7 +15,7 @@
     <ScrollView>
         <VerticalStackLayout Spacing="0" VerticalOptions="Start" Padding="30">
 
-            <!-- Упрощенный заголовок -->
+            <!-- Заголовок -->
             <VerticalStackLayout Spacing="15" Margin="0,40,0,40" HorizontalOptions="Center">
                 <Label Text="🚀" 
                        FontSize="48"

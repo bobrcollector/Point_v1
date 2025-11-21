@@ -19,7 +19,7 @@
                    FontAttributes="Bold"
                    HorizontalOptions="Center"/>
 
-            <!-- ВЕРНЕМ FLEXLayout -->
+
             <FlexLayout BindableLayout.ItemsSource="{Binding TempAllInterests}"
                         Direction="Row"
                         Wrap="Wrap"

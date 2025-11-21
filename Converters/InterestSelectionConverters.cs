@@ -15,11 +15,10 @@ public class InterestSelectionToColorConverter : IValueConverter
         {
             if (isSelected)
             {
-                return Color.FromArgb("#512BD4"); // Фиолетовый для выбранного
+                return Color.FromArgb("#512BD4");
             }
             else
             {
-                // Серый для невыбранного, темнее для темной темы
                 return isDark ? Color.FromArgb("#3A3A3A") : Color.FromArgb("#E8E8E8");
             }
         }
@@ -48,7 +47,6 @@ public class InterestSelectionToTextColorConverter : IValueConverter
             }
             else
             {
-                // Для невыбранного учитываем тему
                 return isDark ? Colors.White : Colors.Black;
             }
         }

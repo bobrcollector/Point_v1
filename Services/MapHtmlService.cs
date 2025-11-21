@@ -103,7 +103,6 @@ public class MapHtmlService
                 controls: ['zoomControl', 'fullscreenControl']
             }});
             
-            // Добавляем маркер текущего местоположения пользователя
             if (showUserLocation) {{
                 userLocationMarker = new ymaps.Placemark([{centerLat}, {centerLon}], {{
                     balloonContentHeader: '<div class=""event-title"">📍 Ваше местоположение</div>',
@@ -117,7 +116,6 @@ public class MapHtmlService
                 map.geoObjects.add(userLocationMarker);
             }}
             
-            // Добавляем метки событий
             events.forEach(function(event) {{
                 if (event.Latitude && event.Longitude) {{
                     var placemark = new ymaps.Placemark([
@@ -140,7 +138,6 @@ public class MapHtmlService
                         hideIconOnBalloonOpen: false
                     }});
                     
-                    // Обработчик клика по метке
                     placemark.events.add('click', function (e) {{
                         selectedEventId = event.EventId;
                         console.log('🎯 Клик по событию: ' + event.EventId);
@@ -158,14 +155,11 @@ public class MapHtmlService
             }});
         }}
         
-        // Функция для центрирования карты на местоположение пользователя
         function centerOnUserLocation() {{
             if (map) {{
-                // НОВОЕ: Закрываем все открытые балуны перед изменением центра
                 try {{
                     map.balloon.close();
                 }} catch (e) {{
-                    // Игнорируем ошибку, если балуна нет
                 }}
                 
                 map.setCenter([userLocationLat, userLocationLon], 12, {{
@@ -175,23 +169,19 @@ public class MapHtmlService
             }}
         }}
         
-        // Функция для центрирования карты на событии
         function centerMapOnEvent(eventId) {{
             var found = false;
             placemarks.forEach(function(item) {{
                 if (item.eventId === eventId) {{
-                    // НОВОЕ: Закрываем все открытые балуны перед открытием нового
                     try {{
                         map.balloon.close();
                     }} catch (e) {{
-                        // Игнорируем ошибку
-                    }}
+                }}
                     
                     map.setCenter([item.lat, item.lon], 13, {{
                         checkZoomRange: true
                     }});
                     
-                    // Даем время на обновление центра перед открытием балуна
                     setTimeout(function() {{
                         try {{
                             item.placemark.balloon.open();
@@ -209,26 +199,21 @@ public class MapHtmlService
             }}
         }}
         
-        // Функция для открытия деталей события
         function openEventDetails(eventId) {{
             console.log('🚀 Переход к событию: ' + eventId);
-            // Отправляем сообщение в C# код
             if (window.chrome && window.chrome.webview) {{
                 window.chrome.webview.postMessage(eventId);
             }} else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webviewHandler) {{
                 window.webkit.messageHandlers.webviewHandler.postMessage(eventId);
             }} else {{
-                // Fallback для других платформ
                 window.location = 'pointapp://event/' + eventId;
             }}
         }}
         
-        // Глобальная функция для C# вызовов
         window.getSelectedEventId = function() {{
             return selectedEventId;
         }};
         
-        // Экспортируем функцию для центрирования
         window.centerMapOnEvent = centerMapOnEvent;
     </script>
 </body>
@@ -237,7 +222,6 @@ public class MapHtmlService
     
     public string GenerateMapHtmlWithCenter(List<MapEvent> events, string focusedEventId, double centerLat = 55.7558, double centerLon = 37.6173, bool showUserLocation = false)
     {
-        // Если есть фокусируемое событие, используем его координаты как центр
         var focusedEvent = events.FirstOrDefault(e => e.EventId == focusedEventId);
         if (focusedEvent != null)
         {
@@ -246,7 +230,6 @@ public class MapHtmlService
         }
 
         var eventsJson = System.Text.Json.JsonSerializer.Serialize(events);
-        // Сохраняем координаты пользователя для кнопки "Мое местоположение"
         var userLocationLat = showUserLocation ? centerLat : 55.7558;
         var userLocationLon = showUserLocation ? centerLon : 37.6173;
 
@@ -343,8 +326,6 @@ public class MapHtmlService
                 zoom: focusedEventId ? 13 : 10,
                 controls: ['zoomControl', 'fullscreenControl']
             }});
-            
-            // Добавляем маркер текущего местоположения пользователя
             if (showUserLocation && !focusedEventId) {{
                 userLocationMarker = new ymaps.Placemark([{centerLat}, {centerLon}], {{
                     balloonContentHeader: '<div class=""event-title"">📍 Ваше местоположение</div>',
@@ -358,7 +339,6 @@ public class MapHtmlService
                 map.geoObjects.add(userLocationMarker);
             }}
             
-            // Добавляем метки событий
             events.forEach(function(event) {{
                 if (event.Latitude && event.Longitude) {{
                     var placemark = new ymaps.Placemark([
@@ -381,7 +361,6 @@ public class MapHtmlService
                         hideIconOnBalloonOpen: false
                     }});
                     
-                    // Обработчик клика по метке
                     placemark.events.add('click', function (e) {{
                         selectedEventId = event.EventId;
                         console.log('🎯 Клик по событию: ' + event.EventId);
@@ -398,7 +377,6 @@ public class MapHtmlService
                 }}
             }});
             
-            // Если есть фокусируемое событие, открываем его балун
             if (focusedEventId) {{
                 setTimeout(function() {{
                     centerMapOnEvent(focusedEventId);
@@ -406,14 +384,11 @@ public class MapHtmlService
             }}
         }}
         
-        // Функция для центрирования карты на местоположение пользователя
         function centerOnUserLocation() {{
             if (map) {{
-                // НОВОЕ: Закрываем все открытые балуны перед изменением центра
                 try {{
                     map.balloon.close();
                 }} catch (e) {{
-                    // Игнорируем ошибку, если балуна нет
                 }}
                 
                 map.setCenter([userLocationLat, userLocationLon], 12, {{
@@ -423,23 +398,19 @@ public class MapHtmlService
             }}
         }}
         
-        // Функция для центрирования карты на событии
         function centerMapOnEvent(eventId) {{
             var found = false;
             placemarks.forEach(function(item) {{
                 if (item.eventId === eventId) {{
-                    // НОВОЕ: Закрываем все открытые балуны перед открытием нового
                     try {{
                         map.balloon.close();
                     }} catch (e) {{
-                        // Игнорируем ошибку
-                    }}
+                }}
                     
                     map.setCenter([item.lat, item.lon], 13, {{
                         checkZoomRange: true
                     }});
                     
-                    // Даем время на обновление центра перед открытием балуна
                     setTimeout(function() {{
                         try {{
                             item.placemark.balloon.open();
@@ -457,26 +428,21 @@ public class MapHtmlService
             }}
         }}
         
-        // Функция для открытия деталей события
         function openEventDetails(eventId) {{
             console.log('🚀 Переход к событию: ' + eventId);
-            // Отправляем сообщение в C# код
             if (window.chrome && window.chrome.webview) {{
                 window.chrome.webview.postMessage(eventId);
             }} else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webviewHandler) {{
                 window.webkit.messageHandlers.webviewHandler.postMessage(eventId);
             }} else {{
-                // Fallback для других платформ
                 window.location = 'pointapp://event/' + eventId;
             }}
         }}
         
-        // Глобальная функция для C# вызовов
         window.getSelectedEventId = function() {{
             return selectedEventId;
         }};
         
-        // Экспортируем функцию для центрирования
         window.centerMapOnEvent = centerMapOnEvent;
     </script>
 </body>
@@ -569,17 +535,14 @@ public class MapHtmlService
                 zoom: 13
             }});
             
-            // Добавляем метку выбранного местоположения, если она есть
             if (selectedLat && selectedLon) {{
                 addPlacemark(selectedLat, selectedLon);
             }}
             
-            // Обработчик клика на карте
             map.events.add('click', function (e) {{
                 var coords = e.get('coords');
                 addPlacemark(coords[0], coords[1]);
                 
-                // Отправляем координаты в приложение через кастомный протокол
                 var lat = coords[0].toFixed(6);
                 var lon = coords[1].toFixed(6);
                 window.location.href = 'app://location?lat=' + lat + '&lon=' + lon;
@@ -587,12 +550,10 @@ public class MapHtmlService
         }}
         
         function addPlacemark(lat, lon) {{
-            // Удаляем предыдущую метку
             if (selectedPlacemark) {{
                 map.geoObjects.remove(selectedPlacemark);
             }}
             
-            // Создаем новую метку
             selectedPlacemark = new ymaps.Placemark([lat, lon], {{
                 balloonContent: 'Выбранное местоположение'
             }}, {{
@@ -602,21 +563,16 @@ public class MapHtmlService
             
             map.geoObjects.add(selectedPlacemark);
             
-            // Обновляем информацию
             updateInfo(lat, lon);
-            
-            // Обработчик перетаскивания метки
             selectedPlacemark.events.add('dragend', function () {{
                 var coords = selectedPlacemark.geometry.getCoordinates();
                 updateInfo(coords[0], coords[1]);
                 
-                // Отправляем координаты в приложение через кастомный протокол
                 var lat = coords[0].toFixed(6);
                 var lon = coords[1].toFixed(6);
                 window.location.href = 'app://location?lat=' + lat + '&lon=' + lon;
             }});
             
-            // Центрируем карту на метке
             map.setCenter([lat, lon], map.getZoom());
         }}
         
@@ -635,7 +591,6 @@ public class MapHtmlService
                     map.setCenter([lat, lon], 15);
                     addPlacemark(lat, lon);
                     
-                    // Отправляем координаты в приложение через кастомный протокол
                     var latStr = lat.toFixed(6);
                     var lonStr = lon.toFixed(6);
                     window.location.href = 'app://location?lat=' + latStr + '&lon=' + lonStr;

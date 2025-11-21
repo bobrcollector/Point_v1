@@ -22,13 +22,9 @@ public partial class ProfilePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        
-        // Перезагружаем данные пользователя при открытии страницы профиля
         if (BindingContext is ProfileViewModel viewModel)
         {
             await viewModel.LoadUserData();
-            
-            // Загружаем статистику для отображения
             if (viewModel.IsAuthenticated)
             {
                 _ = viewModel.LoadUserStatistics(viewModel.GetCurrentUserId());
