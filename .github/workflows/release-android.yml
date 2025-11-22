@@ -28,6 +28,11 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
       
+      - name: Install MAUI workloads
+        run: |
+          dotnet workload restore
+          dotnet workload install maui-android --verbosity quiet
+      
       - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
