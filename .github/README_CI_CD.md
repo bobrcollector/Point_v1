@@ -130,3 +130,4 @@ keytool -genkey -v -keystore point-release.keystore \
 - [.NET MAUI документация](https://learn.microsoft.com/en-us/dotnet/maui/)
 - [Android подпись приложений](https://developer.android.com/studio/publish/app-signing)
 
+

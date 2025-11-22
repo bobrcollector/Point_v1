@@ -38,8 +38,10 @@ jobs:
         uses: android-actions/setup-android@v3
       
       - name: Restore dependencies
-        run: dotnet restore Point_v1.csproj
+        run: |
+          dotnet restore Point_v1.csproj -p:TargetFrameworks=net10.0-android
       
       - name: Build Android
-        run: dotnet build Point_v1.csproj -c Debug -f net10.0-android
+        run: |
+          dotnet build Point_v1.csproj -c Debug -f net10.0-android -p:TargetFrameworks=net10.0-android
 
